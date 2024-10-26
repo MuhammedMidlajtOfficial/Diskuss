@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { individualUserCollection,otpCollection } = require('../../DBConfig');
-// const { individualUserCollection } = require("../../models/individualUser");
 const otpGenerator = require("otp-generator")
 
 module.exports.getIndividualLogin = (req, res) => {
@@ -43,6 +42,85 @@ module.exports.postIndividualLogin = async (req, res) => {
   }
 };
 
+module.exports.postIndividualSignup = async (req, res ) => {
+    const { username, email, otp } = req.body;
+    const passwordRaw = req.body.password;
+    try {
+        if (!username || !email || !passwordRaw || !otp) {
+            res.status(400, "All fields are Required")
+        }
+
+        const isUsernameExist = await individualUserCollection.findOne({ username: username }).exec()
+
+        if (isUsernameExist) {
+            res.status(409, "Username Already Taken. Please Choose different one or login instead");
+        }
+
+        const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+
+        if (isEmailExist) {
+            return res.status(409, "A user with this email address already exist. Please login instead");
+        }
+
+        const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
+        if (response.length === 0 || otp !== response[0].otp) {
+            return res.status(400, { success: false, message: 'The OTP is not valid' })
+        }
+
+        const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+
+        const newUser = await individualUserCollection.create({
+            username,
+            email,
+            password: hashedPassword,
+        })
+
+        res.status(201).json({ message : "user created" })
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+module.exports.postforgotPassword = async (req, res ) => {
+  try {
+    console.log(req.body);
+    const { email, otp } = req.body
+    const passwordRaw = req.body.password
+
+    if (!email || !passwordRaw || !otp) {
+      res.status(400, "All fields are Required")
+    }
+
+    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    if(isEmailExist){
+      const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
+      console.log(response);
+      if (response.length === 0 || otp !== response[0].otp) {
+        return res.status(400, { success: false, message: 'The OTP is not valid' })
+      }
+      const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+      console.log('hashedPassword',hashedPassword);
+
+      const user = await individualUserCollection.updateOne(
+        { email: email },
+        { $set: { password: hashedPassword } }
+      );
+      console.log('user',user);
+      
+      if (user.modifiedCount > 0) {
+        return res.status(200).json({ message: "Password changed successfully." });
+      } else {
+        return res.status(400).json({ message: "Error: Password update failed." });
+      }
+    }else{
+      res.status(401).json({ message : "email not found"})
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports.sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
@@ -70,44 +148,3 @@ module.exports.sendOTP = async (req, res) => {
     console.log(error)
   }
 };
-
-
-module.exports.postIndividualSignup = async (req, res ) => {
-    const { username, email, otp } = req.body;
-    const passwordRaw = req.body.password;
-    try {
-        if (!username || !email || !passwordRaw || !otp) {
-            res.status(400, "All fields are Required")
-        }
-
-        const isUsernameExist = await individualUserCollection.findOne({ username: username }).exec()
-
-        if (isUsernameExist) {
-            res.status(409, "Username Already Taken. Please Choose different one or login instead");
-        }
-
-        const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
-
-        if (isEmailExist) {
-            res.status(409, "A user with this email address already exist. Please login instead");
-        }
-
-        const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
-
-        if (response.length === 0 || otp !== response[0].otp) {
-            res.status(400, { success: false, message: 'The OTP is not valid' })
-        }
-
-        const hashedPassword = await bcrypt.hash(passwordRaw, 10);
-
-        const newUser = await individualUserCollection.create({
-            username,
-            email,
-            password: hashedPassword,
-        })
-
-        res.status(201).json({ message : "user created" })
-    } catch (error) {
-        console.log(error)
-    }
-}
