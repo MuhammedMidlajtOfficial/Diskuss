@@ -30,7 +30,7 @@ app.get('/api/',(req,res)=>{
 
 const port = process.env.PORT | "3000"
 app.listen(port ,()=>{
-  console.log(`Server Connected port : ${port}`);
+  console.log(`Server Connected port : http://localhost:${port}`);
 })
 
 
