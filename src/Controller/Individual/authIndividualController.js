@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { individualUserCollection,otpCollection } = require('../../DBConfig');
+const { otpCollection } = require('../../DBConfig');
+const IndividualUserSchema = require('../../models/individualUser');
 const otpGenerator = require("otp-generator")
 
 module.exports.getIndividualLogin = (req, res) => {
@@ -20,7 +21,7 @@ module.exports.getIndividualLogin = (req, res) => {
 module.exports.postIndividualLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await individualUserCollection.findOne({ email });
+    const user = await IndividualUserSchema.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -45,18 +46,18 @@ module.exports.postIndividualLogin = async (req, res) => {
 module.exports.postIndividualSignup = async (req, res ) => {
     const { username, email, otp } = req.body;
     const passwordRaw = req.body.password;
-    try {
+    try { 
         if (!username || !email || !passwordRaw || !otp) {
             res.status(400, "All fields are Required")
         }
 
-        const isUsernameExist = await individualUserCollection.findOne({ username: username }).exec()
+        const isUsernameExist = await IndividualUserSchema.findOne({ username: username }).exec()
 
         if (isUsernameExist) {
             res.status(409, "Username Already Taken. Please Choose different one or login instead");
         }
 
-        const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+        const isEmailExist = await IndividualUserSchema.findOne({ email: email }).exec();
 
         if (isEmailExist) {
             return res.status(409, "A user with this email address already exist. Please login instead");
@@ -69,7 +70,7 @@ module.exports.postIndividualSignup = async (req, res ) => {
 
         const hashedPassword = await bcrypt.hash(passwordRaw, 10);
 
-        const newUser = await individualUserCollection.create({
+        const newUser = await IndividualUserSchema.create({
             username,
             email,
             password: hashedPassword,
@@ -91,7 +92,7 @@ module.exports.postforgotPassword = async (req, res ) => {
       res.status(400, "All fields are Required")
     }
 
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    const isEmailExist = await IndividualUserSchema.findOne({ email: email }).exec();
     if(isEmailExist){
       const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
       console.log(response);
@@ -101,7 +102,7 @@ module.exports.postforgotPassword = async (req, res ) => {
       const hashedPassword = await bcrypt.hash(passwordRaw, 10);
       console.log('hashedPassword',hashedPassword);
 
-      const user = await individualUserCollection.updateOne(
+      const user = await IndividualUserSchema.updateOne(
         { email: email },
         { $set: { password: hashedPassword } }
       );
