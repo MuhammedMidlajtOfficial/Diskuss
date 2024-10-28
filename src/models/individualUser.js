@@ -14,7 +14,12 @@ const IndividualUserSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
+    cardNo: {
+      type: Number,
+      required: true,
+      default : 0
+    },
   });
   
-  module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);
+  // module.exports = mongoose.model('User', IndividualUserSchema);
   

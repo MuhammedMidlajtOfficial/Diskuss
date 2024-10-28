@@ -2,7 +2,6 @@ const { individualUserCollection } = require("../../DBConfig");
 const Profile = require("../../models/profile");
 const { ObjectId } = require('mongodb');
 
-
 const getProfiles = async (req, res) => {
   try {
     const userId = req.params.id
@@ -56,6 +55,13 @@ const createProfile = async (req, res) => {
 
   try {
     const result = await newProfile.save();
+    if(result){
+      const userData = await individualUserCollection.findOne({ _id : userId })
+      let updateCardNo = userData.cardNo + 1
+      console.log('userData',userData);
+      console.log('updateCardNo',updateCardNo);
+      await individualUserCollection.updateOne({ _id : userId },{ $set :{ cardNo: updateCardNo }})
+    }
     res.json({ message: "Profile added successfully", entryId: result._id });
   } catch (error) {
     res.status(500).json({ message: "Failed to add profile", error });

@@ -32,6 +32,11 @@ mongoose.connect(process.env.MongoDBURL,{
       type: String,
       required: true,
     },
+    cardNo: {
+      type: Number,
+      required: true,
+      default : 0
+    },
   });
 
   const otpSchema = new mongoose.Schema({

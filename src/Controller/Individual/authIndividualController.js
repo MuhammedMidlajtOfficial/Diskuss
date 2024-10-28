@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+// const { otpCollection } = require('../../DBConfig');
 const { otpCollection } = require('../../DBConfig');
-const IndividualUserSchema = require('../../models/individualUser');
+
+const { individualUserCollection } = require('../../DBConfig');
 const otpGenerator = require("otp-generator")
 
 
@@ -30,45 +32,42 @@ module.exports.postIndividualLogin = async (req, res) => {
   }
 };
 
-module.exports.postIndividualSignup = async (req, res ) => {
-    const { username, email, otp } = req.body;
-    const passwordRaw = req.body.password;
-    try { 
-        if (!username || !email || !passwordRaw || !otp) {
-            res.status(400, "All fields are Required")
-        }
+module.exports.postIndividualSignup = async (req, res) => {
+  const { username, email, otp } = req.body;
+  const passwordRaw = req.body.password;
 
-        const isUsernameExist = await individualUserCollection.findOne({ username: username }).exec()
-
-        if (isUsernameExist) {
-            res.status(409, "Username Already Taken. Please Choose different one or login instead");
-        }
-
-        const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
-
-        if (isEmailExist) {
-            return res.status(409, "A user with this email address already exist. Please login instead");
-        }
-        // validate otp
-        const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
-        if (response.length === 0 || otp !== response[0].otp) {
-            return res.status(400, { success: false, message: 'The OTP is not valid' })
-        }
-        // hash password
-        const hashedPassword = await bcrypt.hash(passwordRaw, 10);
-
-        const newUser = await individualUserCollection.create({
-            username,
-            email,
-            password: hashedPassword,
-        })
-
-        res.status(201).json({ message : "user created", user:newUser })
-    } catch (error) {
-      console.log(error)
-      return res.status(500).json({ message: 'Server error' });
+  try {
+    // Check for missing fields
+    if (!username || !email || !passwordRaw || !otp) {
+      return res.status(400).send("All fields are required"); // Correct response handling
     }
+    // Check if email exists
+    const isEmailExist = await individualUserCollection.findOne({ email }).exec();
+    if (isEmailExist) {
+      return res.status(409).send("A user with this email address already exists. Please login instead"); // Correct response handling
+    }
+    // Validate OTP
+    const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
+    if (response.length === 0 || otp !== response[0].otp) {
+      return res.status(400).json({ success: false, message: 'The OTP is not valid' }); // Correct response handling
+    }
+    // Hash password
+    const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+    // Create a new user
+    const newUser = await individualUserCollection.create({
+      username,
+      email,
+      password: hashedPassword,
+      cardNo: 0 // Make sure this is intended
+    });
+
+    return res.status(201).json({ message: "User created", user: newUser });
+  } catch (error) {
+    console.error("Error in postIndividualSignup:", error); // Detailed error logging
+    return res.status(500).json({ message: 'Server error' });
+  }
 }
+
 
 module.exports.postforgotPassword = async (req, res ) => {
   try {
