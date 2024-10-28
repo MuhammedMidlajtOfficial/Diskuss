@@ -10,7 +10,7 @@ const otpGenerator = require("otp-generator")
 module.exports.postIndividualLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await IndividualUserSchema.findOne({ email });
+    const user = await individualUserCollection.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
