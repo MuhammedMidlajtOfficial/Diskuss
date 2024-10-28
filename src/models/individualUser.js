@@ -14,7 +14,9 @@ const individualUserSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
-  });
+  },
+  { timestamps : true }
+  );
   
   module.exports.individualUserCollection = mongoose.model('user', individualUserSchema);
   
