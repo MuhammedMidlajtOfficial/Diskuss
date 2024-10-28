@@ -7,7 +7,7 @@ const getProfiles = async (req, res) => {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
-    const profile = await Profile.findOne({ userId })
+    const profile = await Profile.find({ userId })
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
