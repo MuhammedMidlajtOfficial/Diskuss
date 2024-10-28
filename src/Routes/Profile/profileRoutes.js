@@ -3,7 +3,7 @@ const { getProfiles, createProfile } = require("../../Controller/Profile/profile
 
 const router = express.Router();
 
-router.get("/", getProfiles);
+router.get("/:id", getProfiles);
 router.post("/", createProfile);
 
 module.exports = router;

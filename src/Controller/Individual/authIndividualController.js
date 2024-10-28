@@ -3,19 +3,6 @@ const bcrypt = require('bcrypt');
 const { individualUserCollection,otpCollection } = require('../../DBConfig');
 const otpGenerator = require("otp-generator")
 
-module.exports.getIndividualLogin = (req, res) => {
-  try {
-    const user = req.session.user
-    if (user) {
-      return res.status(200).json({ message: 'User is logged in', user });
-    } else {
-      return res.status(401).json({ message: 'User not logged in' });
-    }
-  } catch (error) {
-    console.error('Error checking login status:', error);
-    return res.status(500).json({ message: 'Server error' });
-  }
-}
 
 module.exports.postIndividualLogin = async (req, res) => {
   try {
@@ -35,7 +22,7 @@ module.exports.postIndividualLogin = async (req, res) => {
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
     req.session.user = user
 
-    return res.status(200).json({ message: 'Login successful', accessToken, refreshToken });
+    return res.status(200).json({ message: 'Login successful', accessToken, refreshToken,user });
   } catch (error) {
     console.error('Error during login:', error);
     return res.status(500).json({ message: 'Server error' });
@@ -75,7 +62,7 @@ module.exports.postIndividualSignup = async (req, res ) => {
             password: hashedPassword,
         })
 
-        res.status(201).json({ message : "user created" })
+        res.status(201).json({ message : "user created", user:newUser })
     } catch (error) {
       console.log(error)
       return res.status(500).json({ message: 'Server error' });
