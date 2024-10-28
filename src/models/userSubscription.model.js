@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const UserSubscriptionSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription',required: true },
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date },
