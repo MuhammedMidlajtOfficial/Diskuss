@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
-const subscriptionPlanSchema = new mongoose.Schema({
-  plan_id: { type: String, default: uuidv4, unique: true },
+const SubscriptionPlanSchema = new mongoose.Schema({
+  planId: { type: String, default: uuidv4, unique: true },
   name: { type: String, required: true, maxlength: 100 },
   price: { type: mongoose.Schema.Types.Decimal128, required: true },
   features: { type: mongoose.Schema.Types.Mixed, default: {} }, // Flexible JSON format
-
+  duration : { type: Number, required: true },
 
 }, { timestamps: true });
 
@@ -23,4 +23,4 @@ const subscriptionPlanSchema = new mongoose.Schema({
 //   next();
 // });
 
-module.exports = mongoose.model("Subscription", subscriptionPlanSchema);
+module.exports = mongoose.model("SubscriptionPlan", SubscriptionPlanSchema);

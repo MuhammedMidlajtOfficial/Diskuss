@@ -1,13 +1,14 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { individualUserCollection,otpCollection } = require('../../DBConfig');
+const { otpCollection } = require('../../DBConfig');
+const IndividualUserSchema = require('../../models/individualUser');
 const otpGenerator = require("otp-generator")
 
 
 module.exports.postIndividualLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await individualUserCollection.findOne({ email });
+    const user = await IndividualUserSchema.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -32,17 +33,19 @@ module.exports.postIndividualLogin = async (req, res) => {
 module.exports.postIndividualSignup = async (req, res ) => {
     const { username, email, otp } = req.body;
     const passwordRaw = req.body.password;
-    try {
+    try { 
         if (!username || !email || !passwordRaw || !otp) {
             res.status(400, "All fields are Required")
         }
-        // check user exist
+
         const isUsernameExist = await individualUserCollection.findOne({ username: username }).exec()
+
         if (isUsernameExist) {
             res.status(409, "Username Already Taken. Please Choose different one or login instead");
         }
-        // check email exist
+
         const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+
         if (isEmailExist) {
             return res.status(409, "A user with this email address already exist. Please login instead");
         }
@@ -53,7 +56,7 @@ module.exports.postIndividualSignup = async (req, res ) => {
         }
         // hash password
         const hashedPassword = await bcrypt.hash(passwordRaw, 10);
-        // creating user
+
         const newUser = await individualUserCollection.create({
             username,
             email,
@@ -76,13 +79,13 @@ module.exports.postforgotPassword = async (req, res ) => {
     if (!email || !passwordRaw ) {
       res.status(400, "All fields are Required")
     }
-    // check email exist
+
     const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
     if(isEmailExist){
       // hash password
       const hashedPassword = await bcrypt.hash(passwordRaw, 10);
       console.log('hashedPassword',hashedPassword);
-      // update password
+
       const user = await individualUserCollection.updateOne(
         { email: email },
         { $set: { password: hashedPassword } }
