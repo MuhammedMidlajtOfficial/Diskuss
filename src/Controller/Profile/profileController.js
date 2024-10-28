@@ -1,9 +1,12 @@
+const { individualUserCollection } = require("../../DBConfig");
 const Profile = require("../../models/profile");
+const { ObjectId } = require('mongodb');
+
 
 const getProfiles = async (req, res) => {
   try {
     const userId = req.params.id
-    if(!isValidUserId(userId)){
+    if(!await(isValidUserId(userId))){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
@@ -59,8 +62,15 @@ const createProfile = async (req, res) => {
   }
 };
 
-async function isValidUserId (userId) {
-  return await Profile.findOne({ userId })
+async function isValidUserId(userId) {
+  try {
+      const objectId = typeof userId === 'string' && ObjectId.isValid(userId) ? new ObjectId(userId) : userId;
+      const user = await individualUserCollection.findOne({ _id: objectId });
+      return user !== null;
+  } catch (error) {
+      console.error('Error checking user ID:', error);
+      return false;
+  }
 }
 
 module.exports = { getProfiles, createProfile };
