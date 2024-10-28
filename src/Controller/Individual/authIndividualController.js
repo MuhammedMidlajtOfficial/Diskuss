@@ -77,27 +77,28 @@ module.exports.postIndividualSignup = async (req, res ) => {
 
         res.status(201).json({ message : "user created" })
     } catch (error) {
-        console.log(error)
+      console.log(error)
+      return res.status(500).json({ message: 'Server error' });
     }
 }
 
 module.exports.postforgotPassword = async (req, res ) => {
   try {
     console.log(req.body);
-    const { email, otp } = req.body
+    const { email } = req.body
     const passwordRaw = req.body.password
 
-    if (!email || !passwordRaw || !otp) {
+    if (!email || !passwordRaw ) {
       res.status(400, "All fields are Required")
     }
 
     const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
     if(isEmailExist){
-      const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
-      console.log(response);
-      if (response.length === 0 || otp !== response[0].otp) {
-        return res.status(400, { success: false, message: 'The OTP is not valid' })
-      }
+      // const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
+      // console.log(response);
+      // if (response.length === 0 || otp !== response[0].otp) {
+      //   return res.status(400, { success: false, message: 'The OTP is not valid' })
+      // }
       const hashedPassword = await bcrypt.hash(passwordRaw, 10);
       console.log('hashedPassword',hashedPassword);
 
@@ -118,6 +119,26 @@ module.exports.postforgotPassword = async (req, res ) => {
 
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
+module.exports.getOtpValidate = async (req, res ) => {
+  try {
+    const { email, otp } = req.body
+    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    if(isEmailExist){
+      const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
+      console.log("res-",response);
+      if (response.length === 0 || otp !== response[0].otp) {
+        return res.status(400).json({ success: false, message: 'The OTP is not valid' })
+      } else {
+        return res.status(200).json({ success: true, message: 'The OTP is valid' })
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Server error' });
   }
 }
 
@@ -146,5 +167,6 @@ module.exports.sendOTP = async (req, res) => {
     });
   } catch (error) {
     console.log(error)
+    return res.status(500).json({ message: 'Server error' });
   }
 };
