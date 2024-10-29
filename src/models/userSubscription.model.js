@@ -1,13 +1,11 @@
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
 
-const subscriptionPlanSchema = new mongoose.Schema({
-  plan_id: { type: String, default: uuidv4, unique: true },
-  name: { type: String, required: true, maxlength: 100 },
-  price: { type: mongoose.Schema.Types.Decimal128, required: true },
-  features: { type: mongoose.Schema.Types.Mixed, default: {} }, // Flexible JSON format
-
-
+const UserSubscriptionSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription',required: true },
+    startDate: { type: Date, default: Date.now },
+    endDate: { type: Date },
+    status: { type: String, enum: ['active', 'inactive', 'canceled'], default: 'active' },
 }, { timestamps: true });
 
 // // Middleware to ensure only one membership type is active
@@ -23,4 +21,4 @@ const subscriptionPlanSchema = new mongoose.Schema({
 //   next();
 // });
 
-module.exports = mongoose.model("Subscription", subscriptionPlanSchema);
+module.exports = mongoose.model("UserSubscription", UserSubscriptionSchema);

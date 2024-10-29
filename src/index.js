@@ -54,9 +54,9 @@ app.use('/api/v1', routes);
 // app.use('/enterprise/',authEnterpriseRouter)
 // app.use("/api/profile", profileRoutes);
 
-app.get('/api/',(req,res)=>{
+app.get('/api/v1',(req,res)=>{
   res.send({
-    message : "Welcome to the API"
+    message : "Welcome to the Diskuss API v1"
   })
 })
 
