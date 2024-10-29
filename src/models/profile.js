@@ -11,6 +11,9 @@ const ProfileSchema = new mongoose.Schema({
   image: String,       
   position: String,
   color: String,
+  referralCode: String,
+  referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  incentives : [{ type : mongoose.Schema.Types.ObjectId, ref: 'Incentive', required: false }],
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   cards : [{ type : mongoose.Schema.Types.ObjectId, ref: 'Card', required: false }],
 });
