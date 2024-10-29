@@ -77,11 +77,11 @@ const findOneById = async (userId) => {
  */
   const updateUserSubscriptionById = async (id, updateData) => {
     try {
-      console.log("id : ",id);
+      // console.log("id : ",id);
       
       const userSubscription = await UserSubscription.findById({_id : id}).exec();
        
-      console.log(userSubscription);
+      // console.log(userSubscription);
       
       if (!userSubscription) {
         throw new Error("User Subscription plan not found");
