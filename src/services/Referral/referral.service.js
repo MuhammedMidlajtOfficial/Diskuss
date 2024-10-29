@@ -40,7 +40,7 @@ const findReferralById = async (referralId) => {
  * @param {String} userId - The unique identifier of the user.
  * @returns {Promise<Referral[]>}
  */
-const findReferralsByUserId = async (userId) => {
+const   findReferralsByUserId = async (userId) => {
     try {
         return await Referral.find({ referrerId: userId }).exec(); // Assuming referrerId is the field that links to the User model
     } catch (error) {
@@ -108,6 +108,41 @@ const deleteReferralById = async (referralId) => {
     }
 };
 
+const findInvitedUsers = async (referrarId) => {
+    try {
+
+        const invitedUsers = await Referral.aggregate([
+            { $match: { referrerId: referrarId } },
+            {
+                $lookup: {
+                    from: 'actions',
+                    localField: '_id',
+                    foreignField: 'referralId',
+                    as: 'actions'
+                }
+            },
+            {
+                $addFields: {
+                    latestAction: { $arrayElemAt: ['$actions', -1] }
+                }
+            },
+            {
+                $project: {
+                    referrerId: 1,
+                    refereeId: 1,
+                    latestActionType: '$latestAction.actionType',
+                    latestActionDate: '$latestAction.actionDate'
+                }
+            }
+        ]);
+
+        console.log("invitedUsers : ", invitedUsers);
+        return invitedUsers;
+    } catch (error) {
+        console.error("Error fetching referrals for user:", error);
+        throw error; // Re-throw the error for higher-level handling if needed
+    }
+};
 
 
 module.exports = {
@@ -117,5 +152,6 @@ module.exports = {
     createReferral,
     updateReferralById,
     deleteReferralById,
+    findInvitedUsers
 
 };
