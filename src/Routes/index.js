@@ -1,54 +1,60 @@
-const express = require('express');
+const express = require("express");
 
-const authIndividualRouter = require('./Individual/authIndividualRouter.js')
-const authEnterpriseRouter = require('./Enterprise/authEnterpriseRouter.js')
-const profileRoutes = require('./Profile/profileRoutes.js')
-const subscriptionPlanRouter = require('./Subscription/SubscriptionPlanRouter.js')
-const serviceRoutes = require('./serviceRouter.js')
-const userSubscriptionRouter = require('./Subscription/UserSubscriptionRouter.js');
-const referralRouter = require('./Referral/ReferralRouter.js');
-const actionRouter = require('./Referral/ActionRotuer.js');
-const referralLevelRouter = require('./Referral/ReferralLevelRouter.js');
+const authIndividualRouter = require("./Individual/authIndividualRouter.js");
+const authEnterpriseRouter = require("./Enterprise/authEnterpriseRouter.js");
+const profileRoutes = require("./Profile/profileRoutes.js");
+const subscriptionPlanRouter = require("./Subscription/SubscriptionPlanRouter.js");
+const serviceRoutes = require("./serviceRouter.js");
+const userSubscriptionRouter = require("./Subscription/UserSubscriptionRouter.js");
+const referralRouter = require("./Referral/ReferralRouter.js");
+const actionRouter = require("./Referral/ActionRotuer.js");
+const referralLevelRouter = require("./Referral/ReferralLevelRouter.js");
+const subscriptionRouter = require("./Subscription/SubscriptionRouter.js");
+const MessageRouter = require("./Message/messageRoute.js");
 
 const router = express.Router();
 
 const defaultRoutes = [
   {
-    path: '/individual',
+    path: "/individual",
     route: authIndividualRouter,
   },
   {
-    path: '/enterprise',
+    path: "/enterprise",
     route: authEnterpriseRouter,
   },
   {
-    path: '/profile',
+    path: "/profile",
     route: profileRoutes,
   },
   {
-    path: '/subscription-plan',
+    path: "/subscription-plan",
     route: subscriptionPlanRouter,
   },
   {
-    path: '/service',
+    path: "/service",
     route: serviceRoutes,
   },
   {
-  path : '/subscription',
-  route: userSubscriptionRouter
+    path: "/subscription",
+    route: userSubscriptionRouter,
   },
   {
-    path : '/referral',
-    route: referralRouter
+    path: "/referral",
+    route: referralRouter,
   },
   {
-    path : '/action',
-    route: actionRouter
+    path: "/action",
+    route: actionRouter,
   },
   {
-    path: '/referral-level',
-    route: referralLevelRouter
-  }
+    path: "/referral-level",
+    route: referralLevelRouter,
+  },
+  {
+    path: "/message",
+    route: MessageRouter,
+  },
 ];
 
 defaultRoutes.forEach((route) => {
