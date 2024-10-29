@@ -1,11 +1,7 @@
 const mongoose = require("mongoose");
 
 const UserSubscriptionSchema = new mongoose.Schema({
-<<<<<<< HEAD
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-=======
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
->>>>>>> Naren
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription',required: true },
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date },

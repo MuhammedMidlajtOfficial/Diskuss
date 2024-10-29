@@ -1,14 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-<<<<<<< HEAD
-const { otpCollection } = require('../../DBConfig');
-const IndividualUserSchema = require('../../models/individualUser');
-=======
 // const { otpCollection } = require('../../DBConfig');
 const { otpCollection } = require('../../DBConfig');
 
 const { individualUserCollection } = require('../../DBConfig');
->>>>>>> Naren
 const otpGenerator = require("otp-generator")
 
 
@@ -37,44 +32,6 @@ module.exports.postIndividualLogin = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-module.exports.postIndividualSignup = async (req, res ) => {
-    const { username, email, otp } = req.body;
-    const passwordRaw = req.body.password;
-    try { 
-        if (!username || !email || !passwordRaw || !otp) {
-            res.status(400, "All fields are Required")
-        }
-
-        const isUsernameExist = await IndividualUserSchema.findOne({ username: username }).exec()
-
-        if (isUsernameExist) {
-            res.status(409, "Username Already Taken. Please Choose different one or login instead");
-        }
-
-        const isEmailExist = await IndividualUserSchema.findOne({ email: email }).exec();
-
-        if (isEmailExist) {
-            return res.status(409, "A user with this email address already exist. Please login instead");
-        }
-
-        const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
-        if (response.length === 0 || otp !== response[0].otp) {
-            return res.status(400, { success: false, message: 'The OTP is not valid' })
-        }
-
-        const hashedPassword = await bcrypt.hash(passwordRaw, 10);
-
-        const newUser = await IndividualUserSchema.create({
-            username,
-            email,
-            password: hashedPassword,
-        })
-
-        res.status(201).json({ message : "user created" })
-    } catch (error) {
-        console.log(error)
-=======
 module.exports.postIndividualSignup = async (req, res) => {
   const { username, email, otp } = req.body;
   const passwordRaw = req.body.password;
@@ -83,7 +40,6 @@ module.exports.postIndividualSignup = async (req, res) => {
     // Check for missing fields
     if (!username || !email || !passwordRaw || !otp) {
       return res.status(400).send("All fields are required"); // Correct response handling
->>>>>>> Naren
     }
     // Check if email exists
     const isEmailExist = await individualUserCollection.findOne({ email }).exec();
