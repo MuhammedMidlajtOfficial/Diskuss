@@ -15,6 +15,7 @@ const findAll = async () => {
   }
   };  
 
+<<<<<<< HEAD
 const findOneById = async (userId) => {
   try {
     console.log("user id :", userId);
@@ -32,6 +33,8 @@ const findOneById = async (userId) => {
 
 
 
+=======
+>>>>>>> Naren
   
 /**
  * Create al UserSubscription
@@ -46,7 +49,11 @@ const findOneById = async (userId) => {
     try {
       // Prepare the UserSubscription data with unique plan_id
 
+<<<<<<< HEAD
       // console.log("data", data);
+=======
+      console.log("data", data);
+>>>>>>> Naren
       const newSubscription = new UserSubscription({
         planId: data.planId,
         userId: data.userId,
@@ -75,11 +82,19 @@ const findOneById = async (userId) => {
  * @returns {Promise<Object>} - Returns the updated UserSubscription plan.
  * @throws {Error} - Throws an error if the UserSubscription plan is not found or if there's an issue with the update.
  */
+<<<<<<< HEAD
   const updateUserSubscriptionById = async (id, updateData) => {
     try {
       console.log("id : ",id);
       
       const userSubscription = await UserSubscription.findById({_id : id}).exec();
+=======
+  const updateUserSubscriptionById = async (plan_id, updateData) => {
+    try {
+      console.log(plan_id);
+      
+      const userSubscription = await UserSubscription.findOne({plan_id:plan_id}).exec();
+>>>>>>> Naren
        
       console.log(userSubscription);
       
@@ -87,7 +102,11 @@ const findOneById = async (userId) => {
         throw new Error("User Subscription plan not found");
       }
       const updatedUserSubscription = await UserSubscription.findOneAndUpdate(
+<<<<<<< HEAD
         { _id: id },
+=======
+        { plan_id },
+>>>>>>> Naren
         { $set: updateData },
         { new: true }
       ).exec(); // Find and update the UserSubscription plan
@@ -131,7 +150,10 @@ const findOneById = async (userId) => {
 
 module.exports = {
     findAll,
+<<<<<<< HEAD
     findOneById,
+=======
+>>>>>>> Naren
     createUserSubscription,
     updateUserSubscriptionById,
     deleteUserSubscriptionById

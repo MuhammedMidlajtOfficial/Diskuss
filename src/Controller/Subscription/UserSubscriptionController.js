@@ -15,6 +15,7 @@ const getUserSubscriptions = async (req, res) => {
     }
 };
 
+<<<<<<< HEAD
 const getUserSubscriptionByUserId = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -24,6 +25,8 @@ const getUserSubscriptionByUserId = async (req, res) => {
         return res.status(500).json({ error: e.message });
     }
 }
+=======
+>>>>>>> Naren
 
 /**
  * Create a new UserSubscription
@@ -76,8 +79,13 @@ const createUserSubscription = async (req,res)=>{
  */
 const updateUserSubscription = async (req, res) => {
     try {
+<<<<<<< HEAD
       const { userSubscription_id } = req.params; 
       // console.log("userSubscriptionId : ", userSubscription_id); // Extract userSubscriptionId from request parameters
+=======
+      const { userSubscriptionId } = req.params; 
+      console.log(userSubscriptionId); // Extract userSubscriptionId from request parameters
+>>>>>>> Naren
       const updateData = req.body;     // Extract update data from request body
   
       // Check if required fields are provided (if applicable)
@@ -85,6 +93,7 @@ const updateUserSubscription = async (req, res) => {
         return res.status(400).json({ message: "No data provided for update." });
       }
   
+<<<<<<< HEAD
       //make it error free if we found the iinvalid enum in updateData
       if(updateData.status && !['active', 'inactive', 'canceled'].includes(updateData.status)){
         return res.status(400).json({ message: "Invalid status provided for update." });
@@ -94,6 +103,12 @@ const updateUserSubscription = async (req, res) => {
       const updatedUserSubscription = await UserSubscriptionService.updateUserSubscriptionById(userSubscription_id, updateData);
   
         // console.log(updateUserSubscription);
+=======
+      // Call the update function
+      const updatedUserSubscription = await UserSubscriptionService.updateUserSubscriptionByPlanId(userSubscriptionId, updateData);
+  
+        console.log(updateUserSubscription);
+>>>>>>> Naren
         
       // Respond with success and the updated plan
       res.status(200).json({
@@ -118,7 +133,11 @@ const updateUserSubscription = async (req, res) => {
       const { plan_id } = req.params; // Extract plan_id from request parameters
   
       // Call the delete function
+<<<<<<< HEAD
       const deletedUserSubscription = await UserSubscriptionService.deleteUserSubscriptionById(plan_id);
+=======
+      const deletedUserSubscription = await UserSubscriptionService.deleteUserSubscriptionByPlanId(plan_id);
+>>>>>>> Naren
   
       // Respond with success and the deleted plan information
       res.status(200).json({
@@ -158,7 +177,10 @@ const getStartEndDate = async (planId) => {
 
 module.exports = {
     getUserSubscriptions,
+<<<<<<< HEAD
     getUserSubscriptionByUserId,
+=======
+>>>>>>> Naren
     createUserSubscription,
     updateUserSubscription,
     deleteUserSubscription
