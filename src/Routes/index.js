@@ -4,6 +4,7 @@ const authIndividualRouter = require('./Individual/authIndividualRouter.js')
 const authEnterpriseRouter = require('./Enterprise/authEnterpriseRouter.js')
 const profileRoutes = require('./Profile/profileRoutes.js')
 const subscriptionRouter = require('./Subscription/SubscriptionRouter.js')
+const MessageRouter = require("./Message/messageRoute.js")
 
 
 const router = express.Router();
@@ -25,6 +26,10 @@ const defaultRoutes = [
       path: '/subscription',
       route: subscriptionRouter,
   },
+  {
+    path: '/message',
+    route: MessageRouter,
+},
 ];
 
 defaultRoutes.forEach((route) => {
