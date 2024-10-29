@@ -6,15 +6,13 @@ const nocache = require('nocache');
 const cors = require('cors');
 const routes = require('./Routes/index.js')
 const http = require('http');
-const { Server } = require('socket.io');
-const { setSocketIO } = require('./Controller/Message/Message.js');
+const socketIo = require('socket.io');
+const server = http.createServer(app);
+const io = socketIo(server);
+const messageController = require('./Controller/Message/messageController');
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
 // const authEnterpriseRouter = require('./Routes/Enterprise/authEnterpriseRouter.js')
 // const profileRoutes = require('./Routes/Profile/profileRoutes.js')
-
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
-
 
 require('dotenv').config();
 
@@ -27,28 +25,9 @@ app.use(nocache());
 app.use(express.json());
 app.use(cors());
 
+messageController.setSocketIO(io);
+
 app.use(express.json({ limit: "10mb" }));
-
-// Set the Socket.IO instance in the controller
-setSocketIO(io);
-
-// Middleware
-app.use(express.json()); // Parse JSON requests
-app.use('/api/v1', routes); // Use your routes
-
-// Socket.IO setup
-io.on('connection', (socket) => {
-  console.log('User connected', socket.id);
-
-  socket.on('joinChat', (chatId) => {
-    socket.join(chatId);
-    console.log(`User ${socket.id} joined chat ${chatId}`);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected', socket.id);
-  });
-});
 
 app.use('/api/v1', routes);
 
@@ -66,7 +45,3 @@ const port = process.env.PORT | "3000"
 app.listen(port ,()=>{
   console.log(`Server Connected port : http://localhost:${port}`);
 })
-
-
-
-

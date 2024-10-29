@@ -1,14 +1,20 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b47efa4 (adding message and socketIo to the backend)
 // const { otpCollection } = require('../../DBConfig');
 const { otpCollection } = require('../../DBConfig');
 
 const { individualUserCollection } = require('../../DBConfig');
+<<<<<<< HEAD
 =======
 const { otpCollection } = require('../../DBConfig');
 const IndividualUserSchema = require('../../models/individualUser');
 >>>>>>> 1a3643a (add message api)
+=======
+>>>>>>> b47efa4 (adding message and socketIo to the backend)
 const otpGenerator = require("otp-generator")
 
 
@@ -38,6 +44,9 @@ module.exports.postIndividualLogin = async (req, res) => {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b47efa4 (adding message and socketIo to the backend)
 module.exports.postIndividualSignup = async (req, res) => {
   const { username, email, otp } = req.body;
   const passwordRaw = req.body.password;
@@ -46,6 +55,7 @@ module.exports.postIndividualSignup = async (req, res) => {
     // Check for missing fields
     if (!username || !email || !passwordRaw || !otp) {
       return res.status(400).send("All fields are required"); // Correct response handling
+<<<<<<< HEAD
 =======
 module.exports.postIndividualSignup = async (req, res ) => {
     const { username, email, otp } = req.body;
@@ -84,6 +94,8 @@ module.exports.postIndividualSignup = async (req, res ) => {
     } catch (error) {
         console.log(error)
 >>>>>>> 1a3643a (add message api)
+=======
+>>>>>>> b47efa4 (adding message and socketIo to the backend)
     }
     // Check if email exists
     const isEmailExist = await individualUserCollection.findOne({ email }).exec();

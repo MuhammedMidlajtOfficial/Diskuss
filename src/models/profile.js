@@ -45,10 +45,13 @@ const ProfileSchema = new mongoose.Schema({
     type:String,
     required : true
   },
+<<<<<<< HEAD
   // userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   // cards : [{ type : mongoose.Schema.Types.ObjectId, ref: 'Card', required: false }],
   // referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   // incentives : [{ type : mongoose.Schema.Types.ObjectId, ref: 'Incentive', required: false }],
+=======
+>>>>>>> b47efa4 (adding message and socketIo to the backend)
 });
 
 module.exports = mongoose.model("Profile", ProfileSchema);

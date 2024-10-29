@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
 
 const UserSubscriptionSchema = new mongoose.Schema({
+<<<<<<< HEAD
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+=======
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
+>>>>>>> b47efa4 (adding message and socketIo to the backend)
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription',required: true },
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date },
