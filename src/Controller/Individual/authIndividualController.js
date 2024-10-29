@@ -153,33 +153,3 @@ module.exports.sendOTP = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
-module.exports.getSendOTP = async (req, res) => {
-  try {
-    const { email } = req.query;
-    console.log('email',req.query);
-
-    let otp = otpGenerator.generate(6, {
-      upperCaseAlphabets: false,
-      lowerCaseAlphabets: false,
-      specialChars: false,
-    });
-    let result = await otpCollection.findOne({ otp: otp });
-    while (result) {
-      otp = otpGenerator.generate(6, {
-        upperCaseAlphabets: false,
-      });
-      result = await otpCollection.findOne({ otp: otp });
-    }
-    const otpPayload = { email, otp };
-    await otpCollection.create(otpPayload);
-    res.status(200).json({
-      success: true,
-      message: 'OTP sent successfully',
-      otp,
-    });
-  } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: 'Server error' });
-  }
-};
