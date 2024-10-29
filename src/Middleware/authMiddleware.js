@@ -13,6 +13,7 @@ module.exports.authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  token 
   if (!token) {
     return res.status(401).json({ message: "No token provided" });
   }
@@ -26,3 +27,14 @@ module.exports.authenticateToken = (req, res, next) => {
     next();
   });
 };
+
+
+module.exports.authenticateToken2 = (req, res, next) => {
+  req.user = {
+    "_id" : "671b83554fe82acbf3064d27",
+    "username" :  "me",
+    "email" : "me@gmail.com",
+    "password" : "Hashed password",
+  }
+next()
+}
