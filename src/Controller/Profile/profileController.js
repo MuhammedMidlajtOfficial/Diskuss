@@ -64,6 +64,7 @@ const createProfile = async (req, res) => {
     }
     res.json({ message: "Profile added successfully", entryId: result._id });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Failed to add profile", error });
   }
 };
