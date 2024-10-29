@@ -9,8 +9,8 @@ if (!process.env.MongoDBURL) {
 }
 
 mongoose.connect(process.env.MongoDBURL,{
-  connectTimeoutMS: 20000, 
-  socketTimeoutMS: 45000,
+  connectTimeoutMS: 200000, 
+  socketTimeoutMS: 450000,
 })
   .then(() => {
     console.log('DB Connected');
