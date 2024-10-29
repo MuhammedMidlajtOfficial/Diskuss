@@ -8,9 +8,6 @@ const serviceRoutes = require('./serviceRouter.js')
 const userSubscriptionRouter = require('./Subscription/UserSubscriptionRouter.js')
 <<<<<<< HEAD
 const messageRoute = require("./Message/messageRoute.js")
-=======
-
->>>>>>> Naren
 
 const router = express.Router();
 
