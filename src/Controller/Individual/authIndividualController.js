@@ -10,7 +10,7 @@ const otpGenerator = require("otp-generator")
 module.exports.postIndividualLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await IndividualUserSchema.findOne({ email });
+    const user = await individualUserCollection.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -79,13 +79,13 @@ module.exports.postforgotPassword = async (req, res ) => {
       res.status(400, "All fields are Required")
     }
 
-    const isEmailExist = await IndividualUserSchema.findOne({ email: email }).exec();
+    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
     if(isEmailExist){
       // hash password
       const hashedPassword = await bcrypt.hash(passwordRaw, 10);
       console.log('hashedPassword',hashedPassword);
 
-      const user = await IndividualUserSchema.updateOne(
+      const user = await individualUserCollection.updateOne(
         { email: email },
         { $set: { password: hashedPassword } }
       );
