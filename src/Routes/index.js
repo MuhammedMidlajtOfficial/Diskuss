@@ -56,6 +56,19 @@ const defaultRoutes = [
     path: "/message",
     route: MessageRouter,
   },
+  {
+    path: '/service',
+    route: serviceRoutes,
+  },
+  {
+  path : '/subscription',
+  route: userSubscriptionRouter
+  },
+  {
+    path: '/message',
+    route: messageRoute,
+  },
+  
 ];
 
 defaultRoutes.forEach((route) => {
