@@ -49,7 +49,11 @@ const defaultRoutes = [
   {
     path: '/referral-level',
     route: referralLevelRouter
-  }
+  },
+  // {
+  //   path: '/message',
+  //   route: messageRoute
+  // }
 ];
 
 defaultRoutes.forEach((route) => {

@@ -34,6 +34,7 @@ module.exports.createProfile = async (req, res) => {
     services,
     image,
     position,
+    cardType,
     color,
   } = req.body;
 
@@ -52,6 +53,7 @@ module.exports.createProfile = async (req, res) => {
     services,
     image,
     position,
+    cardType,
     color,
   });
 
@@ -82,6 +84,7 @@ module.exports.updateProfile = async (req, res) => {
       image,
       position,
       color,
+      cardType
     } = req.body;
 
     if (!isValidUserId(userId)) {
@@ -90,7 +93,19 @@ module.exports.updateProfile = async (req, res) => {
 
     const result = await Profile.updateOne(
       { _id: cardId },
-      { $set: { businessName, yourName, designation, mobile, email, location, services, image, position, color } }
+      { $set: { 
+        businessName, 
+        yourName, 
+        designation, 
+        mobile, 
+        email, 
+        location, 
+        services, 
+        image, 
+        position, 
+        color, 
+        cardType 
+      } }
     );
 
     if (result.modifiedCount === 0) {

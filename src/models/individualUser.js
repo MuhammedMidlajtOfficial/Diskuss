@@ -18,12 +18,15 @@ const IndividualUserSchema = new mongoose.Schema({
       type: Boolean,
       default: false,
     },
-    
     cardNo: {
       type: Number,
       required: true,
       default : 0
     },
+    image: {
+      type:String,
+      default : ''
+    }
   } ,{ timestamps: true });
   
   module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);

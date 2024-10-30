@@ -1,15 +1,15 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { otpCollection } = require('../../DBConfig');
-
-const { individualUserCollection } = require('../../DBConfig');
 const otpGenerator = require("otp-generator")
 
+const enterpriseUser = require("../../models/enterpriseUser");
+const { otpCollection } = require('../../DBConfig');
 
-module.exports.postIndividualLogin = async (req, res) => {
+
+module.exports.postEnterpriseLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await individualUserCollection.findOne({ email });
+    const user = await enterpriseUser.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -31,19 +31,18 @@ module.exports.postIndividualLogin = async (req, res) => {
   }
 };
 
-module.exports.postIndividualSignup = async (req, res) => {
-  const { username, email, otp } = req.body;
-  const passwordRaw = req.body.password;
-
+module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
-    // Check for missing fields
-    if (!username || !email || !passwordRaw || !otp) {
-      return res.status(400).send("All fields are required"); // Correct response handling
+    const { companyName, industryType, email, otp } = req.body
+    const passwordRaw = req.body.password
+
+    if (!companyName || !email || !industryType || !passwordRaw || !otp) {
+      return res.status(400).json({message:"All fields are required"}); // Correct response handling
     }
     // Check if email exists
-    const isEmailExist = await individualUserCollection.findOne({ email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email }).exec();
     if (isEmailExist) {
-      return res.status(409).send("A user with this email address already exists. Please login instead"); // Correct response handling
+      return res.status(409).json({message:"A user with this email address already exists. Please login instead"}); // Correct response handling
     }
     // Validate OTP
     const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
@@ -52,17 +51,17 @@ module.exports.postIndividualSignup = async (req, res) => {
     }
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
-    // Create a new user
-    const newUser = await individualUserCollection.create({
-      username,
+
+    const newUser = await enterpriseUser.create({
+      companyName,
+      industryType,
       email,
       password: hashedPassword,
-      cardNo: 0 // Make sure this is intended
     });
-
+    console.log(newUser);
     return res.status(201).json({ message: "User created", user: newUser });
-  } catch (error) {
-    console.error("Error in postIndividualSignup:", error); // Detailed error logging
+  } catch (err) {
+    console.log(err);
     return res.status(500).json({ message: 'Server error' });
   }
 }
@@ -77,13 +76,13 @@ module.exports.postforgotPassword = async (req, res ) => {
       res.status(400, "All fields are Required")
     }
 
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
     if(isEmailExist){
       // hash password
       const hashedPassword = await bcrypt.hash(passwordRaw, 10);
       console.log('hashedPassword',hashedPassword);
 
-      const user = await individualUserCollection.updateOne(
+      const user = await enterpriseUser.updateOne(
         { email: email },
         { $set: { password: hashedPassword } }
       );
@@ -107,7 +106,7 @@ module.exports.postforgotPassword = async (req, res ) => {
 module.exports.OtpValidate = async (req, res ) => {
   try {
     const { email, otp } = req.body
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
     if(isEmailExist){
       const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
       console.log("res-",response);
