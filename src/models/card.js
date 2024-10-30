@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const ProfileSchema = new mongoose.Schema({
+const cardSchema = new mongoose.Schema({
   userId: {
     type:String,
     required : true
@@ -60,4 +60,4 @@ const ProfileSchema = new mongoose.Schema({
   // incentives : [{ type : mongoose.Schema.Types.ObjectId, ref: 'Incentive', required: false }],
 });
 
-module.exports = mongoose.model("Profile", ProfileSchema);
+module.exports = mongoose.model("Card", cardSchema);

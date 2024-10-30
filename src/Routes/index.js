@@ -2,7 +2,7 @@ const express = require('express');
 
 const authIndividualRouter = require('./Individual/authIndividualRouter.js')
 const authEnterpriseRouter = require('./Enterprise/authEnterpriseRouter.js')
-const profileRoutes = require('./Profile/profileRoutes.js')
+const cardRouter = require('./Card/cardRoutes.js')
 const subscriptionPlanRouter = require('./Subscription/SubscriptionPlanRouter.js')
 const serviceRoutes = require('./serviceRouter.js')
 const userSubscriptionRouter = require('./Subscription/UserSubscriptionRouter.js')
@@ -23,8 +23,8 @@ const defaultRoutes = [
     route: authEnterpriseRouter,
   },
   {
-    path: '/profile',
-    route: profileRoutes,
+    path: '/card',
+    route: cardRouter,
   },
   {
     path: '/subscription-plan',

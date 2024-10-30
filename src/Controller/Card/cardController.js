@@ -1,8 +1,8 @@
 const { individualUserCollection } = require("../../DBConfig");
-const Profile = require("../../models/profile");
+const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
 
-module.exports.getProfiles = async (req, res) => {
+module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id
     
@@ -10,19 +10,19 @@ module.exports.getProfiles = async (req, res) => {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
-    const profile = await Profile.find({ userId })
-    if (!profile) {
-      return res.status(404).json({ message: 'Profile not found' });
+    const card = await Card.find({ userId })
+    if (!card) {
+      return res.status(404).json({ message: 'Card not found' });
     }
-    console.log(profile);
-    return res.status(200).json(profile);
+    console.log(card);
+    return res.status(200).json(card);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Failed to get profiles", error });
+    res.status(500).json({ message: "Failed to get cards", error });
   }
 };
 
-module.exports.createProfile = async (req, res) => {
+module.exports.createCard = async (req, res) => {
   console.log(req.body);
   const {
     userId,
@@ -44,7 +44,7 @@ module.exports.createProfile = async (req, res) => {
     return res.status(400).json({ message: 'Invalid user ID' });
   }
 
-  const newProfile = new Profile({
+  const newCard = new Card({
     userId,
     businessName,
     yourName,
@@ -61,18 +61,18 @@ module.exports.createProfile = async (req, res) => {
   });
 
   try {
-    const result = await newProfile.save();
+    const result = await newCard.save();
     if(result){
       await individualUserCollection.updateOne({ _id: userId }, { $inc: { cardNo: 1 } });
     }
-    res.status(201).json({ message: "Profile added successfully", entryId: result._id });
+    res.status(201).json({ message: "Card added successfully", entryId: result._id });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Failed to add profile", error });
+    res.status(500).json({ message: "Failed to add card", error });
   }
 };
 
-module.exports.updateProfile = async (req, res) => {
+module.exports.updateCard = async (req, res) => {
   try {
     const {
       userId,
@@ -95,7 +95,7 @@ module.exports.updateProfile = async (req, res) => {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
-    const result = await Profile.updateOne(
+    const result = await Card.updateOne(
       { _id: cardId },
       { $set: { 
         businessName, 
@@ -114,17 +114,17 @@ module.exports.updateProfile = async (req, res) => {
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: 'Profile not found or no changes detected' });
+      return res.status(404).json({ message: 'Card not found or no changes detected' });
     }
 
-    res.status(200).json({ message: 'Profile updated successfully' });
+    res.status(200).json({ message: 'Card updated successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to update profile', error });
+    res.status(500).json({ message: 'Failed to update card', error });
   }
 };
 
-module.exports.deleteProfile = async (req, res) => {
+module.exports.deleteCard = async (req, res) => {
   const { userId, cardId } = req.body;
 
   if (!isValidUserId(userId)) {
@@ -132,20 +132,20 @@ module.exports.deleteProfile = async (req, res) => {
   }
 
   try {
-    const result = await Profile.deleteOne({ userId, _id: cardId });
+    const result = await Card.deleteOne({ userId, _id: cardId });
     console.log(result);
     if (result.deletedCount > 0) {
       await individualUserCollection.updateOne(
         { _id: userId },
         { $inc: { cardNo: -1 } }
       );
-      return res.status(200).json({ message: "Profile deleted successfully" });
+      return res.status(200).json({ message: "Card deleted successfully" });
     } else {
-      return res.status(404).json({ message: "Profile not found" });
+      return res.status(404).json({ message: "Card not found" });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to delete profile", error });
+    res.status(500).json({ message: "Failed to delete card", error });
   }
 };
 
