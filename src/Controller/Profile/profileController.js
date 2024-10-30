@@ -23,6 +23,7 @@ module.exports.getProfiles = async (req, res) => {
 };
 
 module.exports.createProfile = async (req, res) => {
+  console.log(req.body);
   const {
     userId,
     businessName,
@@ -36,6 +37,7 @@ module.exports.createProfile = async (req, res) => {
     position,
     cardType,
     color,
+    website
   } = req.body;
 
   if(!isValidUserId(userId)){
@@ -55,6 +57,7 @@ module.exports.createProfile = async (req, res) => {
     position,
     cardType,
     color,
+    website
   });
 
   try {
@@ -84,7 +87,8 @@ module.exports.updateProfile = async (req, res) => {
       image,
       position,
       color,
-      cardType
+      cardType,
+      website
     } = req.body;
 
     if (!isValidUserId(userId)) {
@@ -104,7 +108,8 @@ module.exports.updateProfile = async (req, res) => {
         image, 
         position, 
         color, 
-        cardType 
+        cardType,
+        website
       } }
     );
 

@@ -49,7 +49,11 @@ const ProfileSchema = new mongoose.Schema({
     type:String,
     required:true,
     default:"Personal card"
-  }
+  },
+  website:  {
+    type:String,
+    required : true
+  },
   // userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   // cards : [{ type : mongoose.Schema.Types.ObjectId, ref: 'Card', required: false }],
   // referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
