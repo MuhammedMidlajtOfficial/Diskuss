@@ -116,12 +116,44 @@ module.exports.OtpValidate = async (req, res ) => {
       } else {
         return res.status(200).json({ success: true, message: 'The OTP is valid' })
       }
-    }
+    } return res.status(401).json({ message: "Email not valid" })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });
   }
 }
+
+module.exports.sendForgotPasswordOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    if(!isEmailExist){
+      return res.status(401).json({ message: "Email not valid" })
+    }
+    let otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+    let result = await otpCollection.findOne({ otp: otp });
+    while (result) {
+      otp = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+      });
+      result = await otpCollection.findOne({ otp: otp });
+    }
+    const otpPayload = { email, otp };
+    await otpCollection.create(otpPayload);
+    res.status(200).json({
+      success: true,
+      message: 'OTP sent successfully',
+      otp,
+    });
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
 
 module.exports.sendOTP = async (req, res) => {
   try {

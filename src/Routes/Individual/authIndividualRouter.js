@@ -3,6 +3,7 @@ const authIndividualController = require('../../Controller/Individual/authIndivi
 const authIndividualRouter = express.Router()
 
 authIndividualRouter.post('/sendotp',authIndividualController.sendOTP)
+authIndividualRouter.post('/sendForgotPasswordOtp',authIndividualController.sendForgotPasswordOTP)
 authIndividualRouter.post('/validateotp',authIndividualController.OtpValidate)
 authIndividualRouter.post('/forgotpassword',authIndividualController.postforgotPassword)
 authIndividualRouter.post('/login',authIndividualController.postIndividualLogin)

@@ -4,6 +4,7 @@ const authEnterpriseRouter = express.Router()
 
 
 authEnterpriseRouter.post('/sendotp', authEnterpriseController.sendOTP)
+authEnterpriseRouter.post('/sendForgotPasswordOtp', authEnterpriseController.sendForgotPasswordOTP)
 authEnterpriseRouter.post('/validateotp',authEnterpriseController.OtpValidate)
 authEnterpriseRouter.post('/login', authEnterpriseController.postEnterpriseLogin)
 authEnterpriseRouter.post('/signup', authEnterpriseController.postEnterpriseSignup)
