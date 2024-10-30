@@ -2,9 +2,10 @@ const { individualUserCollection } = require("../../DBConfig");
 const Profile = require("../../models/profile");
 const { ObjectId } = require('mongodb');
 
-const getProfiles = async (req, res) => {
+module.exports.getProfiles = async (req, res) => {
   try {
     const userId = req.params.id
+    
     if(!await(isValidUserId(userId))){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
@@ -13,6 +14,7 @@ const getProfiles = async (req, res) => {
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
+    console.log(profile);
     return res.status(200).json(profile);
   } catch (error) {
     console.log(error);
@@ -20,7 +22,7 @@ const getProfiles = async (req, res) => {
   }
 };
 
-const createProfile = async (req, res) => {
+module.exports.createProfile = async (req, res) => {
   const {
     userId,
     businessName,
@@ -56,18 +58,77 @@ const createProfile = async (req, res) => {
   try {
     const result = await newProfile.save();
     if(result){
-      const userData = await individualUserCollection.findOne({ _id : userId })
-      let updateCardNo = userData.cardNo + 1
-      console.log('userData',userData);
-      console.log('updateCardNo',updateCardNo);
-      await individualUserCollection.updateOne({ _id : userId },{ $set :{ cardNo: updateCardNo }})
+      await individualUserCollection.updateOne({ _id: userId }, { $inc: { cardNo: 1 } });
     }
-    res.json({ message: "Profile added successfully", entryId: result._id });
+    res.status(201).json({ message: "Profile added successfully", entryId: result._id });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Failed to add profile", error });
   }
 };
+
+module.exports.updateProfile = async (req, res) => {
+  try {
+    const {
+      userId,
+      cardId,
+      businessName,
+      yourName,
+      designation,
+      mobile,
+      email,
+      location,
+      services,
+      image,
+      position,
+      color,
+    } = req.body;
+
+    if (!isValidUserId(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    const result = await Profile.updateOne(
+      { _id: cardId },
+      { $set: { businessName, yourName, designation, mobile, email, location, services, image, position, color } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: 'Profile not found or no changes detected' });
+    }
+
+    res.status(200).json({ message: 'Profile updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to update profile', error });
+  }
+};
+
+module.exports.deleteProfile = async (req, res) => {
+  const { userId, cardId } = req.body;
+
+  if (!isValidUserId(userId)) {
+    return res.status(400).json({ message: 'Invalid user ID' });
+  }
+
+  try {
+    const result = await Profile.deleteOne({ userId, _id: cardId });
+    console.log(result);
+    if (result.deletedCount > 0) {
+      await individualUserCollection.updateOne(
+        { _id: userId },
+        { $inc: { cardNo: -1 } }
+      );
+      return res.status(200).json({ message: "Profile deleted successfully" });
+    } else {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to delete profile", error });
+  }
+};
+
 
 async function isValidUserId(userId) {
   try {
@@ -79,5 +140,3 @@ async function isValidUserId(userId) {
       return false;
   }
 }
-
-module.exports = { getProfiles, createProfile };
