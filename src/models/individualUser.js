@@ -14,23 +14,19 @@ const IndividualUserSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
-<<<<<<< HEAD
     isSubscribed: {
       type: Boolean,
       default: false,
     },
     
-  }, { timestamps: true });
-  
-  module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);
-=======
     cardNo: {
       type: Number,
       required: true,
       default : 0
     },
-  });
+  } ,{ timestamps: true });
+  
+  module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);
   
   // module.exports = mongoose.model('User', IndividualUserSchema);
->>>>>>> Naren
   

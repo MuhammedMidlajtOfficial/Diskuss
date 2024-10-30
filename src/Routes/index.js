@@ -35,9 +35,21 @@ const defaultRoutes = [
     route: serviceRoutes,
   },
   {
-  path : '/subscription',
-  route: userSubscriptionRouter
+    path : '/subscription',
+    route: userSubscriptionRouter
   },
+  {
+    path : '/referral',
+    route: referralRouter
+  },
+  {
+    path : '/action',
+    route: actionRouter
+  },
+  {
+    path: '/referral-level',
+    route: referralLevelRouter
+  }
 ];
 
 defaultRoutes.forEach((route) => {
