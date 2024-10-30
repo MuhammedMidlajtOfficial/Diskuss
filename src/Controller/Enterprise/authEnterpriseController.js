@@ -114,8 +114,8 @@ module.exports.OtpValidate = async (req, res ) => {
         return res.status(400).json({ success: false, message: 'The OTP is not valid' })
       } else {
         return res.status(200).json({ success: true, message: 'The OTP is valid' })
-      }
-    }
+      } 
+    } return res.status(401).json({ message: "Email not exist" })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });
@@ -127,7 +127,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
     const { email } = req.body;
     const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
     if(!isEmailExist){
-      return res.status(401).json({ message: "Email not valid" })
+      return res.status(401).json({ message: "Email not exist" })
     }
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
