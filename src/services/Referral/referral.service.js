@@ -111,31 +111,32 @@ const deleteReferralById = async (referralId) => {
 const findInvitedUsers = async (referrarId) => {
     try {
 
-        const invitedUsers = await Referral.aggregate([
-            { $match: { referrerId: referrarId } },
-            {
-                $lookup: {
-                    from: 'actions',
-                    localField: '_id',
-                    foreignField: 'referralId',
-                    as: 'actions'
-                }
-            },
-            {
-                $addFields: {
-                    latestAction: { $arrayElemAt: ['$actions', -1] }
-                }
-            },
-            {
-                $project: {
-                    referrerId: 1,
-                    refereeId: 1,
-                    latestActionType: '$latestAction.actionType',
-                    latestActionDate: '$latestAction.actionDate'
-                }
-            }
-        ]);
+        // const invitedUsers = await Referral.aggregate([
+        //     { $match: { referrerId: referrarId } },
+        //     {
+        //         $lookup: {
+        //             from: 'actions',
+        //             localField: '_id',
+        //             foreignField: 'referralId',
+        //             as: 'actions'
+        //         }
+        //     },
+        //     {
+        //         $addFields: {
+        //             latestAction: { $arrayElemAt: ['$actions', -1] }
+        //         }
+        //     },
+        //     {
+        //         $project: {
+        //             referrerId: 1,
+        //             refereeId: 1,
+        //             latestActionType: '$latestAction.actionType',
+        //             latestActionDate: '$latestAction.actionDate'
+        //         }
+        //     }
+        // ]);
 
+        const invitedUsers = {}
         console.log("invitedUsers : ", invitedUsers);
         return invitedUsers;
     } catch (error) {

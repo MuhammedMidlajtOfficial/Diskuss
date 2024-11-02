@@ -186,18 +186,51 @@ const getInvitedUsers = async (req, res) => {
         //     actions: actions.filter(action => action.referralId === referral._id)
         // }));
 
-        const invitedUsers = await ReferralService.findInvitedUsers(userId);
+        // const invitedUsers = await ReferralService.findInvitedUsers(userId);
 
-        if (!invitedUsers || invitedUsers.length === 0) {
-            return res.status(404).json({ message: 'No invited users found for this user' });
-        }
+        const referrals = await ReferralService.findReferralsByUserId(userId)
+        console.log("referrals : ", referrals)
+        
+        const referralIds = await referrals.map(ref => ref._id)
 
-        return res.status(200).json(invitedUsers);
+        console.log("ref_ids : ", referralIds)
+
+        // const action = referralIds.map(async (refId)=> {
+        //     const action =  await ActionService.findActionsByReferralId(refId)
+        //     return action
+        // })
+
+                // Fetch actions for each referral ID asynchronously
+        const actions = await Promise.all(referralIds.map(async (refId) => {
+            const action = await ActionService.findActionsByReferralId(refId);
+            return action;
+        }));
+
+        console.log("actions :", actions)
+
+        // if (!invitedUsers || invitedUsers.length === 0) {
+        //     return res.status(404).json({ message: 'No invited users found for this user' });
+        // }
+
+        return res.status(200).json(actions );
     } catch (error) {
         console.error("Error fetching invited users by user ID:", error);
         return res.status(500).json({ error: error.message });
     }
 }
+
+
+/*
+I want this: 
+{
+inviteduser : [
+{
+    'referralId': 123123,
+    '
+},{},{}]
+}
+*/
+
 
 module.exports = {
     getAllReferrals,
