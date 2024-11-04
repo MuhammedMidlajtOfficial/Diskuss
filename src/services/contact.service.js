@@ -59,9 +59,10 @@ const createContact = async (ContactData) => {
  * @returns {Promise<Object>} - Returns the updated Contact.
  * @throws {Error} - Throws an error if the Contact is not found or if there's an issue with the update.
  */
-const updateContactById = async (ContactId, updateData) => {
+const updateContact = async (ContactId, updateData) => {
     try {
         const updatedContact = await Contact.findByIdAndUpdate(ContactId, updateData, { new: true }).exec();
+        console.log("updated Contact: ", updatedContact)
         if (!updatedContact) {
             throw new Error("Contact not found");
         }
@@ -78,7 +79,7 @@ const updateContactById = async (ContactId, updateData) => {
  * @returns {Promise<Object>} - Returns the deleted Contact for confirmation.
  * @throws {Error} - Throws an error if the Contact is not found or if there's an issue with the deletion.
  */
-const deleteContactById = async (ContactId) => {
+const deleteContact = async (ContactId) => {
     try {
         const deletedContact = await Contact.findByIdAndDelete(ContactId).exec();
         if (!deletedContact) {
@@ -91,7 +92,7 @@ const deleteContactById = async (ContactId) => {
     }
 };
 
-const findContactsByUserId = async (userId) => {
+const findContactsByOwnerUserId = async (userId) => {
     try{
         const contact = await Contact.find({contactOwnerId: userId}).exec();
         console.log("contact by userId: ", contact)
@@ -111,7 +112,7 @@ module.exports = {
     findAllContacts,
     findContactById,
     createContact,
-    updateContactById,
-    deleteContactById,
-    findContactsByUserId
+    updateContact,
+    deleteContact,
+   findContactsByOwnerUserId
 };

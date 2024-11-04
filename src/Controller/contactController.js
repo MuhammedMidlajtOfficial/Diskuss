@@ -97,18 +97,18 @@ const createContact = async (req, res) => {
 const updateContact = async (req, res) => {
     try {
 
-        const { error } = contactSchema.validate(req.body);
+        // const { error } = contactSchema.validate(req.body);
   
-        if (error) {
-          return res.status(400).json({ message: error.details[0].message });
-        }
+        // if (error) {
+        //   return res.status(400).json({ message: error.details[0].message });
+        // }
         
-        const { id } = req.params; // Extract id from request parameters
+        const { contact_id } = req.params; // Extract id from request parameters
         const updateData = req.body; // Extract update data from request body
 
 
         // Call the service to update the Contact
-        const updatedContact = await ContactService.updateContact(id, updateData);
+        const updatedContact = await ContactService.updateContact(contact_id, updateData);
 
         if (!updatedContact) return res.status(404).json({ message: 'Contact not found' });
 
@@ -131,10 +131,10 @@ const updateContact = async (req, res) => {
  */
 const deleteContact = async (req, res) => {
     try {
-      const { id } = req.params; // Extract id from request parameters
+      const { contact_id } = req.params; // Extract id from request parameters
   
       // Call the service to delete the Contact
-      const deletedContact = await ContactService.deleteContactById(id);
+      const deletedContact = await ContactService.deleteContact(contact_id);
   
       if (!deletedContact) return res.status(404).json({ message: 'Contact not found' });
 
@@ -156,10 +156,10 @@ const deleteContact = async (req, res) => {
  * @param {Response} res
  * @returns {Promise<Response>}
  */
-const getContactsByUserId = async (req, res) => {
+const getContactsByOwnerUserId = async (req, res) => {
     try {
         const { user_id } = req.params; // Extract referralId from request parameters
-        const Contacts = await ContactService.findContactsByUserId(user_id);
+        const Contacts = await ContactService.findContactsByOwnerUserId(user_id);
 
         if (!Contacts || Contacts.length === 0) {
             return res.status(404).json({ message: 'No Contacts found for this user' });
@@ -180,5 +180,5 @@ module.exports = {
     createContact,
     updateContact,
     deleteContact,
-    getContactsByUserId,
+    getContactsByOwnerUserId,
 };
