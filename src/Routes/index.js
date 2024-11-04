@@ -9,6 +9,7 @@ const userSubscriptionRouter = require('./Subscription/UserSubscriptionRouter.js
 const referralRouter = require('./Referral/ReferralRouter.js');
 const actionRouter = require('./Referral/ActionRotuer.js');
 const referralLevelRouter = require('./Referral/ReferralLevelRouter.js');
+const contactRouter = require("./contactRouter.js")
 
 const router = express.Router();
 
@@ -48,6 +49,10 @@ const defaultRoutes = [
   {
     path: '/referral-level',
     route: referralLevelRouter
+  },
+  {
+    path: '/contact',
+    route: contactRouter
   }
 ];
 

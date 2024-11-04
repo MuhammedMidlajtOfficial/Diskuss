@@ -1,4 +1,4 @@
-const {Referral} = require('../../models/referral.model');
+const {Referral, Action} = require('../../models/referral.model');
 
 /**
  * Find all Referrals
@@ -111,6 +111,29 @@ const deleteReferralById = async (referralId) => {
 const findInvitedUsers = async (referrarId) => {
     try {
 
+        const invitedUsers = await Action.aggregate([
+            [
+                {
+                    '$lookup': {
+                        'from': 'actions', 
+                        'localField': '_id', 
+                        'foreignField': 'referralId', 
+                        'as': 'action'
+                    }
+                }, {
+                    '$match': {
+                        'referralId': referrarId
+                    }
+                }, {
+                    '$sort': {
+                        'actionDate': -1
+                    }
+                }, {
+                    '$limit': 1
+                }
+            ]
+          ])
+          //----------------------
         // const invitedUsers = await Referral.aggregate([
         //     { $match: { referrerId: referrarId } },
         //     {
@@ -136,7 +159,6 @@ const findInvitedUsers = async (referrarId) => {
         //     }
         // ]);
 
-        const invitedUsers = {}
         console.log("invitedUsers : ", invitedUsers);
         return invitedUsers;
     } catch (error) {
