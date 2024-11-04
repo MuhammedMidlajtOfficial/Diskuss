@@ -172,6 +172,22 @@ const getContactsByOwnerUserId = async (req, res) => {
     }
 };
 
+const getSearchedContact = async (req, res) => {
+    const {number} = req.query;
+    console.log("number : ". number)
+    
+    if (!number) {
+        return res.status(400).json({ message: 'Number query parameter is required.' });
+      }
+    try{
+        const results = await ContactService.findContactsByNumberSearch(number);
+        res.status(200).json(results);
+
+    } catch(error) {
+        console.error("Error fetching contacts by search query");
+        return res.status(500).json({ error: error.message });    }
+}
+
 
 
 module.exports = {
@@ -181,4 +197,5 @@ module.exports = {
     updateContact,
     deleteContact,
     getContactsByOwnerUserId,
+    getSearchedContact
 };

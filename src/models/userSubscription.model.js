@@ -4,6 +4,7 @@ const UserSubscriptionSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription',required: true },
     startDate: { type: Date, default: Date.now },
+    payment : {type: Array },
     endDate: { type: Date },
     status: { type: String, enum: ['active', 'inactive', 'canceled'], default: 'active' },
 }, { timestamps: true });

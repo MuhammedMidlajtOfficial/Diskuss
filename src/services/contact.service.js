@@ -107,6 +107,22 @@ const findContactsByOwnerUserId = async (userId) => {
     }
 }
 
+const findContactsByNumberSearch = async (number) => {
+    try{
+        const regex = new RegExp(number, 'i'); // 'i' for case-insensitive search
+        const contact = await Contact.find({ mobile: regex }).populate('userId contactOwnerId');
+        console.log("contact by userId: ", contact)
+        if (!contact) {
+            throw new Error("Contact not found");
+        }
+        return contact;
+        
+    } catch(error){
+        console.error("Error fetching contacts by user id: ", error)
+        throw error
+    }
+}
+
 
 module.exports = {
     findAllContacts,
@@ -114,5 +130,6 @@ module.exports = {
     createContact,
     updateContact,
     deleteContact,
-   findContactsByOwnerUserId
+    findContactsByOwnerUserId,
+    findContactsByNumberSearch
 };
