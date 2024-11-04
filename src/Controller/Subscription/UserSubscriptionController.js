@@ -15,6 +15,15 @@ const getUserSubscriptions = async (req, res) => {
     }
 };
 
+const getUserSubscriptionByUserId = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        const userSubscriptions = await UserSubscriptionService.findOneById(user_id);
+        return res.status(200).json({ userSubscriptions });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+}
 
 /**
  * Create a new UserSubscription
@@ -67,8 +76,8 @@ const createUserSubscription = async (req,res)=>{
  */
 const updateUserSubscription = async (req, res) => {
     try {
-      const { userSubscriptionId } = req.params; 
-      console.log(userSubscriptionId); // Extract userSubscriptionId from request parameters
+      const { userSubscription_id } = req.params; 
+      // console.log("userSubscriptionId : ", userSubscription_id); // Extract userSubscriptionId from request parameters
       const updateData = req.body;     // Extract update data from request body
   
       // Check if required fields are provided (if applicable)
@@ -76,10 +85,15 @@ const updateUserSubscription = async (req, res) => {
         return res.status(400).json({ message: "No data provided for update." });
       }
   
+      //make it error free if we found the iinvalid enum in updateData
+      if(updateData.status && !['active', 'inactive', 'canceled'].includes(updateData.status)){
+        return res.status(400).json({ message: "Invalid status provided for update." });
+      }
+
       // Call the update function
-      const updatedUserSubscription = await UserSubscriptionService.updateUserSubscriptionByPlanId(userSubscriptionId, updateData);
+      const updatedUserSubscription = await UserSubscriptionService.updateUserSubscriptionById(userSubscription_id, updateData);
   
-        console.log(updateUserSubscription);
+        // console.log(updateUserSubscription);
         
       // Respond with success and the updated plan
       res.status(200).json({
@@ -104,7 +118,7 @@ const updateUserSubscription = async (req, res) => {
       const { plan_id } = req.params; // Extract plan_id from request parameters
   
       // Call the delete function
-      const deletedUserSubscription = await UserSubscriptionService.deleteUserSubscriptionByPlanId(plan_id);
+      const deletedUserSubscription = await UserSubscriptionService.deleteUserSubscriptionById(plan_id);
   
       // Respond with success and the deleted plan information
       res.status(200).json({
@@ -144,6 +158,7 @@ const getStartEndDate = async (planId) => {
 
 module.exports = {
     getUserSubscriptions,
+    getUserSubscriptionByUserId,
     createUserSubscription,
     updateUserSubscription,
     deleteUserSubscription

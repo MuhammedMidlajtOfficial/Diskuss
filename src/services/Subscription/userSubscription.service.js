@@ -15,6 +15,23 @@ const findAll = async () => {
   }
   };  
 
+const findOneById = async (userId) => {
+  try {
+    console.log("user id :", userId);
+
+    const userSubscriptions =  await UserSubscription.find({userId}).exec();
+    console.log("user subscription : ", userSubscriptions);
+
+    return userSubscriptions;
+    return
+  } catch (error) {
+    console.error("Error fetching User Subscriptions plan:", error);
+    throw error; // Re-throw the error for higher-level handling if needed
+  }
+  };  
+
+
+
   
 /**
  * Create al UserSubscription
@@ -29,7 +46,7 @@ const findAll = async () => {
     try {
       // Prepare the UserSubscription data with unique plan_id
 
-      console.log("data", data);
+      // console.log("data", data);
       const newSubscription = new UserSubscription({
         planId: data.planId,
         userId: data.userId,
@@ -58,19 +75,19 @@ const findAll = async () => {
  * @returns {Promise<Object>} - Returns the updated UserSubscription plan.
  * @throws {Error} - Throws an error if the UserSubscription plan is not found or if there's an issue with the update.
  */
-  const updateUserSubscriptionById = async (plan_id, updateData) => {
+  const updateUserSubscriptionById = async (id, updateData) => {
     try {
-      console.log(plan_id);
+      // console.log("id : ",id);
       
-      const userSubscription = await UserSubscription.findOne({plan_id:plan_id}).exec();
+      const userSubscription = await UserSubscription.findById({_id : id}).exec();
        
-      console.log(userSubscription);
+      // console.log(userSubscription);
       
       if (!userSubscription) {
         throw new Error("User Subscription plan not found");
       }
       const updatedUserSubscription = await UserSubscription.findOneAndUpdate(
-        { plan_id },
+        { _id: id },
         { $set: updateData },
         { new: true }
       ).exec(); // Find and update the UserSubscription plan
@@ -114,6 +131,7 @@ const findAll = async () => {
 
 module.exports = {
     findAll,
+    findOneById,
     createUserSubscription,
     updateUserSubscriptionById,
     deleteUserSubscriptionById

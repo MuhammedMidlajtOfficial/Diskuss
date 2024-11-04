@@ -34,6 +34,8 @@ const createProfile = async (req, res) => {
     position,
     color,
   } = req.body;
+  console.log(createProfile);
+  
 
   if(!isValidUserId(userId)){
     return res.status(400).json({ message: 'Invalid user ID' });

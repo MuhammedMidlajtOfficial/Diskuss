@@ -2,7 +2,7 @@
 
 const express = require("express");
 const router = express.Router();
-const {CreateMeeting, getUpcomingMeetings,deleteMeeting,getMeetingsByIds} = require("../../Controller/Meeting/Meeting");
+const {CreateMeeting, getUpcomingMeetings,deleteMeeting,getMeetingsByIds,meetingList} = require("../../Controller/Meeting/Meeting");
 
 router.post("/Create-Meeting", CreateMeeting); // This should handle POST requests
  // http://localhost:3000/api/v1/meeting/Create-Meeting
@@ -14,8 +14,11 @@ router.get('/upcoming/:userId', getUpcomingMeetings);
 router.delete('/:meetingId', deleteMeeting); 
  // http://localhost:3000/api/v1/meeting/6721d27a974599b7535c33fa
 
-router.post('/get-meeting', getMeetingsByIds);  
+router.post('/get-meeting/:userId', getMeetingsByIds);  
  // http://localhost:3000/api/v1/meeting/get-meeting
+
+router.post('/get-meeting-list/:userId', meetingList);  
+
 
 
 module.exports = router;

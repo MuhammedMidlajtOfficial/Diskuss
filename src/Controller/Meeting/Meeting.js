@@ -3,6 +3,8 @@ const moment = require('moment');
 const cron = require('node-cron');
 const Profile = require('../../models/profile')
 const mongoose = require("mongoose");
+const Contact = require('../../models/contact.model')
+
 
 
 
@@ -71,6 +73,20 @@ const CreateMeeting = async (req, res) => {
         const newMeeting = new MeetingBase(newMeetingData);
         const savedMeeting = await newMeeting.save();
 
+        try {
+            const ownerProfile = await Profile.findOneAndUpdate(
+                { userId: meetingOwner },
+                { $push: { meetings: savedMeeting._id } },
+                { new: true }
+            ).exec();
+
+            if (!ownerProfile) {
+                console.log(`No profile found for meeting owner ID: ${meetingOwnerId}`);
+            }
+        } catch (error) {
+            console.error(`Error updating profile for meeting owner ID: ${meetingOwnerId}`, error);
+        }
+
         // Update each invited user's profile to include the meeting ID
         await Promise.all(
             invitedPeople.map(async (userId) => {
@@ -78,7 +94,7 @@ const CreateMeeting = async (req, res) => {
                     
                     const userIdString = userId.toString(); // Convert to string
                     console.log(`Updating profile for user ID: ${userIdString}`);
-        
+                 
                     const updatedProfile = await Profile.findOneAndUpdate(
                         { userId: userIdString },
                         { $push: { meetings: savedMeeting._id } },
@@ -143,9 +159,20 @@ const getUpcomingMeetings = async (req, res) => {
 
 
 const getMeetingsByIds = async (req, res) => {
-    const { meetingIds } = req.body; // Assuming an array of meeting IDs is provided in the request body
+    // const { meetingIds } = req.body; // Assuming an array of meeting IDs is provided in the request body
 
     try {
+        const { userId } = req.params;
+      
+        
+        // Find the user's profile
+        console.log(userId);
+        
+        const userInfo = await Profile.findOne({ userId }).populate('meetings'); // Populate meetings directly if referenced in schema
+        console.log(userInfo);
+        
+        // Extract meeting IDs
+        const meetingIds = userInfo.meetings.map(meeting => meeting._id);
         // Filter out invalid ObjectIds from the provided meetingIds array
         // const validMeetingIds = meetingIds.filter(id => mongoose.Types.ObjectId.isValid(id));
 
@@ -188,6 +215,28 @@ const getMeetingsByIds = async (req, res) => {
 };
 
 
+const contects = async (req, res) => {
+    try {
+        // Assuming the user ID is available in req.user (after authentication)
+        const userId = req.user._id; // Adjust according to your authentication setup
+
+        // Fetch all contacts associated with the user
+        const contacts = await Contact.find({ contactOwnerId: userId });
+
+        // Send the contacts in the response
+        res.status(200).json({
+            success: true,
+            data: contacts
+        });
+    } catch (error) {
+        console.error('Error fetching contacts:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while fetching contacts.',
+            error: error.message
+        });
+    }
+};
 
 
 const deleteMeeting = async (req, res) => {
@@ -213,12 +262,39 @@ const deleteMeeting = async (req, res) => {
 
 
 
+const meetingList = async (req, res) => {
+        try {
+            const { userId } = req.params;
+    
+            // Find the user's profile
+            const userInfo = await Profile.findOne({ userId }).populate('meetings'); // Populate meetings directly if referenced in schema
+    
+            // Extract meeting IDs
+            const meetingIds = userInfo.meetings.map(meeting => meeting._id);
+    
+            // Find all meetings based on extracted IDs
+            // const meetingDetails = await MeetingBase.find({ _id: { $in: meetingIds } });
+    
+            // Send response with user info and full meeting details
+            res.status(200).send({ info: userInfo, meetingsIds:meetingIds });
+
+
+        } catch (error) {
+            console.error("Error fetching meetings:", error);
+            res.status(500).send({ error: "Failed to retrieve meeting information" });
+        }
+    };
+
+    
+
+
+
 
 // Schedule the cron job to run every minute
 cron.schedule('* * * * *', async () => {
     try {
         const currentTime = new Date();
-        console.log("Current Time:", currentTime);
+        
 
         // Fetch all meetings from the database
         const meetings = await MeetingBase.find({});
@@ -230,15 +306,15 @@ cron.schedule('* * * * *', async () => {
                 "YYYY-MM-DD hh:mm A"
             ).toDate();
 
-            console.log("Meeting End DateTime:", meetingEndDateTime);
+            
 
             // Check if the `meetingEndDateTime` is before `currentTime`
             if (meetingEndDateTime < currentTime) {
                 // Delete the expired meeting
                 await MeetingBase.deleteOne({ _id: meeting._id });
-                console.log(`Deleted expired meeting: ${meeting._id}`);
+                
             } else {
-                console.log(`Meeting ${meeting._id} is still ongoing.`);
+                
             }
         }
     } catch (error) {
@@ -251,6 +327,13 @@ cron.schedule('* * * * *', async () => {
 
 
 
-module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds};
 
-// 60f6c72f0c4f5b001f1aab07
+
+
+
+
+
+
+
+module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds,meetingList};
+
