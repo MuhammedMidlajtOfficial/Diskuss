@@ -226,7 +226,7 @@ module.exports.resetPassword = async (req, res ) => {
 
 module.exports.updateProfile = async (req, res ) => {
   try {
-    const { userId, image, aboutUs, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
+    const { userId, companyName, industryType, image, aboutUs, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
      
     // if (!role || !name || !website || !address || !whatsappNo || !facebookLink || !instagramLink || !twitterLink ) {
     //   return res.status(400).json({ message: "All fields are Required"})
@@ -242,6 +242,8 @@ module.exports.updateProfile = async (req, res ) => {
       { _id: userId },
       { 
         $set: { 
+          companyName, 
+          industryType,
           image,
           aboutUs,
           website,
