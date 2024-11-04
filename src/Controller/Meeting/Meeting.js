@@ -156,63 +156,68 @@ const getUpcomingMeetings = async (req, res) => {
 
 
 
-
-
 const getMeetingsByIds = async (req, res) => {
-    // const { meetingIds } = req.body; // Assuming an array of meeting IDs is provided in the request body
-
     try {
-        const { userId } = req.params;
-      
+        const { userId } = req.params; // Extract userId from request parameters
         
-        // Find the user's profile
+        // Find the user's profile by userId and populate meetings if referenced in schema
         console.log(userId);
-        
-        const userInfo = await Profile.findOne({ userId }).populate('meetings'); // Populate meetings directly if referenced in schema
+        const userInfo = await Profile.findOne({ userId }).populate('meetings');
         console.log(userInfo);
-        
-        // Extract meeting IDs
-        const meetingIds = userInfo.meetings.map(meeting => meeting._id);
-        // Filter out invalid ObjectIds from the provided meetingIds array
-        // const validMeetingIds = meetingIds.filter(id => mongoose.Types.ObjectId.isValid(id));
 
-        // Find meetings that match the valid IDs
+        // If user profile not found, return an error
+        if (!userInfo) {
+            return res.status(404).json({ message: "User profile not found." });
+        }
+
+        // Extract meeting IDs from the user's profile
+        const meetingIds = userInfo.meetings.map(meeting => meeting._id);
+
+        // Find meetings in MeetingBase collection that match the extracted meeting IDs
         const meetings = await MeetingBase.find({ _id: { $in: meetingIds } });
 
-        // Check if there are any found meetings
+        // If no meetings found, return an error message
         if (meetings.length === 0) {
             return res.status(404).json({ message: "No meetings found for the provided IDs." });
         }
 
-// Extract invited people's IDs from the meetings
+        // Extract meetingOwner IDs and invited people IDs from each meeting
+        const meetingOwnerIds = meetings.map(meeting => meeting.meetingOwner);
         const invitedPeopleIds = meetings.flatMap(meeting => meeting.invitedPeople);
 
-        // Fetch user profiles based on invited people IDs
+        // Fetch profiles of meeting owners and invited people based on their IDs
+        const ownerProfiles = await Profile.find({ userId: { $in: meetingOwnerIds } });
         const invitedProfiles = await Profile.find({ userId: { $in: invitedPeopleIds } });
 
-        // Create a map for easy access to profiles by ID
-        const profilesMap = invitedProfiles.reduce((acc, profile) => {
-            acc[profile.userId] = profile; // Assuming profile has a unique _id
+        // Create a map for easy lookup of profiles by userId
+        const profilesMap = [...ownerProfiles, ...invitedProfiles].reduce((acc, profile) => {
+            acc[profile.userId] = profile; // Store each profile by its userId
             return acc;
         }, {});
 
-        // Augment meetings with invited people's profiles
+        // Enrich each meeting with the meeting owner's profile and invited people's profiles
         const enrichedMeetings = meetings.map(meeting => {
-            const invitedInfo = meeting.invitedPeople.map(id => profilesMap[id] || null); // Map to user profiles or null if not found
+            const meetingOwnerInfo = profilesMap[meeting.meetingOwner] || null; // Find the meeting owner's profile
+            const invitedInfo = meeting.invitedPeople.map(id => profilesMap[id] || null); // Map invited IDs to profiles or null if not found
             return {
                 ...meeting.toObject(), // Convert mongoose document to plain object
-                invitedInfo // Add invitedInfo array
+                meetingOwnerInfo, // Add meeting owner's profile info
+                invitedInfo // Add invited people's profile info
             };
         });
 
-        // Return the enriched meetings
+        // Send back the enriched meetings as the response
         return res.status(200).json({ meetings: enrichedMeetings });
 
     } catch (error) {
-        console.error("Error fetching meetings by IDs:", error);
-        return res.status(500).json({ message: "Internal server error." });
+        console.error("Error fetching meetings by IDs:", error); // Log error details for debugging
+        return res.status(500).json({ message: "Internal server error." }); // Return error response for server errors
     }
 };
+
+
+
+
 
 
 const contects = async (req, res) => {
