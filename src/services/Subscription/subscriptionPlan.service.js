@@ -54,12 +54,12 @@ throw error; // Re-throw the error for higher-level handling if needed
     
       if (!subscriptionPlan) {
       throw new Error("Subscription Plan not found");
-    }
+      }
     
-    return subscriptionPlan;
+      return subscriptionPlan;
     } catch (error) {
-    console.error("Error fetching Subscription Plan:", error);
-    throw error; // Re-throw the error for higher-level handling if needed
+      console.error("Error fetching Subscription Plan:", error);
+      throw error; // Re-throw the error for higher-level handling if needed
     }
     };
     

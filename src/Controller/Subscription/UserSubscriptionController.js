@@ -36,7 +36,7 @@ const getUserSubscriptionByUserId = async (req, res) => {
     */
 const createUserSubscription = async (req, res) => {
   try {
-    const { planId, userId, amount } = req.body;
+    const { planId, userId } = req.body;
     // const userId = req.user._id;
 
     if (!userId || !planId) {
@@ -45,6 +45,10 @@ const createUserSubscription = async (req, res) => {
 
     // Retrieve subscription start and end dates
     const { startDate, endDate, newPlanId } = await getStartEndDate(planId);
+
+    const subscriptionPlan = await findOneByPlanId(planId)
+    console.log("subscriptionPlan----",subscriptionPlan);
+    const amount = parseFloat(subscriptionPlan.price.toString())
 
     // Shortened receipt ID to stay within 40 characters
     const receiptId = `recpt_${userId.toString().slice(-6)}_${newPlanId.toString().slice(-6)}`;
@@ -82,6 +86,7 @@ const createUserSubscription = async (req, res) => {
       message: "User subscription initiated, complete payment to activate.",
       orderId: razorpayOrder.id,
       amount,
+      Plan_name :subscriptionPlan.name,
       currency: 'INR'
     });
 
