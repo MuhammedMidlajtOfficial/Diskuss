@@ -44,6 +44,10 @@ const IndividualUserSchema = new mongoose.Schema({
       type:String,
       default : ''
     },
+    contacts : {
+      type : Array,
+      default : []
+    },
     socialMedia: {
       whatsappNo: {
         type:String,
