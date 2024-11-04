@@ -15,7 +15,6 @@ const findAll = async () => {
   }
   };  
 
-<<<<<<< HEAD
 const findOneById = async (userId) => {
   try {
     console.log("user id :", userId);
@@ -33,8 +32,6 @@ const findOneById = async (userId) => {
 
 
 
-=======
->>>>>>> b47efa4 (adding message and socketIo to the backend)
   
 /**
  * Create al UserSubscription
@@ -49,11 +46,7 @@ const findOneById = async (userId) => {
     try {
       // Prepare the UserSubscription data with unique plan_id
 
-<<<<<<< HEAD
       // console.log("data", data);
-=======
-      console.log("data", data);
->>>>>>> b47efa4 (adding message and socketIo to the backend)
       const newSubscription = new UserSubscription({
         planId: data.planId,
         userId: data.userId,
@@ -138,10 +131,7 @@ const findOneById = async (userId) => {
 
 module.exports = {
     findAll,
-<<<<<<< HEAD
     findOneById,
-=======
->>>>>>> b47efa4 (adding message and socketIo to the backend)
     createUserSubscription,
     updateUserSubscriptionById,
     deleteUserSubscriptionById

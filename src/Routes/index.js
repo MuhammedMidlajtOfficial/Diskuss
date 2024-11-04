@@ -11,6 +11,7 @@ const actionRouter = require("./Referral/ActionRotuer.js");
 const referralLevelRouter = require("./Referral/ReferralLevelRouter.js");
 const subscriptionRouter = require("./Subscription/SubscriptionRouter.js");
 const MessageRouter = require("./Message/messageRoute.js");
+const groupMessageRoute = require ("./Message/groupMessageRoute.js")
 
 
 const router = express.Router();
@@ -57,16 +58,8 @@ const defaultRoutes = [
     route: MessageRouter,
   },
   {
-    path: '/service',
-    route: serviceRoutes,
-  },
-  {
-  path : '/subscription',
-  route: userSubscriptionRouter
-  },
-  {
-    path: '/message',
-    route: messageRoute,
+    path: "/groupMessage",
+    route: groupMessageRoute,
   },
   
 ];
