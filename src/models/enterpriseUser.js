@@ -28,7 +28,37 @@ const enterpriseUserSchema = new mongoose.Schema({
     image: {
         type:String,
         default : ''
-    }
+    },
+    aboutUs: {
+        type:String,
+        default : ''
+    },
+    website: {
+        type:String,
+        default : ''
+    },
+    address: {
+        type:String,
+        default : ''
+      },
+      socialMedia: {
+        whatsappNo: {
+          type:String,
+          default : ''
+        },
+        facebookLink: {
+          type:String,
+          default : ''
+        },
+        instagramLink: {
+          type:String,
+          default : ''
+        },
+        twitterLink: {
+          type:String,
+          default : ''
+        },
+      }
 },{ timestamps:true })
 
 module.exports = mongoose.model('EnterpriseUser',enterpriseUserSchema)

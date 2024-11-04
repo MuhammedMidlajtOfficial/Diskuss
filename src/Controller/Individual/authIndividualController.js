@@ -38,12 +38,12 @@ module.exports.postIndividualSignup = async (req, res) => {
   try {
     // Check for missing fields
     if (!username || !email || !passwordRaw || !otp) {
-      return res.status(400).send("All fields are required"); // Correct response handling
+      return res.status(400).json({ message :"All fields are required"}); // Correct response handling
     }
     // Check if email exists
     const isEmailExist = await individualUserCollection.findOne({ email }).exec();
     if (isEmailExist) {
-      return res.status(409).send("A user with this email address already exists. Please login instead"); // Correct response handling
+      return res.status(409).json({ message :"A user with this email address already exists. Please login instead"}); // Correct response handling
     }
     // Validate OTP
     const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
@@ -57,9 +57,9 @@ module.exports.postIndividualSignup = async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      cardNo: 0 // Make sure this is intended
+      // cardNo: 0,
     });
-
+    console.log(newUser);
     return res.status(201).json({ message: "User created", user: newUser });
   } catch (error) {
     console.error("Error in postIndividualSignup:", error); // Detailed error logging
@@ -183,3 +183,87 @@ module.exports.sendOTP = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+module.exports.resetPassword = async (req, res ) => {
+  try {
+    const { email, oldPassword } = req.body
+    const passwordRaw = req.body.password
+     
+    if (!email || !passwordRaw || !oldPassword ) {
+      return res.status(400).json({ message: "All fields are Required"})
+    }
+
+    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    console.log("isEmailExist-",isEmailExist);
+    if(!isEmailExist){
+      return res.status(401).json({ message : "email not found"})
+    }
+    // Check password match
+    const passwordMatch = await bcrypt.compare(oldPassword, isEmailExist.password);
+    if(!passwordMatch){
+      return res.status(401).json({ message : "Password not matching"})
+    }
+    // hash password
+    const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+    // Update password
+    const user = await individualUserCollection.updateOne(
+      { email: email },
+      { $set: { password: hashedPassword } }
+    );
+    console.log('user',user);
+
+    if (user.modifiedCount > 0) {
+      return res.status(200).json({ message: "Password changed successfully." });
+    } else {
+      return res.status(400).json({ message: "Error: Password update failed." });
+    }
+      
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
+module.exports.updateProfile = async (req, res ) => {
+  try {
+    const { userId, image, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
+     
+    // if (!role || !name || !website || !address || !whatsappNo || !facebookLink || !instagramLink || !twitterLink ) {
+    //   return res.status(400).json({ message: "All fields are Required"})
+    // }
+
+    const isUserExist = await individualUserCollection.findOne({ _id:userId }).exec();
+    console.log("isUserExist-",isUserExist);
+    if(!isUserExist){
+      return res.status(401).json({ message : "user not found"})
+    }
+    // Update password
+    const user = await individualUserCollection.updateOne(
+      { _id: userId },
+      { 
+        $set: { 
+          image,
+          role,
+          name,
+          website,
+          address,
+          "socialMedia.whatsappNo": whatsappNo,
+          "socialMedia.facebookLink": facebookLink,
+          "socialMedia.instagramLink": instagramLink,
+          "socialMedia.twitterLink": twitterLink
+        }
+      }
+    );
+    console.log('user',user);
+
+    if (user.modifiedCount > 0) {
+      return res.status(200).json({ message: "Profile updated successfully." });
+    } else {
+      return res.status(400).json({ message: "Error: Profile update failed." });
+    }
+      
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}

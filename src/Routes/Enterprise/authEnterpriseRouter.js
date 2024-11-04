@@ -9,6 +9,7 @@ authEnterpriseRouter.post('/validateotp',authEnterpriseController.OtpValidate)
 authEnterpriseRouter.post('/login', authEnterpriseController.postEnterpriseLogin)
 authEnterpriseRouter.post('/signup', authEnterpriseController.postEnterpriseSignup)
 authEnterpriseRouter.post('/forgotpassword',authEnterpriseController.postforgotPassword)
+authEnterpriseRouter.patch('/updateProfile',authEnterpriseController.updateProfile)
 
 
 module.exports = authEnterpriseRouter

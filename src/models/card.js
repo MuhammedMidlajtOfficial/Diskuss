@@ -32,7 +32,7 @@ const cardSchema = new mongoose.Schema({
   services: [ {
     type:String,
     required : true
-  }], 
+  } ], 
   image:  {
     type:String,
     required : true
