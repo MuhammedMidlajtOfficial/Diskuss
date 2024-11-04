@@ -11,4 +11,6 @@ router.post('/',authMiddleware.authenticateToken2, controller.createUserSubscrip
 router.patch('/:userSubscription_id', authMiddleware.authenticateToken2, controller.updateUserSubscription);
 router.delete('/:userSubscription_id',authMiddleware.authenticateToken2, controller.deleteUserSubscription);
 
+router.post('/verifyPayment', authMiddleware.authenticateToken2, controller.verifyPayment)
+
 module.exports = router;
