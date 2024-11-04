@@ -93,7 +93,8 @@ const deleteContactById = async (ContactId) => {
 
 const findContactsByUserId = async (userId) => {
     try{
-        const contact = await Contact.find ({userId: userId}).exec();
+        const contact = await Contact.find({contactOwnerId: userId}).exec();
+        console.log("contact by userId: ", contact)
         if (!contact) {
             throw new Error("Contact not found");
         }
@@ -112,4 +113,5 @@ module.exports = {
     createContact,
     updateContactById,
     deleteContactById,
+    findContactsByUserId
 };

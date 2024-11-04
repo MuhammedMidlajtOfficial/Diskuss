@@ -158,8 +158,8 @@ const deleteContact = async (req, res) => {
  */
 const getContactsByUserId = async (req, res) => {
     try {
-        const { userId } = req.params; // Extract referralId from request parameters
-        const Contacts = await ContactService.findContactsByUserId(referralId);
+        const { user_id } = req.params; // Extract referralId from request parameters
+        const Contacts = await ContactService.findContactsByUserId(user_id);
 
         if (!Contacts || Contacts.length === 0) {
             return res.status(404).json({ message: 'No Contacts found for this user' });
