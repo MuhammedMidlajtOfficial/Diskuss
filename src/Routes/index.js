@@ -7,6 +7,7 @@ const subscriptionPlanRouter = require('./Subscription/SubscriptionPlanRouter.js
 const serviceRoutes = require('./serviceRouter.js')
 const userSubscriptionRouter = require('./Subscription/UserSubscriptionRouter.js')
 const messageRoute = require("./Message/messageRoute.js")
+const MeetingRoute = require("./Meeting/MeetingRouter.js")
 
 const router = express.Router();
 
@@ -46,6 +47,10 @@ const defaultRoutes = [
   {
     path: '/message',
     route: messageRoute,
+  },
+  {
+    path: '/meeting',
+    route: MeetingRoute,
   },
   
 ];
