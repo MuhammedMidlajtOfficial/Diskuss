@@ -1,5 +1,8 @@
 const UserSubscriptionService = require('../../services/Subscription/userSubscription.service');
 const { findOneByPlanId } = require('../../services/Subscription/subscriptionPlan.service');
+const { razorpay } = require('../../services/Razorpay/razorpay');
+require('dotenv')
+
 /**
  * Get all UserSubscription
  * @param {Request} req
@@ -31,35 +34,88 @@ const getUserSubscriptionByUserId = async (req, res) => {
  * @param {Response} res
  * @returns {Promise<Response>}
     */
-const createUserSubscription = async (req,res)=>{
-    try {
-    // Destructure plan data from the request body
-    const { planId } = req.body;
+const createUserSubscription = async (req, res) => {
+  try {
+    const { planId, userId, amount } = req.body;
+    // const userId = req.user._id;
 
-    const userId = req.user._id; 
-
-    console.log(`userId : ${userId} and planId : ${planId}`);
-    // Check if required fields are provided
     if (!userId || !planId) {
-      return res.status(400).json({ message: "User id and Plan id are required." });
+      return res.status(400).json({ message: "User ID and Plan ID are required." });
     }
 
-    const {startDate, endDate, newPlanId} = await getStartEndDate(planId);
+    // Retrieve subscription start and end dates
+    const { startDate, endDate, newPlanId } = await getStartEndDate(planId);
 
-    // Prepare userSubscription Data to pass to the function
-    const userSubsciptionData = { userId: userId, planId : newPlanId, startDate: startDate, endDate : endDate, status: 'active' };
+    // Shortened receipt ID to stay within 40 characters
+    const receiptId = `recpt_${userId.toString().slice(-6)}_${newPlanId.toString().slice(-6)}`;
 
-    // Call the function to create a UserSubscription plan
-    const newUserSubsciptionData = await UserSubscriptionService.createUserSubscription(userSubsciptionData);
+    // Create a Razorpay order for the subscription amount
+    const razorpayOrder = await razorpay.orders.create({
+      amount, // Amount in paise
+      currency: 'INR',
+      receipt: receiptId,  // Updated receipt field
+      notes: { planId: newPlanId, userId }
+    });
 
-    // Respond with success and the created plan
-    res.status(201).json({ message: "User Subscription plan created successfully", plan: newUserSubsciptionData });
-        
-
-    } catch (e) {
-        return res.status(500).json({ error: e.message });
+    if (!razorpayOrder || !razorpayOrder.id) {
+      console.error("Failed to create Razorpay order.");
+      return res.status(500).json({ error: "Failed to create Razorpay order" });
     }
-}
+
+    // Prepare subscription data with Razorpay order ID
+    const userSubscriptionData = {
+      userId,
+      planId: newPlanId,
+      startDate,
+      endDate,
+      razorpayOrderId: razorpayOrder.id,  // Store the Razorpay order ID
+      status: 'pending'  // Set as 'pending' until payment confirmation
+    };
+
+    // Save the user subscription data in the database
+    const newUserSubscriptionData = await UserSubscriptionService.createUserSubscription(userSubscriptionData);
+
+    console.log("razorpayOrder--",razorpayOrder);
+
+    // Respond with order details for frontend to process payment
+    return res.status(201).json({
+      message: "User subscription initiated, complete payment to activate.",
+      orderId: razorpayOrder.id,
+      amount,
+      currency: 'INR'
+    });
+
+  } catch (error) {
+    console.error("Error in createUserSubscription:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const verifyPayment = async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    // Generate the signature to verify the payment authenticity
+    const generatedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_API_SECRET )  // Use your Razorpay key secret
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    if (generatedSignature !== razorpay_signature) {
+      // Update the subscription status to failed on Payment verification failed 
+      await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, 'failed');
+      return res.status(400).json({ message: "Payment verification failed." });
+    }
+
+    // Update the subscription status to active on successful payment verification
+    await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, 'active');
+
+    res.json({ message: "Payment verified and subscription activated successfully." });
+  } catch (error) {
+    console.error("Payment verification failed:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
 
 
 /**
@@ -161,5 +217,6 @@ module.exports = {
     getUserSubscriptionByUserId,
     createUserSubscription,
     updateUserSubscription,
-    deleteUserSubscription
+    deleteUserSubscription,
+    verifyPayment
 };

@@ -3,9 +3,10 @@ const mongoose = require("mongoose");
 const UserSubscriptionSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription',required: true },
+    razorpayOrderId: { type:String,required:true },
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date },
-    status: { type: String, enum: ['active', 'inactive', 'canceled'], default: 'active' },
+    status: { type: String, enum: ['active', 'inactive', 'canceled', 'pending', 'failed'], default: 'active' },
 }, { timestamps: true });
 
 // // Middleware to ensure only one membership type is active

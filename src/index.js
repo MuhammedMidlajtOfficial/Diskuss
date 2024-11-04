@@ -33,9 +33,6 @@ app.use(express.json({ limit: "10mb" }));
 
 app.use('/api/v1', routes);
 
-// app.use('/individual/',authIndividualRouter)
-// app.use('/enterprise/',authEnterpriseRouter)
-// app.use("/api/profile", profileRoutes);
 
 app.get('/api/v1',(req,res)=>{
   res.send({

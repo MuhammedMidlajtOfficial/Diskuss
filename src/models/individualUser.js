@@ -6,7 +6,7 @@ const IndividualUserSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
-    email: {
+    email:{
       type: String,
       required: true,
     },
@@ -18,8 +18,57 @@ const IndividualUserSchema = new mongoose.Schema({
       type: Boolean,
       default: false,
     },
-    
-  }, { timestamps: true });
+    cardNo: {
+      type: Number,
+      required: true,
+      default : 0
+    },
+    image: {
+      type:String,
+      required: true,
+      default : ''
+    },
+    role: {
+      type:String,
+      default : ''
+    },
+    name: {
+      type:String,
+      default : ''
+    },
+    website: {
+      type:String,
+      default : ''
+    },
+    address: {
+      type:String,
+      default : ''
+    },
+    contacts : {
+      type : Array,
+      default : []
+    },
+    socialMedia: {
+      whatsappNo: {
+        type:String,
+        default : ''
+      },
+      facebookLink: {
+        type:String,
+        default : ''
+      },
+      instagramLink: {
+        type:String,
+        default : ''
+      },
+      twitterLink: {
+        type:String,
+        default : ''
+      },
+    }
+  } ,{ timestamps: true });
   
   module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);
+  
+  // module.exports = mongoose.model('User', IndividualUserSchema);
   

@@ -50,7 +50,7 @@ throw error; // Re-throw the error for higher-level handling if needed
   const findOneByPlanId = async (planId) => {
       try {
         // console
-      const subscriptionPlan = await SubscriptionPlan.findOne({ planId }).exec();
+      const subscriptionPlan = await SubscriptionPlan.findOne({ _id:planId }).exec();
     
       if (!subscriptionPlan) {
       throw new Error("Subscription Plan not found");
