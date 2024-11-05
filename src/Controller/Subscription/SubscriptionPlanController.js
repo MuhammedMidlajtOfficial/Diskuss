@@ -11,7 +11,8 @@ const getSubscriptionPlans = async (req, res) => {
     try {
         const SubscriptionPlans = await SubscriptionPlanService.findAll();
         return res.status(200).json({ SubscriptionPlans });
-    } catch (e) {const getSubscriptionPlanByPlanId = async (req, res) => {
+    } catch (e) {
+      const getSubscriptionPlanByPlanId = async (req, res) => {
       try { 
         const { plan_id } = req.params; // Extract plan_id from request parameters
   
