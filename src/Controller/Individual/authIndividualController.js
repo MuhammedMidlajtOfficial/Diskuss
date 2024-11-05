@@ -31,6 +31,7 @@ module.exports.postIndividualLogin = async (req, res) => {
   }
 };
 
+
 module.exports.postIndividualSignup = async (req, res) => {
   const { username, email, otp } = req.body;
   const passwordRaw = req.body.password;

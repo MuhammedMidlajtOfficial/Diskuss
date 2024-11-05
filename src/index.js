@@ -9,6 +9,11 @@ const http = require('http');
 const socketIo = require('socket.io');
 const server = http.createServer(app);
 const io = socketIo(server);
+const messageController = require('./Controller/Message/messageController');
+const groupmessageController = require('./Controller/Message/groupmessageController.js');
+// const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
+// const authEnterpriseRouter = require('./Routes/Enterprise/authEnterpriseRouter.js')
+// const profileRoutes = require('./Routes/Profile/profileRoutes.js')
 
 require('dotenv').config();
 
@@ -20,6 +25,10 @@ app.use(session({
 app.use(nocache());
 app.use(express.json());
 app.use(cors());
+
+messageController.setSocketIO(io);
+groupmessageController.setSocketIO(io);
+
 app.use(express.json({ limit: "10mb" }));
 
 app.use('/api/v1', routes);
