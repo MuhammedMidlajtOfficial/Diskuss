@@ -7,12 +7,12 @@
 // });
 // module.exports = mongoose.model('Chat', ChatSchema);
 
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-  _id: String,
-  name: String,
-  email: String,
-});
+// const userSchema = new mongoose.Schema({
+//   _id: String,
+//   name: String,
+//   email: String,
+// });
 
-module.exports = mongoose.model("User", userSchema);
+// module.exports = mongoose.model("User", userSchema);
