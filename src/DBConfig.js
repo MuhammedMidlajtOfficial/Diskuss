@@ -61,6 +61,10 @@ mongoose.connect(process.env.MongoDBURL,{
       type:String,
       default : ''
     },
+    contacts : {
+      type : Array,
+      default : []
+    },
     socialMedia: {
       whatsappNo: {
         type:String,
