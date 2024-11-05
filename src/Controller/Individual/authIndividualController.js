@@ -245,7 +245,7 @@ module.exports.updateProfile = async (req, res ) => {
         $set: { 
           image,
           role,
-          name,
+          username:name,
           website,
           address,
           "socialMedia.whatsappNo": whatsappNo,
