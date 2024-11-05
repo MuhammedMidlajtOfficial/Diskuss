@@ -8,11 +8,6 @@ const Contact = require('../../models/contact.model')
 
 
 
-
-
-
-
-
 // CreateMeeting controller
 const CreateMeeting = async (req, res) => {
     try {
@@ -123,12 +118,6 @@ const CreateMeeting = async (req, res) => {
 
         
 
-
-          
-
-    
-
-
 const getUpcomingMeetings = async (req, res) => {
     const { userId } = req.params; // Get the user ID from the request parameters
 
@@ -219,44 +208,39 @@ const getMeetingsByIds = async (req, res) => {
 
 
 
-
-const contects = async (req, res) => {
-    try {
-        // Assuming the user ID is available in req.user (after authentication)
-        const userId = req.user._id; // Adjust according to your authentication setup
-
-        // Fetch all contacts associated with the user
-        const contacts = await Contact.find({ contactOwnerId: userId });
-
-        // Send the contacts in the response
-        res.status(200).json({
-            success: true,
-            data: contacts
-        });
-    } catch (error) {
-        console.error('Error fetching contacts:', error);
-        res.status(500).json({
-            success: false,
-            message: 'An error occurred while fetching contacts.',
-            error: error.message
-        });
-    }
-};
-
-
 const deleteMeeting = async (req, res) => {
     const { meetingId } = req.params; // Get the meeting ID from the request parameters
 
     try {
         // Find and delete the meeting by ID
-        const deletedMeeting = await MeetingBase.findByIdAndDelete(meetingId);
+        const meetingToDelete = await MeetingBase.findById(meetingId);
+        console.log(meetingToDelete);
+        const { meetingOwner, invitedPeople } = meetingToDelete;
+         console.log(meetingOwner,invitedPeople);
+         
+
 
         // Check if the meeting was found and deleted
-        if (!deletedMeeting) {
+        if (!meetingToDelete) {
             return res.status(404).json({ message: "Meeting not found." });
         }
 
-        return res.status(200).json({ message: "Meeting deleted successfully.", meeting: deletedMeeting });
+          // Delete the meeting
+          await MeetingBase.findByIdAndDelete(meetingId);
+
+          // Remove the meeting ID from the meetingOwner's Profile document
+          await Profile.updateOne(
+              { userId: meetingOwner },
+              { $pull: { meetings: meetingId } }
+          );
+  
+          // Remove the meeting ID from each invited user's Profile document
+          await Profile.updateMany(
+              { userId: { $in: invitedPeople } },
+              { $pull: { meetings: meetingId } }
+          );
+
+        return res.status(200).json({ message: "Meeting deleted successfully.", meeting: meetingToDelete });
     } catch (error) {
         console.error("Error deleting meeting:", error);
         return res.status(500).json({ message: "Internal server error." });
@@ -267,28 +251,31 @@ const deleteMeeting = async (req, res) => {
 
 
 
-const meetingList = async (req, res) => {
-        try {
-            const { userId } = req.params;
-    
-            // Find the user's profile
-            const userInfo = await Profile.findOne({ userId }).populate('meetings'); // Populate meetings directly if referenced in schema
-    
-            // Extract meeting IDs
-            const meetingIds = userInfo.meetings.map(meeting => meeting._id);
-    
-            // Find all meetings based on extracted IDs
-            // const meetingDetails = await MeetingBase.find({ _id: { $in: meetingIds } });
-    
-            // Send response with user info and full meeting details
-            res.status(200).send({ info: userInfo, meetingsIds:meetingIds });
-
-
-        } catch (error) {
-            console.error("Error fetching meetings:", error);
-            res.status(500).send({ error: "Failed to retrieve meeting information" });
-        }
-    };
+const UpdateMeeting = async (req, res) => {
+    try {
+      const {meetingId} = req.params; // Get meeting ID from request parameters
+      const updatedData = req.body; // Get updated meeting data from request body
+        console.log(updatedData);
+        
+      // Find the meeting by ID and update it with the new data
+      const updatedMeeting = await MeetingBase.findByIdAndUpdate(meetingId, updatedData, {
+        new: true, // Return the updated document
+        runValidators: true // Ensure the schema validation rules are respected
+      });
+  
+      // Check if the meeting was found and updated
+      if (!updatedMeeting) {
+        return res.status(404).json({ message: "Meeting not found" });
+      }
+  
+      // Return the updated meeting information
+      res.status(200).json({data:updatedMeeting,sucess:true,message:"sucessfully updated"});
+    } catch (error) {
+      // Handle errors, such as database connection issues or validation errors
+      console.error(error);
+      res.status(500).json({ message: "Failed to update meeting", error: error.message });
+    }
+  };
 
     
 
@@ -331,14 +318,5 @@ cron.schedule('* * * * *', async () => {
 
 
 
-
-
-
-
-
-
-
-
-
-module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds,meetingList};
+module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting};
 

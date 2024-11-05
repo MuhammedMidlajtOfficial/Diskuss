@@ -2,6 +2,7 @@ const { individualUserCollection } = require("../../DBConfig");
 const Profile = require("../../models/profile");
 const { ObjectId } = require('mongodb');
 
+
 const getProfiles = async (req, res) => {
   try {
     const userId = req.params.id
