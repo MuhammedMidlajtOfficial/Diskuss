@@ -148,12 +148,14 @@ const getUpcomingMeetings = async (req, res) => {
 const getMeetingsByIds = async (req, res) => {
     try {
         const { userId } = req.params; // Extract userId from request parameters
-        
+         console.log(userId);
+         
         // Find the user's profile by userId and populate meetings if referenced in schema
         console.log(userId);
         const userInfo = await Profile.findOne({ userId }).populate('meetings');
         console.log(userInfo);
-
+         console.log(userInfo);
+         
         // If user profile not found, return an error
         if (!userInfo) {
             return res.status(404).json({ message: "User profile not found." });
@@ -167,7 +169,7 @@ const getMeetingsByIds = async (req, res) => {
 
         // If no meetings found, return an error message
         if (meetings.length === 0) {
-            return res.status(404).json({ message: "No meetings found for the provided IDs." });
+            return res.status(404).json({ message: [] });
         }
 
         // Extract meetingOwner IDs and invited people IDs from each meeting
@@ -283,36 +285,7 @@ const UpdateMeeting = async (req, res) => {
 
 
 // Schedule the cron job to run every minute
-cron.schedule('* * * * *', async () => {
-    try {
-        const currentTime = new Date();
-        
 
-        // Fetch all meetings from the database
-        const meetings = await MeetingBase.find({});
-
-        for (const meeting of meetings) {
-            // Combine `selectedDate` and `endTime` to create a full `meetingEndDateTime`
-            const meetingEndDateTime = moment(
-                `${meeting.selectedDate.toISOString().split('T')[0]} ${meeting.endTime}`,
-                "YYYY-MM-DD hh:mm A"
-            ).toDate();
-
-            
-
-            // Check if the `meetingEndDateTime` is before `currentTime`
-            if (meetingEndDateTime < currentTime) {
-                // Delete the expired meeting
-                await MeetingBase.deleteOne({ _id: meeting._id });
-                
-            } else {
-                
-            }
-        }
-    } catch (error) {
-        console.error('Error deleting expired meetings:', error);
-    }
-});
 
 
 
