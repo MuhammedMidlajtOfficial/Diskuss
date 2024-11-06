@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const { otpCollection } = require('../../DBConfig');
 
 const { individualUserCollection } = require('../../DBConfig');
+
 const otpGenerator = require("otp-generator")
 
 
@@ -165,6 +166,9 @@ module.exports.sendOTP = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
+
+    console.log(otp);
+    
     let result = await otpCollection.findOne({ otp: otp });
     while (result) {
       otp = otpGenerator.generate(6, {
