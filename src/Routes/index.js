@@ -5,8 +5,14 @@ const authEnterpriseRouter = require('./Enterprise/authEnterpriseRouter.js')
 const cardRouter = require('./Card/cardRoutes.js')
 const subscriptionPlanRouter = require('./Subscription/SubscriptionPlanRouter.js')
 const serviceRoutes = require('./serviceRouter.js')
-const userSubscriptionRouter = require('./Subscription/UserSubscriptionRouter.js')
-const messageRoute = require("./Message/messageRoute.js")
+const messageRoute = require("./Message/messageRoute.js");
+const groupMessage = require('./Message/groupMessageRoute.js');
+const userSubscriptionRouter = require('./Subscription/UserSubscriptionRouter.js');
+const referralRouter = require('./Referral/ReferralRouter.js');
+const actionRouter = require('./Referral/ActionRotuer.js');
+const referralLevelRouter = require('./Referral/ReferralLevelRouter.js');
+const contactRouter = require("./contactRouter.js")
+const MeetingRoute = require("./Meeting/MeetingRouter.js")
 
 const router = express.Router();
 
@@ -52,8 +58,8 @@ const defaultRoutes = [
     route: contactRouter
   },
   {
-    path : '/referral',
-    route: referralRouter
+    path: '/service',
+    route: serviceRoutes,
   },
   {
     path : '/action',
@@ -69,7 +75,15 @@ const defaultRoutes = [
   // },
   {
     path: '/message',
-    route: messageRoute,
+    route: messageRoute
+  },
+  {
+    path:'/groupMessage',
+    route: groupMessage
+  },
+  {
+    path: '/meeting',
+    route: MeetingRoute,
   },
 ];
 
