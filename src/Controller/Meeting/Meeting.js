@@ -8,7 +8,7 @@ const Contact = require('../../models/contact.model')
 
 
 
-// CreateMeeting controller
+// CreateMeeting controller 
 const CreateMeeting = async (req, res) => {
     try {
         const {
@@ -117,7 +117,7 @@ const CreateMeeting = async (req, res) => {
 
 
         
-
+// getUpcoming controller and its take req.params
 const getUpcomingMeetings = async (req, res) => {
     const { userId } = req.params; // Get the user ID from the request parameters
 
@@ -144,7 +144,7 @@ const getUpcomingMeetings = async (req, res) => {
 }
 
 
-
+// get meeting by ids 
 const getMeetingsByIds = async (req, res) => {
     try {
         const { userId } = req.params; // Extract userId from request parameters
@@ -207,7 +207,7 @@ const getMeetingsByIds = async (req, res) => {
 
 
 
-
+// delete meeting ny meeting id
 const deleteMeeting = async (req, res) => {
     const { meetingId } = req.params; // Get the meeting ID from the request parameters
 
@@ -250,7 +250,7 @@ const deleteMeeting = async (req, res) => {
 
 
 
-
+//update meeting by meeting id
 const UpdateMeeting = async (req, res) => {
     try {
       const {meetingId} = req.params; // Get meeting ID from request parameters
