@@ -283,36 +283,8 @@ const UpdateMeeting = async (req, res) => {
 
 
 // Schedule the cron job to run every minute
-cron.schedule('* * * * *', async () => {
-    try {
-        const currentTime = new Date();
-        
 
-        // Fetch all meetings from the database
-        const meetings = await MeetingBase.find({});
 
-        for (const meeting of meetings) {
-            // Combine `selectedDate` and `endTime` to create a full `meetingEndDateTime`
-            const meetingEndDateTime = moment(
-                `${meeting.selectedDate.toISOString().split('T')[0]} ${meeting.endTime}`,
-                "YYYY-MM-DD hh:mm A"
-            ).toDate();
-
-            
-
-            // Check if the `meetingEndDateTime` is before `currentTime`
-            if (meetingEndDateTime < currentTime) {
-                // Delete the expired meeting
-                await MeetingBase.deleteOne({ _id: meeting._id });
-                
-            } else {
-                
-            }
-        }
-    } catch (error) {
-        console.error('Error deleting expired meetings:', error);
-    }
-});
 
 
 
