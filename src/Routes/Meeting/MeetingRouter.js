@@ -14,7 +14,7 @@ router.get('/upcoming/:userId', getUpcomingMeetings);
 router.delete('/:meetingId', deleteMeeting); 
  // http://localhost:3000/api/v1/meeting/6721d27a974599b7535c33fa
 
-router.post('/get-meeting/:userId', getMeetingsByIds);  
+router.get('/get-meeting/:userId', getMeetingsByIds);  
  // http://localhost:3000/api/v1/meeting/get-meeting
 
 router.patch('/update-meeting/:meetingId', UpdateMeeting);  
