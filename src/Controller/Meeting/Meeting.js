@@ -169,7 +169,7 @@ const getMeetingsByIds = async (req, res) => {
 
         // If no meetings found, return an error message
         if (meetings.length === 0) {
-            return res.status(201).json({ message: [] });
+            return res.status(200).json({ message: [] });
         }
 
         // Extract meetingOwner IDs and invited people IDs from each meeting
@@ -210,37 +210,80 @@ const getMeetingsByIds = async (req, res) => {
 
 
 // delete meeting ny meeting id
+// const deleteMeeting = async (req, res) => {
+//     const { meetingId } = req.params; // Get the meeting ID from the request parameters
+
+//     try {
+//         // Find and delete the meeting by ID
+//         const meetingToDelete = await MeetingBase.findById(meetingId);
+//         console.log(meetingToDelete);
+//         const { meetingOwner, invitedPeople } = meetingToDelete;
+//          console.log(meetingOwner,invitedPeople);
+         
+
+
+//         // Check if the meeting was found and deleted
+//         if (!meetingToDelete) {
+//             return res.status(404).json({ message: "Meeting not found." });
+//         }
+
+//           // Delete the meeting
+//           await MeetingBase.findByIdAndDelete(meetingId);
+
+//           // Remove the meeting ID from the meetingOwner's Profile document
+//           await Profile.updateOne(
+//               { userId: meetingOwner },
+//               { $pull: { meetings: meetingId } }
+//           );
+  
+//           // Remove the meeting ID from each invited user's Profile document
+//           await Profile.updateMany(
+//               { userId: { $in: invitedPeople } },
+//               { $pull: { meetings: meetingId } }
+//           );
+
+//         return res.status(200).json({ message: "Meeting deleted successfully.", meeting: meetingToDelete });
+//     } catch (error) {
+//         console.error("Error deleting meeting:", error);
+//         return res.status(500).json({ message: "Internal server error." });
+//     }
+// };
 const deleteMeeting = async (req, res) => {
     const { meetingId } = req.params; // Get the meeting ID from the request parameters
 
     try {
-        // Find and delete the meeting by ID
+        // Find the meeting by ID
         const meetingToDelete = await MeetingBase.findById(meetingId);
-        console.log(meetingToDelete);
-        const { meetingOwner, invitedPeople } = meetingToDelete;
-         console.log(meetingOwner,invitedPeople);
-         
-
-
-        // Check if the meeting was found and deleted
+        
+        // Check if the meeting exists
         if (!meetingToDelete) {
             return res.status(404).json({ message: "Meeting not found." });
         }
 
-          // Delete the meeting
-          await MeetingBase.findByIdAndDelete(meetingId);
+        const { meetingOwner, invitedPeople } = meetingToDelete;
+        
+        // Log the meeting details
+        console.log("Meeting found:", meetingToDelete);
+        console.log("Meeting Owner ID:", meetingOwner);
+        console.log("Invited People IDs:", invitedPeople);
 
-          // Remove the meeting ID from the meetingOwner's Profile document
-          await Profile.updateOne(
-              { userId: meetingOwner },
-              { $pull: { meetings: meetingId } }
-          );
-  
-          // Remove the meeting ID from each invited user's Profile document
-          await Profile.updateMany(
-              { userId: { $in: invitedPeople } },
-              { $pull: { meetings: meetingId } }
-          );
+        // Delete the meeting
+        await MeetingBase.findByIdAndDelete(meetingId);
+
+        // Remove the meeting ID from the meetingOwner's Profile document
+        await Profile.updateOne(
+            { userId: meetingOwner },
+            { $pull: { meetings: meetingId } }
+        );
+
+        // Remove the meeting ID from each invited user's Profile document
+        const result = await Profile.updateMany(
+            { userId: { $in: invitedPeople } },
+            { $pull: { meetings: meetingId } }
+        );
+
+        // Log the update result for confirmation
+        console.log(`Removed meeting ID from ${result.nModified} invited users' meeting lists`);
 
         return res.status(200).json({ message: "Meeting deleted successfully.", meeting: meetingToDelete });
     } catch (error) {
@@ -248,6 +291,7 @@ const deleteMeeting = async (req, res) => {
         return res.status(500).json({ message: "Internal server error." });
     }
 };
+
 
 
 
