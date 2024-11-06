@@ -59,9 +59,10 @@ const createContact = async (ContactData) => {
  * @returns {Promise<Object>} - Returns the updated Contact.
  * @throws {Error} - Throws an error if the Contact is not found or if there's an issue with the update.
  */
-const updateContactById = async (ContactId, updateData) => {
+const updateContact = async (ContactId, updateData) => {
     try {
         const updatedContact = await Contact.findByIdAndUpdate(ContactId, updateData, { new: true }).exec();
+        console.log("updated Contact: ", updatedContact)
         if (!updatedContact) {
             throw new Error("Contact not found");
         }
@@ -78,7 +79,7 @@ const updateContactById = async (ContactId, updateData) => {
  * @returns {Promise<Object>} - Returns the deleted Contact for confirmation.
  * @throws {Error} - Throws an error if the Contact is not found or if there's an issue with the deletion.
  */
-const deleteContactById = async (ContactId) => {
+const deleteContact = async (ContactId) => {
     try {
         const deletedContact = await Contact.findByIdAndDelete(ContactId).exec();
         if (!deletedContact) {
@@ -91,9 +92,26 @@ const deleteContactById = async (ContactId) => {
     }
 };
 
-const findContactsByUserId = async (userId) => {
+const findContactsByOwnerUserId = async (userId) => {
     try{
-        const contact = await Contact.find ({userId: userId}).exec();
+        const contact = await Contact.find({contactOwnerId: userId}).exec();
+        console.log("contact by userId: ", contact)
+        if (!contact) {
+            throw new Error("Contact not found");
+        }
+        return contact;
+        
+    } catch(error){
+        console.error("Error fetching contacts by user id: ", error)
+        throw error
+    }
+}
+
+const findContactsByNumberSearch = async (number) => {
+    try{
+        const regex = new RegExp(number, 'i'); // 'i' for case-insensitive search
+        const contact = await Contact.find({ mobile: regex }).populate('userId contactOwnerId');
+        console.log("contact by userId: ", contact)
         if (!contact) {
             throw new Error("Contact not found");
         }
@@ -110,6 +128,8 @@ module.exports = {
     findAllContacts,
     findContactById,
     createContact,
-    updateContactById,
-    deleteContactById,
+    updateContact,
+    deleteContact,
+    findContactsByOwnerUserId,
+    findContactsByNumberSearch
 };
