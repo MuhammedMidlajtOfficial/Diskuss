@@ -241,12 +241,15 @@ module.exports.updateProfile = async (req, res ) => {
     if(!isUserExist){
       return res.status(401).json({ message : "user not found"})
     }
-    // Update password
+    const base64Data = image.split(',')[1]; // Remove the metadata part if needed
+    const bufferData = Buffer.from(base64Data, 'base64');
+
+    // Update profile
     const user = await individualUserCollection.updateOne(
       { _id: userId },
       { 
         $set: { 
-          image,
+          image: bufferData,
           role,
           username:name,
           website,
