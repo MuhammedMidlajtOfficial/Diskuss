@@ -230,17 +230,13 @@ module.exports.resetPassword = async (req, res ) => {
 
 module.exports.updateProfile = async (req, res ) => {
   try {
-    const { userId, image, phnNumber, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
-     
-    // if (!role || !name || !website || !address || !whatsappNo || !facebookLink || !instagramLink || !twitterLink ) {
-    //   return res.status(400).json({ message: "All fields are Required"})
-    // }
+    const { userId, image, phnNumber, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body;
 
-    const isUserExist = await individualUserCollection.findOne({ _id:userId }).exec();
-    console.log("isUserExist-",isUserExist);
-    if(!isUserExist){
-      return res.status(401).json({ message : "user not found"})
+    const isUserExist = await individualUserCollection.findOne({ _id: userId }).exec();
+    if (!isUserExist) {
+      return res.status(401).json({ message: "User not found" });
     }
+
     const base64Data = image.split(',')[1]; // Remove the metadata part if needed
     const bufferData = Buffer.from(base64Data, 'base64');
 
@@ -251,7 +247,7 @@ module.exports.updateProfile = async (req, res ) => {
         $set: { 
           image: bufferData,
           role,
-          username:name,
+          username: name,
           website,
           phnNumber,
           address,
@@ -262,7 +258,6 @@ module.exports.updateProfile = async (req, res ) => {
         }
       }
     );
-    console.log('user',user);
 
     if (user.modifiedCount > 0) {
       return res.status(200).json({ message: "Profile updated successfully." });
@@ -274,7 +269,7 @@ module.exports.updateProfile = async (req, res ) => {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });
   }
-}
+};
 
 module.exports.getProfile = async (req, res ) => {
   try {
