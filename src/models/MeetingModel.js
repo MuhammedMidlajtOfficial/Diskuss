@@ -21,7 +21,7 @@ const meetingSchema = new mongoose.Schema({
   // Fields for Offline Meeting
   meetingPlace: { type: String, required: function() { return this.type === 'offline'; } },
   roomNo: { type: String, required: function() { return this.type === 'offline'; } },
-  cabinNo: { type: String, required: function() { return this.type === 'offline'; } },
+  cabinNo: { type: String, function() { return this.type === 'offline'; } },
 
   // Common Fields for Date and Time
   selectedDate: { type: Date, required: true }, // Date of the meeting
