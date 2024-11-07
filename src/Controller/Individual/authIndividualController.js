@@ -32,7 +32,6 @@ module.exports.postIndividualLogin = async (req, res) => {
   }
 };
 
-
 module.exports.postIndividualSignup = async (req, res) => {
   const { username, email, otp } = req.body;
   const passwordRaw = req.body.password;
@@ -231,7 +230,7 @@ module.exports.resetPassword = async (req, res ) => {
 
 module.exports.updateProfile = async (req, res ) => {
   try {
-    const { userId, image, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
+    const { userId, image, phnNumber, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
      
     // if (!role || !name || !website || !address || !whatsappNo || !facebookLink || !instagramLink || !twitterLink ) {
     //   return res.status(400).json({ message: "All fields are Required"})
@@ -251,6 +250,7 @@ module.exports.updateProfile = async (req, res ) => {
           role,
           username:name,
           website,
+          phnNumber,
           address,
           "socialMedia.whatsappNo": whatsappNo,
           "socialMedia.facebookLink": facebookLink,
