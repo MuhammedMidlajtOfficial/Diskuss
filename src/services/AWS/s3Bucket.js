@@ -1,16 +1,17 @@
-const AWS = require('aws-sdk');
-require('dotenv').config()
-// Configure AWS SDK
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+require('dotenv').config();
+
+// Configure S3 client
+const s3Client = new S3Client({
   region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
 
-const s3 = new AWS.S3();
-
 // Upload function for S3
-module.exports.uploadImageToS3 = async (imageBuffer, fileName) => {
+async function uploadImageToS3(imageBuffer, fileName) {
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: `profile-images/${fileName}`, // Store in a "profile-images" folder
@@ -19,5 +20,15 @@ module.exports.uploadImageToS3 = async (imageBuffer, fileName) => {
     ContentType: 'image/jpeg', // Adjust based on image type
   };
 
-  return s3.upload(params).promise();
-};
+  try {
+    const command = new PutObjectCommand(params);
+    const response = await s3Client.send(command);
+    console.log("Image uploaded successfully:", response);
+    // Construct the public URL of the uploaded image
+    return { Location: `https://${params.Bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${params.Key}` };
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    throw error;
+  }
+}
+module.exports.uploadImageToS3 = uploadImageToS3;
