@@ -18,6 +18,7 @@ async function uploadImageToS3(imageBuffer, fileName) {
     Body: imageBuffer,
     ContentEncoding: 'base64', // Required if using a base64 image
     ContentType: 'image/jpeg', // Adjust based on image type
+    ACL: 'public-read', // Grant public read access to the uploaded image
   };
 
   try {
@@ -31,4 +32,5 @@ async function uploadImageToS3(imageBuffer, fileName) {
     throw error;
   }
 }
+
 module.exports.uploadImageToS3 = uploadImageToS3;

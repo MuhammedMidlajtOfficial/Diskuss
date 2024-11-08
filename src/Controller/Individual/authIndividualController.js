@@ -6,6 +6,7 @@ const { individualUserCollection } = require('../../DBConfig');
 
 const otpGenerator = require("otp-generator");
 const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
+const { createProfile } = require('../Profile/profileController');
 
 
 module.exports.postIndividualLogin = async (req, res) => {
@@ -62,6 +63,7 @@ module.exports.postIndividualSignup = async (req, res) => {
       // cardNo: 0,
     });
     console.log(newUser);
+    createProfile()
     return res.status(201).json({ message: "User created", user: newUser });
   } catch (error) {
     console.error("Error in postIndividualSignup:", error); // Detailed error logging
