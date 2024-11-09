@@ -76,11 +76,11 @@ const findOneById = async (userId) => {
  * @returns {Promise<Object>} - Returns the updated UserSubscription plan.
  * @throws {Error} - Throws an error if the UserSubscription plan is not found or if there's an issue with the update.
  */
-  const updateUserSubscriptionById = async (plan_id, updateData) => {
+  const updateUserSubscriptionById = async (id, updateData) => {
     try {
-      console.log(plan_id);
+      // console.log("id : ",id);
       
-      const userSubscription = await UserSubscription.findOne({plan_id:plan_id}).exec();
+      const userSubscription = await UserSubscription.findById({_id : id}).exec();
        
       // console.log(userSubscription);
       
