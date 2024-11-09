@@ -10,4 +10,6 @@ router.get('/:id', ReferralController.getReferralById);
 router.put('/:id', ReferralController.updateReferral);
 router.delete('/:id', ReferralController.deleteReferral);
 
+router.get('/invited/:userId', ReferralController.getInvitedUsers);
+
 module.exports = router;

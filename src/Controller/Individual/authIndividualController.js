@@ -3,7 +3,10 @@ const bcrypt = require('bcrypt');
 const { otpCollection } = require('../../DBConfig');
 
 const { individualUserCollection } = require('../../DBConfig');
-const otpGenerator = require("otp-generator")
+
+const otpGenerator = require("otp-generator");
+const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
+const { createProfile } = require('../Profile/profileController');
 
 
 module.exports.postIndividualLogin = async (req, res) => {
@@ -30,7 +33,6 @@ module.exports.postIndividualLogin = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 module.exports.postIndividualSignup = async (req, res) => {
   const { username, email, otp } = req.body;
@@ -61,6 +63,7 @@ module.exports.postIndividualSignup = async (req, res) => {
       // cardNo: 0,
     });
     console.log(newUser);
+    createProfile()
     return res.status(201).json({ message: "User created", user: newUser });
   } catch (error) {
     console.error("Error in postIndividualSignup:", error); // Detailed error logging
@@ -165,6 +168,9 @@ module.exports.sendOTP = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
+
+    console.log(otp);
+    
     let result = await otpCollection.findOne({ otp: otp });
     while (result) {
       otp = otpGenerator.generate(6, {
@@ -225,44 +231,64 @@ module.exports.resetPassword = async (req, res ) => {
   }
 }
 
-module.exports.updateProfile = async (req, res ) => {
+module.exports.updateProfile = async (req, res) => {
   try {
-    const { userId, image, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
-     
-    // if (!role || !name || !website || !address || !whatsappNo || !facebookLink || !instagramLink || !twitterLink ) {
-    //   return res.status(400).json({ message: "All fields are Required"})
-    // }
+    const { userId, image, phnNumber, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body;
 
-    const isUserExist = await individualUserCollection.findOne({ _id:userId }).exec();
-    console.log("isUserExist-",isUserExist);
-    if(!isUserExist){
-      return res.status(401).json({ message : "user not found"})
+    const isUserExist = await individualUserCollection.findOne({ _id: userId }).exec();
+    if (!isUserExist) {
+      return res.status(401).json({ message: "User not found" });
     }
-    // Update password
+
+    let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
+
+    // Upload image to S3 if a new image is provided
+    if (image) {
+      const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+      const fileName = `${userId}-profile.jpg`; // Create a unique file name based on user ID
+      const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+      imageUrl = uploadResult.Location; // URL of the uploaded image
+    }
+
+    // Update profile
     const user = await individualUserCollection.updateOne(
       { _id: userId },
-      { 
-        $set: { 
-          image,
+      {
+        $set: {
+          image: imageUrl,
           role,
-          name,
+          username: name,
           website,
+          phnNumber,
           address,
           "socialMedia.whatsappNo": whatsappNo,
           "socialMedia.facebookLink": facebookLink,
           "socialMedia.instagramLink": instagramLink,
-          "socialMedia.twitterLink": twitterLink
-        }
+          "socialMedia.twitterLink": twitterLink,
+        },
       }
     );
-    console.log('user',user);
 
     if (user.modifiedCount > 0) {
       return res.status(200).json({ message: "Profile updated successfully." });
     } else {
       return res.status(400).json({ message: "Error: Profile update failed." });
     }
-      
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports.getProfile = async (req, res ) => {
+  try {
+    const { id: userId } = req.params;
+    const user = await individualUserCollection.findOne({ _id : userId });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    return res.status(200).json({ user })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });

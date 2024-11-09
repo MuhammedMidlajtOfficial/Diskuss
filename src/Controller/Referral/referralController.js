@@ -1,5 +1,6 @@
 // controllers/referralController.js
 const ReferralService = require('../../services/Referral/referral.service');
+const ActionService = require('../../services/Referral/action.service');
 
 /**
  * Get all Referrals
@@ -162,6 +163,75 @@ const deleteReferral = async (req, res) => {
     }
 };
 
+const getInvitedUsers = async (req, res) => {
+    try {
+        const { userId } = req.params; // Extract userId from request parameters
+        // const referrals = await ReferralService.findReferralsByUserId(userId) // Call service method
+        
+        // Step 2: Extract referee IDs
+        // const referralIds = referrals.map(referral => referral._id);
+        // console.log(referralIds);
+        // // Step 3: Fetch actions for each referral
+        
+        // const all = await referralIds.forEach(async (referralId) => {
+        //     const actions = await ActionService.findActionsByReferralId(referralId);
+        //     console.log("action : ", actions);
+        // });
+        // console.log("all :", all);
+
+        // const actions = await ActionService.findActionsByReferralId(referrals.map(r => r._id));
+
+        // const invitedUsers = referrals.map(referral => ({
+        //     ...referral,
+        //     actions: actions.filter(action => action.referralId === referral._id)
+        // }));
+
+        // const invitedUsers = await ReferralService.findInvitedUsers(userId);
+
+        const referrals = await ReferralService.findReferralsByUserId(userId)
+        console.log("referrals : ", referrals)
+        
+        const referralIds = await referrals.map(ref => ref._id)
+
+        console.log("ref_ids : ", referralIds)
+
+        // const action = referralIds.map(async (refId)=> {
+        //     const action =  await ActionService.findActionsByReferralId(refId)
+        //     return action
+        // })
+
+                // Fetch actions for each referral ID asynchronously
+        const actions = await Promise.all(referralIds.map(async (refId) => {
+            const action = await ActionService.findActionsByReferralId(refId);
+            return action;
+        }));
+
+        console.log("actions :", actions)
+
+        // if (!invitedUsers || invitedUsers.length === 0) {
+        //     return res.status(404).json({ message: 'No invited users found for this user' });
+        // }
+
+        return res.status(200).json(actions );
+    } catch (error) {
+        console.error("Error fetching invited users by user ID:", error);
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+
+/*
+I want this: 
+{
+inviteduser : [
+{
+    'referralId': 123123,
+    '
+},{},{}]
+}
+*/
+
+
 module.exports = {
     getAllReferrals,
     getReferralById,
@@ -169,4 +239,5 @@ module.exports = {
     createReferral,
     updateReferral,
     deleteReferral,
+    getInvitedUsers
 };
