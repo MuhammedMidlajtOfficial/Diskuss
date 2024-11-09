@@ -1,13 +1,9 @@
 const mongoose = require("mongoose");
 
-const EnterpriseEmployeeSchema = new mongoose.Schema({
-    email: {
-        type:String,
-        required : true
-    },
-    password: {
-        type:String,
-        required : true
+const EnterpriseEmployeeCardSchema = new mongoose.Schema({
+    userId:{
+      type:String,
+      required : true
     },
     businessName: {
       type:String,
@@ -59,4 +55,4 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model("EnterpriseEmployee",EnterpriseEmployeeSchema );
+module.exports = mongoose.model("EnterpriseEmployeeCard",EnterpriseEmployeeCardSchema );

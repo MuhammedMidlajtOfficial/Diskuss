@@ -5,15 +5,15 @@ const Joi = require('joi');
 // Define a schema for validating contact data
 const contactSchema = Joi.object({
     name: Joi.string().required(),
-    designation: Joi.string().optional(),
+    designation: Joi.string().optional().default(''),
     mobile: Joi.string().required(),
     email: Joi.string().email().required(),
-    website: Joi.string().optional(),
-    businessCategory: Joi.string(),
+    website: Joi.string().optional().default(''),
+    businessCategory: Joi.string().default(''),
     scheduled: Joi.boolean().default(false),
-    scheduledTime: Joi.string().optional(),
-    notes: Joi.string().optional(),
-    userId: Joi.string(), // Optional if not required during creation
+    scheduledTime: Joi.string().optional().default(''),
+    notes: Joi.string().optional().default(''),
+    userId: Joi.string().default(''), // Optional if not required during creation
     contactOwnerId: Joi.string().required()
   });
 
