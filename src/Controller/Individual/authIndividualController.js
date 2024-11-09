@@ -63,7 +63,6 @@ module.exports.postIndividualSignup = async (req, res) => {
       // cardNo: 0,
     });
     console.log(newUser);
-    createProfile()
     return res.status(201).json({ message: "User created", user: newUser });
   } catch (error) {
     console.error("Error in postIndividualSignup:", error); // Detailed error logging
