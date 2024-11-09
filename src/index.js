@@ -8,7 +8,6 @@ const routes = require('./Routes/index.js')
 const http = require('http');
 const socketIo = require('socket.io');
 const server = http.createServer(app);
-const io = socketIo(server);
 const socketController = require('./Controller/Socketio/socketController.js');
 const messageController = require('./Controller/Message/messageController');
 const groupmessageController = require('./Controller/Message/groupmessageController.js');
@@ -26,6 +25,10 @@ app.use(session({
 app.use(nocache());
 app.use(express.json());
 app.use(cors());
+
+const io = socketIo(server, {
+  transports: ['websocket', 'polling'],
+});
 
 socketController.setSocketIO(io);
 messageController.setSocketIO(io);
