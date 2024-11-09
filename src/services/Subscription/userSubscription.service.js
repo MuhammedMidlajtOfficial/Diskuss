@@ -50,6 +50,7 @@ const findOneById = async (userId) => {
       const newSubscription = new UserSubscription({
         planId: data.planId,
         userId: data.userId,
+        razorpayOrderId:data.razorpayOrderId,
         startDate: data.startDate,
         endDate: data.endDate,
         status: data.status

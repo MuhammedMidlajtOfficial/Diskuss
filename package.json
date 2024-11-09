@@ -12,7 +12,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.687.0",
+    "@aws-sdk/s3-request-presigner": "^3.687.0",
+    "aws-sdk": "^2.1692.0",
     "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
@@ -27,6 +31,7 @@
     "nodemon": "^3.1.7",
     "npm": "^10.9.0",
     "otp-generator": "^4.0.1",
+    "razorpay": "^2.9.5",
     "session": "^0.1.0",
     "socket.io": "^4.8.1",
     "uuid": "^10.0.0"

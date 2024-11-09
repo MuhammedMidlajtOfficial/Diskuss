@@ -1,18 +1,15 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const otpGenerator = require("otp-generator")
+
+const enterpriseUser = require("../../models/enterpriseUser");
 const { otpCollection } = require('../../DBConfig');
 
-const { individualUserCollection } = require('../../DBConfig');
 
-const otpGenerator = require("otp-generator");
-const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
-const { createProfile } = require('../Profile/profileController');
-
-
-module.exports.postIndividualLogin = async (req, res) => {
+module.exports.postEnterpriseLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await individualUserCollection.findOne({ email });
+    const user = await enterpriseUser.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -34,19 +31,18 @@ module.exports.postIndividualLogin = async (req, res) => {
   }
 };
 
-module.exports.postIndividualSignup = async (req, res) => {
-  const { username, email, otp } = req.body;
-  const passwordRaw = req.body.password;
-
+module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
-    // Check for missing fields
-    if (!username || !email || !passwordRaw || !otp) {
-      return res.status(400).json({ message :"All fields are required"}); // Correct response handling
+    const { companyName, industryType, email, otp } = req.body
+    const passwordRaw = req.body.password
+
+    if (!companyName || !email || !industryType || !passwordRaw || !otp) {
+      return res.status(400).json({message:"All fields are required"}); // Correct response handling
     }
     // Check if email exists
-    const isEmailExist = await individualUserCollection.findOne({ email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email }).exec();
     if (isEmailExist) {
-      return res.status(409).json({ message :"A user with this email address already exists. Please login instead"}); // Correct response handling
+      return res.status(409).json({message:"A user with this email address already exists. Please login instead"}); // Correct response handling
     }
     // Validate OTP
     const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
@@ -55,18 +51,17 @@ module.exports.postIndividualSignup = async (req, res) => {
     }
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
-    // Create a new user
-    const newUser = await individualUserCollection.create({
-      username,
+
+    const newUser = await enterpriseUser.create({
+      companyName,
+      industryType,
       email,
       password: hashedPassword,
-      // cardNo: 0,
     });
     console.log(newUser);
-    createProfile()
     return res.status(201).json({ message: "User created", user: newUser });
-  } catch (error) {
-    console.error("Error in postIndividualSignup:", error); // Detailed error logging
+  } catch (err) {
+    console.log(err);
     return res.status(500).json({ message: 'Server error' });
   }
 }
@@ -81,13 +76,13 @@ module.exports.postforgotPassword = async (req, res ) => {
       res.status(400, "All fields are Required")
     }
 
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
     if(isEmailExist){
       // hash password
       const hashedPassword = await bcrypt.hash(passwordRaw, 10);
       console.log('hashedPassword',hashedPassword);
 
-      const user = await individualUserCollection.updateOne(
+      const user = await enterpriseUser.updateOne(
         { email: email },
         { $set: { password: hashedPassword } }
       );
@@ -111,7 +106,7 @@ module.exports.postforgotPassword = async (req, res ) => {
 module.exports.OtpValidate = async (req, res ) => {
   try {
     const { email, otp } = req.body
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
     if(isEmailExist){
       const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
       console.log("res-",response);
@@ -119,7 +114,7 @@ module.exports.OtpValidate = async (req, res ) => {
         return res.status(400).json({ success: false, message: 'The OTP is not valid' })
       } else {
         return res.status(200).json({ success: true, message: 'The OTP is valid' })
-      }
+      } 
     } return res.status(401).json({ message: "Email not exist" })
   } catch (error) {
     console.log(error);
@@ -130,7 +125,7 @@ module.exports.OtpValidate = async (req, res ) => {
 module.exports.sendForgotPasswordOTP = async (req, res) => {
   try {
     const { email } = req.body;
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
     if(!isEmailExist){
       return res.status(401).json({ message: "Email not exist" })
     }
@@ -168,9 +163,6 @@ module.exports.sendOTP = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-
-    console.log(otp);
-    
     let result = await otpCollection.findOne({ otp: otp });
     while (result) {
       otp = otpGenerator.generate(6, {
@@ -193,6 +185,7 @@ module.exports.sendOTP = async (req, res) => {
 
 module.exports.resetPassword = async (req, res ) => {
   try {
+    console.log(req.body);
     const { email, oldPassword } = req.body
     const passwordRaw = req.body.password
      
@@ -200,7 +193,7 @@ module.exports.resetPassword = async (req, res ) => {
       return res.status(400).json({ message: "All fields are Required"})
     }
 
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
     console.log("isEmailExist-",isEmailExist);
     if(!isEmailExist){
       return res.status(401).json({ message : "email not found"})
@@ -213,7 +206,7 @@ module.exports.resetPassword = async (req, res ) => {
     // hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
     // Update password
-    const user = await individualUserCollection.updateOne(
+    const user = await enterpriseUser.updateOne(
       { email: email },
       { $set: { password: hashedPassword } }
     );
@@ -231,60 +224,55 @@ module.exports.resetPassword = async (req, res ) => {
   }
 }
 
-module.exports.updateProfile = async (req, res) => {
+module.exports.updateProfile = async (req, res ) => {
   try {
-    const { userId, image, phnNumber, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body;
+    const { userId, companyName, industryType, image, aboutUs, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
+     
+    // if (!role || !name || !website || !address || !whatsappNo || !facebookLink || !instagramLink || !twitterLink ) {
+    //   return res.status(400).json({ message: "All fields are Required"})
+    // }
 
-    const isUserExist = await individualUserCollection.findOne({ _id: userId }).exec();
-    if (!isUserExist) {
-      return res.status(401).json({ message: "User not found" });
+    const isUserExist = await enterpriseUser.findOne({ _id:userId }).exec();
+    console.log("isUserExist-",isUserExist);
+    if(!isUserExist){
+      return res.status(401).json({ message : "user not found"})
     }
-
-    let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
-
-    // Upload image to S3 if a new image is provided
-    if (image) {
-      const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-      const fileName = `${userId}-profile.jpg`; // Create a unique file name based on user ID
-      const uploadResult = await uploadImageToS3(imageBuffer, fileName);
-      imageUrl = uploadResult.Location; // URL of the uploaded image
-    }
-
-    // Update profile
-    const user = await individualUserCollection.updateOne(
+    // Update password
+    const user = await enterpriseUser.updateOne(
       { _id: userId },
-      {
-        $set: {
-          image: imageUrl,
-          role,
-          username: name,
+      { 
+        $set: { 
+          companyName, 
+          industryType,
+          image,
+          aboutUs,
           website,
-          phnNumber,
           address,
           "socialMedia.whatsappNo": whatsappNo,
           "socialMedia.facebookLink": facebookLink,
           "socialMedia.instagramLink": instagramLink,
-          "socialMedia.twitterLink": twitterLink,
-        },
+          "socialMedia.twitterLink": twitterLink
+        }
       }
     );
+    console.log('user',user);
 
     if (user.modifiedCount > 0) {
       return res.status(200).json({ message: "Profile updated successfully." });
     } else {
       return res.status(400).json({ message: "Error: Profile update failed." });
     }
-
+      
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });
   }
-};
+}
 
 module.exports.getProfile = async (req, res ) => {
   try {
     const { id: userId } = req.params;
-    const user = await individualUserCollection.findOne({ _id : userId });
+    const user = await enterpriseUser.findOne({ _id : userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

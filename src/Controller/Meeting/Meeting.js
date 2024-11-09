@@ -1,7 +1,7 @@
 const MeetingBase = require("../../models/MeetingModel")
 const moment = require('moment');
 const cron = require('node-cron');
-const Profile = require('../../models/profile')
+const {individualUserCollection: Profile} = require('../../models/individualUser')
 const mongoose = require("mongoose");
 const Contact = require('../../models/contact.model')
 
@@ -46,6 +46,8 @@ const CreateMeeting = async (req, res) => {
             isRemind
         };
 
+        // console.log(newMeetingData);
+        
         // Add online or offline-specific fields
         if (type === 'online') {
             if (!meetingPlatform || !meetingLink) {
@@ -67,19 +69,22 @@ const CreateMeeting = async (req, res) => {
         // Save the new meeting
         const newMeeting = new MeetingBase(newMeetingData);
         const savedMeeting = await newMeeting.save();
-
+        //  console.log(meetingOwner);
+         
         try {
             const ownerProfile = await Profile.findOneAndUpdate(
-                { userId: meetingOwner },
+                { _id: meetingOwner },
                 { $push: { meetings: savedMeeting._id } },
                 { new: true }
             ).exec();
+            // console.log("from line 77",ownerProfile);
+            
 
             if (!ownerProfile) {
-                console.log(`No profile found for meeting owner ID: ${meetingOwnerId}`);
+                console.log(`No profile found for meeting owner ID: ${meetingOwner}`);
             }
         } catch (error) {
-            console.error(`Error updating profile for meeting owner ID: ${meetingOwnerId}`, error);
+            console.error(`Error updating profile for meeting owner ID: ${meetingOwner}`, error);
         }
 
         // Update each invited user's profile to include the meeting ID
@@ -91,7 +96,7 @@ const CreateMeeting = async (req, res) => {
                     console.log(`Updating profile for user ID: ${userIdString}`);
                  
                     const updatedProfile = await Profile.findOneAndUpdate(
-                        { userId: userIdString },
+                        { _id: userIdString },
                         { $push: { meetings: savedMeeting._id } },
                         { new: true }
                     ).exec();
@@ -116,6 +121,11 @@ const CreateMeeting = async (req, res) => {
 
 
 
+
+
+
+
+
         
 // getUpcoming controller and its take req.params
 const getUpcomingMeetings = async (req, res) => {
@@ -128,7 +138,7 @@ const getUpcomingMeetings = async (req, res) => {
         // Find all upcoming meetings organized by the user
         const upcomingMeetings = await MeetingBase.find({
             meetingOwner: userId, // Filter by user ID
-            // selectedDate: { $gte: currentDateTime.toDate() } // Filter for upcoming meetings for today
+            selectedDate: { $gte: currentDateTime.toDate() } // Filter for upcoming meetings for today
         }).exec();
 
         // Check if there are no upcoming meetings
@@ -148,13 +158,13 @@ const getUpcomingMeetings = async (req, res) => {
 const getMeetingsByIds = async (req, res) => {
     try {
         const { userId } = req.params; // Extract userId from request parameters
-         console.log(userId);
+        //  console.log(userId);
          
         // Find the user's profile by userId and populate meetings if referenced in schema
-        console.log(userId);
-        const userInfo = await Profile.findOne({ userId }).populate('meetings');
-        console.log(userInfo);
-         console.log(userInfo);
+        // console.log(userId);
+        const userInfo = await Profile.findOne({ _id:userId }).populate('meetings');
+     
+        //  console.log("user info from line no 167",userInfo);
          
         // If user profile not found, return an error
         if (!userInfo) {
@@ -163,26 +173,33 @@ const getMeetingsByIds = async (req, res) => {
 
         // Extract meeting IDs from the user's profile
         const meetingIds = userInfo.meetings.map(meeting => meeting._id);
-
+        // console.log("meeting ids from line no 176",meetingIds);
+        
         // Find meetings in MeetingBase collection that match the extracted meeting IDs
         const meetings = await MeetingBase.find({ _id: { $in: meetingIds } });
+        // console.log("meetings from  from line no 167",meetings);
 
         // If no meetings found, return an error message
         if (meetings.length === 0) {
-            return res.status(200).json({ message: [] });
+            return res.status(404).json({ message: [] });
         }
 
         // Extract meetingOwner IDs and invited people IDs from each meeting
         const meetingOwnerIds = meetings.map(meeting => meeting.meetingOwner);
         const invitedPeopleIds = meetings.flatMap(meeting => meeting.invitedPeople);
+        // console.log("from line no 190",meetingOwnerIds);
+        // console.log("from line no 190",invitedPeopleIds);
+        
 
         // Fetch profiles of meeting owners and invited people based on their IDs
-        const ownerProfiles = await Profile.find({ userId: { $in: meetingOwnerIds } });
-        const invitedProfiles = await Profile.find({ userId: { $in: invitedPeopleIds } });
-
+        const ownerProfiles = await Profile.find({ _id: { $in: meetingOwnerIds } });
+        const invitedProfiles = await Profile.find({ _id: { $in: invitedPeopleIds } });
+        // console.log(ownerProfiles);
+        // console.log(invitedProfiles);
+        
         // Create a map for easy lookup of profiles by userId
         const profilesMap = [...ownerProfiles, ...invitedProfiles].reduce((acc, profile) => {
-            acc[profile.userId] = profile; // Store each profile by its userId
+            acc[profile._id] = profile; // Store each profile by its userId
             return acc;
         }, {});
 
@@ -196,6 +213,9 @@ const getMeetingsByIds = async (req, res) => {
                 invitedInfo // Add invited people's profile info
             };
         });
+
+        // console.log(enrichedMeetings);
+        
 
         // Send back the enriched meetings as the response
         return res.status(200).json({ meetings: enrichedMeetings });
@@ -263,24 +283,29 @@ const deleteMeeting = async (req, res) => {
         const { meetingOwner, invitedPeople } = meetingToDelete;
         
         // Log the meeting details
-        console.log("Meeting found:", meetingToDelete);
-        console.log("Meeting Owner ID:", meetingOwner);
-        console.log("Invited People IDs:", invitedPeople);
+        // console.log("Meeting found:", meetingToDelete);
+        // console.log("Meeting Owner ID:", meetingOwner);
+        // console.log("Invited People IDs:", invitedPeople);
 
         // Delete the meeting
         await MeetingBase.findByIdAndDelete(meetingId);
 
         // Remove the meeting ID from the meetingOwner's Profile document
-        await Profile.updateOne(
-            { userId: meetingOwner },
+      const newData =  await Profile.updateOne(
+            { _id: meetingOwner },
             { $pull: { meetings: meetingId } }
         );
 
+        // console.log(newData);
+        
+
         // Remove the meeting ID from each invited user's Profile document
         const result = await Profile.updateMany(
-            { userId: { $in: invitedPeople } },
+            { _id: { $in: invitedPeople } },
             { $pull: { meetings: meetingId } }
         );
+
+        // console.log(result);
 
         // Log the update result for confirmation
         console.log(`Removed meeting ID from ${result.nModified} invited users' meeting lists`);
@@ -301,7 +326,7 @@ const UpdateMeeting = async (req, res) => {
     try {
       const {meetingId} = req.params; // Get meeting ID from request parameters
       const updatedData = req.body; // Get updated meeting data from request body
-        console.log(updatedData);
+        // console.log(updatedData);
         
       // Find the meeting by ID and update it with the new data
       const updatedMeeting = await MeetingBase.findByIdAndUpdate(meetingId, updatedData, {

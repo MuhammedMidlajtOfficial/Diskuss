@@ -2,43 +2,44 @@ const express = require('express');
 
 const authIndividualRouter = require('./Individual/authIndividualRouter.js')
 const authEnterpriseRouter = require('./Enterprise/authEnterpriseRouter.js')
-const profileRoutes = require('./Profile/profileRoutes.js')
+const cardRouter = require('./Card/cardRoutes.js')
 const subscriptionPlanRouter = require('./Subscription/SubscriptionPlanRouter.js')
 const serviceRoutes = require('./serviceRouter.js')
+const messageRoute = require("./Message/messageRoute.js");
+const groupMessage = require('./Message/groupMessageRoute.js');
 const userSubscriptionRouter = require('./Subscription/UserSubscriptionRouter.js');
 const referralRouter = require('./Referral/ReferralRouter.js');
 const actionRouter = require('./Referral/ActionRotuer.js');
 const referralLevelRouter = require('./Referral/ReferralLevelRouter.js');
 const contactRouter = require("./contactRouter.js")
-// const messageRoute = require("./Message/messageRoute")
 const MeetingRoute = require("./Meeting/MeetingRouter.js")
 
 const router = express.Router();
 
 const defaultRoutes = [
   {
-    path: '/individual',
+    path: "/individual",
     route: authIndividualRouter,
   },
   {
-    path: '/enterprise',
+    path: "/enterprise",
     route: authEnterpriseRouter,
   },
   {
-    path: '/profile',
-    route: profileRoutes,
+    path: '/card',
+    route: cardRouter,
   },
   {
-    path: '/subscription-plan',
+    path: "/subscription-plan",
     route: subscriptionPlanRouter,
   },
   {
-    path: '/service',
+    path: "/service",
     route: serviceRoutes,
   },
   {
-  path : '/subscription',
-  route: userSubscriptionRouter
+    path : '/subscription',
+    route: userSubscriptionRouter
   },
   {
     path : '/referral',
@@ -57,22 +58,9 @@ const defaultRoutes = [
     route: contactRouter
   },
   {
-    path: '/service',
-    route: serviceRoutes,
-  },
-  {
-  path : '/subscription',
-  route: userSubscriptionRouter
-  },
-  // {
-  //   path: '/message',
-  //   route: messageRoute,
-  // },
-  {
     path: '/meeting',
     route: MeetingRoute,
   },
-  
 ];
 
 defaultRoutes.forEach((route) => {
