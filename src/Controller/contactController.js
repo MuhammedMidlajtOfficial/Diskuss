@@ -11,7 +11,7 @@ const contactSchema = Joi.object({
     website: Joi.string().optional(),
     businessCategory: Joi.string(),
     scheduled: Joi.boolean().default(false),
-    scheduledTime: Joi.date().optional(),
+    scheduledTime: Joi.string().optional(),
     notes: Joi.string().optional(),
     userId: Joi.string(), // Optional if not required during creation
     contactOwnerId: Joi.string().required()
