@@ -41,7 +41,7 @@ app.get('/api/v1',(req,res)=>{
   })
 })
 
-const port = process.env.PORT | "3000"
+const port = process.env.PORT | 3000
 app.listen(port ,()=>{
   console.log(`Server Connected port : http://localhost:${port}`);
 })

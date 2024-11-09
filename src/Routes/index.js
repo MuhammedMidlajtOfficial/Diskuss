@@ -61,6 +61,14 @@ const defaultRoutes = [
     path: '/meeting',
     route: MeetingRoute,
   },
+  {
+    path: '/message',
+    route: messageRoute,
+  },
+  {
+    path: '/groupMessage',
+    route: groupMessage,
+  },
 ];
 
 defaultRoutes.forEach((route) => {
