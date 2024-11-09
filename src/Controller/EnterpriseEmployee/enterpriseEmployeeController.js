@@ -54,7 +54,10 @@ module.exports.createCard = async (req, res) => {
         //     return res.status(500).json({ message: "Failed to upload image", error: uploadError });
         //   }
         // }
-    
+        if (!newUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
         const newCard = new Card({
             userId:newUser._id,
             businessName,

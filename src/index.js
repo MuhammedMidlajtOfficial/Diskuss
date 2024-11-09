@@ -27,7 +27,12 @@ app.use(express.json());
 app.use(cors());
 
 const io = socketIo(server, {
-  transports: ['websocket', 'polling'],
+  transports: ['websocket'],
+  cors: {
+    origin: "*", 
+    methods: ["GET", "POST"],
+  },
+
 });
 
 socketController.setSocketIO(io);
@@ -46,7 +51,8 @@ app.get('/api/v1',(req,res)=>{
   })
 })
 
-const port = process.env.PORT | 3000
-app.listen(port ,()=>{
-  console.log(`Server Connected port : http://localhost:${port}`);
-})
+const port = process.env.PORT || "3000"
+
+server.listen(port, () => {
+  console.log(`Server connected on http://localhost:${port}`);
+});
