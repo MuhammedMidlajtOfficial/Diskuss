@@ -4,6 +4,7 @@ const otpGenerator = require("otp-generator")
 
 const enterpriseUser = require("../../models/enterpriseUser");
 const { otpCollection } = require('../../DBConfig');
+const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
 
 
 module.exports.postEnterpriseLogin = async (req, res) => {
@@ -224,50 +225,68 @@ module.exports.resetPassword = async (req, res ) => {
   }
 }
 
-module.exports.updateProfile = async (req, res ) => {
+module.exports.updateProfile = async (req, res) => {
   try {
-    const { userId, companyName, industryType, image, aboutUs, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
-     
-    // if (!role || !name || !website || !address || !whatsappNo || !facebookLink || !instagramLink || !twitterLink ) {
-    //   return res.status(400).json({ message: "All fields are Required"})
-    // }
+    const {
+      userId,
+      companyName,
+      industryType,
+      image,
+      aboutUs,
+      website,
+      address,
+      whatsappNo,
+      facebookLink,
+      instagramLink,
+      twitterLink
+    } = req.body;
 
-    const isUserExist = await enterpriseUser.findOne({ _id:userId }).exec();
-    console.log("isUserExist-",isUserExist);
-    if(!isUserExist){
-      return res.status(401).json({ message : "user not found"})
+    const isUserExist = await enterpriseUser.findOne({ _id: userId }).exec();
+    if (!isUserExist) {
+      return res.status(401).json({ message: "User not found" });
     }
-    // Update password
+
+    let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
+
+    // Upload image to S3 if a new image is provided
+    if (image) {
+      const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+      const fileName = `${userId}-company-profile.jpg`; // Unique file name based on user ID
+      const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+      imageUrl = uploadResult.Location; // URL of the uploaded image
+    }
+
+    // Update profile
     const user = await enterpriseUser.updateOne(
       { _id: userId },
-      { 
-        $set: { 
-          companyName, 
+      {
+        $set: {
+          companyName,
           industryType,
-          image,
+          image: imageUrl,
           aboutUs,
           website,
           address,
           "socialMedia.whatsappNo": whatsappNo,
           "socialMedia.facebookLink": facebookLink,
           "socialMedia.instagramLink": instagramLink,
-          "socialMedia.twitterLink": twitterLink
-        }
+          "socialMedia.twitterLink": twitterLink,
+        },
       }
     );
-    console.log('user',user);
 
     if (user.modifiedCount > 0) {
       return res.status(200).json({ message: "Profile updated successfully." });
     } else {
       return res.status(400).json({ message: "Error: Profile update failed." });
     }
-      
+
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });
   }
-}
+};
+
 
 module.exports.getProfile = async (req, res ) => {
   try {
