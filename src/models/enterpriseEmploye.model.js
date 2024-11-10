@@ -5,6 +5,10 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    userType: {
+        type: String,
+        default:'employee'
+    },
     email: {
       type: String,
       required: true,
@@ -43,7 +47,8 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
       default : ''
     },
     contacts : {
-      type : Array,
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'Contact' ,
       default : []
     },
     socialMedia: {
