@@ -46,11 +46,13 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
       type:String,
       default : ''
     },
-    contacts : {
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'Contact' ,
-      default : []
-    },
+    contacts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Contact',
+        default: []
+      }
+    ],    
     socialMedia: {
       whatsappNo: {
         type:String,

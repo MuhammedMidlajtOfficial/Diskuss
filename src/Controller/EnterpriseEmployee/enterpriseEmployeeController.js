@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployeCardModel = require('../../models/enterpriseEmployeCard.model');
+const mailSender = require('../../util/mailSender');
 
 
 module.exports.getCardForUser = async (req, res) => {
@@ -72,6 +73,7 @@ module.exports.getContactOfEmployee = async (req, res) => {
 module.exports.createCard = async (req, res) => {
     const {
         enterpriseId,
+        userPersonalEmail,
         email,
         businessName,
         empName,
@@ -89,7 +91,7 @@ module.exports.createCard = async (req, res) => {
 
     try {
         // Check for missing fields
-        if (!email || !passwordRaw || !enterpriseId || !businessName || !empName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
+        if (!email || !passwordRaw || !userPersonalEmail || !enterpriseId || !businessName || !empName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -163,7 +165,9 @@ module.exports.createCard = async (req, res) => {
                 } }
             );
 
-            return res.status(201).json({ message: "Card added successfully", entryId: result._id });
+            res.status(201).json({ message: "Card added successfully", entryId: result._id });
+
+            sendVerificationEmail(userPersonalEmail,newUser.email,passwordRaw)
         } else {
             return res.status(500).json({ message: "Failed to save card" });
         }
@@ -173,3 +177,32 @@ module.exports.createCard = async (req, res) => {
         res.status(500).json({ message: "Failed to add card", error });
     }
 };
+
+
+async function sendVerificationEmail(email,newEmail,newPassword) {
+    try {
+      const mailResponse = await mailSender(
+        email,
+        "Connect - Business Card allotted",
+        `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; color: #333; border: 1px solid #e0e0e0; border-radius: 10px;">
+        <h2 style="color: #333; text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 20px;">DISKUSS - Your Business Card is Ready!</h2>
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+          <p style="font-size: 18px; color: #555; margin: 10px 0;">Your new email:</p>
+          <p style="font-size: 18px; color: #333; font-weight: 600;">${newEmail}</p>
+          <p style="font-size: 18px; color: #555; margin: 10px 0;">Your temporary password:</p>
+          <p style="font-size: 18px; color: #333; font-weight: 600;">${newPassword}</p>
+          
+        </div>
+        <p style="font-size: 14px; color: #777; margin-top: 20px; text-align: center;">
+          If you didn’t request this, please ignore this email or contact our support team.
+        </p>
+      </div>
+        `
+      );
+      console.log("Email sent successfully: ", mailResponse);
+    } catch (error) {
+      console.log("Error occurred while sending email: ", error);
+      throw error;
+    }
+  }
