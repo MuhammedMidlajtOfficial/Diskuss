@@ -5,32 +5,62 @@ const otpGenerator = require("otp-generator")
 const enterpriseUser = require("../../models/enterpriseUser");
 const { otpCollection } = require('../../DBConfig');
 const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
+const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 
 
 module.exports.postEnterpriseLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await enterpriseUser.findOne({ email });
-    if (!user) {
+
+    // Find enterprise user
+    const enterprise = await enterpriseUser.findOne({ email });
+    const enterpriseEmp = await enterpriseEmployeModel.findOne({ email });
+
+    // Check if neither user is found
+    if (!enterprise && !enterpriseEmp) {
       return res.status(404).json({ message: 'User not found' });
     }
-    // Check password match
-    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    let user = null;
+    let emp = false;
+    let passwordMatch = false;
+
+    // Check password for enterprise user if found
+    if (enterprise) {
+      passwordMatch = await bcrypt.compare(password, enterprise.password);
+      if (passwordMatch) {
+        user = enterprise;
+      }
+    }
+
+    // Check password for enterprise employee if found and no match with enterprise user
+    if (!passwordMatch && enterpriseEmp) {
+      passwordMatch = await bcrypt.compare(password, enterpriseEmp.password);
+      if (passwordMatch) {
+        user = enterpriseEmp;
+        emp = true;
+      }
+    }
+
+    // If password does not match for both, return invalid credentials
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    // Set jwt token
+
+    // Set JWT token if a match was found
     const payload = { id: user._id, email: user.email };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-    req.session.user = user
+    req.session.user = user;
 
-    return res.status(200).json({ message: 'Login successful', accessToken, refreshToken,user });
+    return res.status(200).json({ message: 'Login successful', emp, accessToken, refreshToken, user });
+    
   } catch (error) {
     console.error('Error during login:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {

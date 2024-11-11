@@ -65,7 +65,14 @@ const IndividualUserSchema = new mongoose.Schema({
         type:String,
         default : ''
       },
-    }
+    },
+    meetings: [
+      {
+        type: String,
+        ref: "Meeting", // Reference to Meeting model
+        required: false,
+      },
+    ],
   } ,{ timestamps: true });
   
   module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);

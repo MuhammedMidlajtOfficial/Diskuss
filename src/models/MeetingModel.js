@@ -30,7 +30,7 @@ const meetingSchema = new mongoose.Schema({
 
   // List of People Invited
   invitedPeople: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: 'User' // Assuming 'User' schema exists
   }],
 

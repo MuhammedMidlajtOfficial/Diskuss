@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 
 const EnterpriseEmployeeCardSchema = new mongoose.Schema({
     userId:{
-      type:String,
+      type: mongoose.Schema.Types.ObjectId, ref: 'EnterpriseEmployee',
+      required : true
+    },
+    enterpriseId:{
+      type: mongoose.Schema.Types.ObjectId, ref: 'EnterpriseUser',
       required : true
     },
     businessName: {
@@ -53,6 +57,7 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
       required : true,
       default:''
     },
+    
 });
 
 module.exports = mongoose.model("EnterpriseEmployeeCard",EnterpriseEmployeeCardSchema );
