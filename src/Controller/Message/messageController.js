@@ -9,7 +9,6 @@ exports.setSocketIO = (socketIO) => {
 
 // Send message
 exports.sendMessage = async (req, res) => {
-  const io = getSocketIO();
   const { senderId, receiverId, content } = req.body;
   console.log("Request Body:", req.body);
   
