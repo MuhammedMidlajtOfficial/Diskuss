@@ -69,6 +69,10 @@ const defaultRoutes = [
     path: '/groupMessage',
     route: groupMessage,
   },
+  {
+    path: '/enterpriseEmployee',
+    route: groupMessage,
+  },
 ];
 
 defaultRoutes.forEach((route) => {

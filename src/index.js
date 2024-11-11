@@ -32,6 +32,7 @@ const io = socketIo(server, {
     origin: "*", 
     methods: ["GET", "POST"],
   },
+
 });
 
 socketController.setSocketIO(io);
