@@ -4,32 +4,63 @@ const otpGenerator = require("otp-generator")
 
 const enterpriseUser = require("../../models/enterpriseUser");
 const { otpCollection } = require('../../DBConfig');
+const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
+const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 
 
 module.exports.postEnterpriseLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await enterpriseUser.findOne({ email });
-    if (!user) {
+
+    // Find enterprise user
+    const enterprise = await enterpriseUser.findOne({ email });
+    const enterpriseEmp = await enterpriseEmployeModel.findOne({ email });
+
+    // Check if neither user is found
+    if (!enterprise && !enterpriseEmp) {
       return res.status(404).json({ message: 'User not found' });
     }
-    // Check password match
-    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    let user = null;
+    let emp = false;
+    let passwordMatch = false;
+
+    // Check password for enterprise user if found
+    if (enterprise) {
+      passwordMatch = await bcrypt.compare(password, enterprise.password);
+      if (passwordMatch) {
+        user = enterprise;
+      }
+    }
+
+    // Check password for enterprise employee if found and no match with enterprise user
+    if (!passwordMatch && enterpriseEmp) {
+      passwordMatch = await bcrypt.compare(password, enterpriseEmp.password);
+      if (passwordMatch) {
+        user = enterpriseEmp;
+        emp = true;
+      }
+    }
+
+    // If password does not match for both, return invalid credentials
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    // Set jwt token
+
+    // Set JWT token if a match was found
     const payload = { id: user._id, email: user.email };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-    req.session.user = user
+    req.session.user = user;
 
-    return res.status(200).json({ message: 'Login successful', accessToken, refreshToken,user });
+    return res.status(200).json({ message: 'Login successful', emp, accessToken, refreshToken, user });
+    
   } catch (error) {
     console.error('Error during login:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
@@ -224,50 +255,67 @@ module.exports.resetPassword = async (req, res ) => {
   }
 }
 
-module.exports.updateProfile = async (req, res ) => {
+module.exports.updateProfile = async (req, res) => {
   try {
-    const { userId, companyName, industryType, image, aboutUs, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body
-     
-    // if (!role || !name || !website || !address || !whatsappNo || !facebookLink || !instagramLink || !twitterLink ) {
-    //   return res.status(400).json({ message: "All fields are Required"})
-    // }
+    const {
+      userId,
+      companyName,
+      industryType,
+      image,
+      aboutUs,
+      website,
+      address,
+      whatsappNo,
+      facebookLink,
+      instagramLink,
+      twitterLink
+    } = req.body;
 
-    const isUserExist = await enterpriseUser.findOne({ _id:userId }).exec();
-    console.log("isUserExist-",isUserExist);
-    if(!isUserExist){
-      return res.status(401).json({ message : "user not found"})
+    const isUserExist = await enterpriseUser.findOne({ _id: userId }).exec();
+    if (!isUserExist) {
+      return res.status(401).json({ message: "User not found" });
     }
-    // Update password
+
+    let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
+
+    // Upload image to S3 if a new image is provided
+    if (image) {
+      const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+      const fileName = `${userId}-company-profile.jpg`; // Unique file name based on user ID
+      const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+      imageUrl = uploadResult.Location; // URL of the uploaded image
+    }
+
+    // Update profile
     const user = await enterpriseUser.updateOne(
       { _id: userId },
-      { 
-        $set: { 
-          companyName, 
+      {
+        $set: {
+          companyName,
           industryType,
-          image,
+          image: imageUrl,
           aboutUs,
           website,
           address,
           "socialMedia.whatsappNo": whatsappNo,
           "socialMedia.facebookLink": facebookLink,
           "socialMedia.instagramLink": instagramLink,
-          "socialMedia.twitterLink": twitterLink
-        }
+          "socialMedia.twitterLink": twitterLink,
+        },
       }
     );
-    console.log('user',user);
 
     if (user.modifiedCount > 0) {
       return res.status(200).json({ message: "Profile updated successfully." });
     } else {
       return res.status(400).json({ message: "Error: Profile update failed." });
     }
-      
+
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });
   }
-}
+};
 
 module.exports.getProfile = async (req, res ) => {
   try {

@@ -8,7 +8,7 @@ const routes = require('./Routes/index.js')
 const http = require('http');
 const socketIo = require('socket.io');
 const server = http.createServer(app);
-const io = socketIo(server);
+const socketController = require('./Controller/Socketio/socketController.js');
 const messageController = require('./Controller/Message/messageController');
 const groupmessageController = require('./Controller/Message/groupmessageController.js');
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
@@ -26,6 +26,16 @@ app.use(nocache());
 app.use(express.json());
 app.use(cors());
 
+const io = socketIo(server, {
+  transports: ['websocket'],
+  cors: {
+    origin: "*", 
+    methods: ["GET", "POST"],
+  },
+
+});
+
+socketController.setSocketIO(io);
 messageController.setSocketIO(io);
 groupmessageController.setSocketIO(io);
 
@@ -41,7 +51,8 @@ app.get('/api/v1',(req,res)=>{
   })
 })
 
-const port = process.env.PORT | "3000"
-app.listen(port ,()=>{
-  console.log(`Server Connected port : http://localhost:${port}`);
-})
+const port = process.env.PORT || "3000"
+
+server.listen(port, () => {
+  console.log(`Server connected on http://localhost:${port}`);
+});
