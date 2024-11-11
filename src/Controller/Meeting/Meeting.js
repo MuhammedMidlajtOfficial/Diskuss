@@ -127,7 +127,7 @@ const CreateMeeting = async (req, res) => {
 
 
         
-// getUpcoming controller and its take req.params
+// getUpcoming controller and its take req.params //
 const getUpcomingMeetings = async (req, res) => {
     const { userId } = req.params; // Get the user ID from the request parameters
 
@@ -154,7 +154,7 @@ const getUpcomingMeetings = async (req, res) => {
 }
 
 
-// get meeting by ids 
+// get meeting by ids  //
 const getMeetingsByIds = async (req, res) => {
     try {
         const { userId } = req.params; // Extract userId from request parameters
@@ -199,7 +199,13 @@ const getMeetingsByIds = async (req, res) => {
         
         // Create a map for easy lookup of profiles by userId
         const profilesMap = [...ownerProfiles, ...invitedProfiles].reduce((acc, profile) => {
-            acc[profile._id] = profile; // Store each profile by its userId
+            acc[profile._id] = {
+  
+                username: profile.username,
+                email: profile.email,
+                image: profile.image,
+                userId:profile._id
+            };; // Store each profile by its userId
             return acc;
         }, {});
 
@@ -321,6 +327,11 @@ const deleteMeeting = async (req, res) => {
 
 
 
+
+
+
+
+
 //update meeting by meeting id
 const UpdateMeeting = async (req, res) => {
     try {
@@ -348,12 +359,17 @@ const UpdateMeeting = async (req, res) => {
     }
   };
 
+
+
     
 
 
 
 
 // Schedule the cron job to run every minute
+
+
+
 
 
 
