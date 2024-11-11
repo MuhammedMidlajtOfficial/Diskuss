@@ -166,7 +166,7 @@ const getMeetingsByIds = async (req, res) => {
         });
      
         //  console.log("user info from line no 167",userInfo);
-         
+         console.log('userInfo',userInfo);
         // If user profile not found, return an error
         if (!userInfo) {
             return res.status(404).json({ message: "User profile not found." });
@@ -182,7 +182,7 @@ const getMeetingsByIds = async (req, res) => {
 
         // If no meetings found, return an error message
         if (meetings.length === 0) {
-            return res.status(404).json({ message: [] });
+            return res.status(200).json({ message: [] });
         }
 
         // Extract meetingOwner IDs and invited people IDs from each meeting
