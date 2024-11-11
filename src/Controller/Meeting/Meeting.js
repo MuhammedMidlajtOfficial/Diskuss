@@ -1,11 +1,9 @@
 const MeetingBase = require("../../models/MeetingModel")
 const moment = require('moment');
 const cron = require('node-cron');
-const {individualUserCollection: Profile} = require('../../models/individualUser')
+const {individualUserCollection: Profile} = require('../../DBConfig')
 const mongoose = require("mongoose");
 const Contact = require('../../models/contact.model')
-
-
 
 
 // CreateMeeting controller 
