@@ -55,15 +55,49 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// Get messages
+
+// Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
-  const { chatId } = req.query;
+  const { chatId, userId } = req.query;
 
   try {
-    const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
-    res.status(200).json(messages);
+    if (chatId) {
+      // Case 1: Retrieve all messages for a specific chat
+      const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+      return res.status(200).json(messages);
+    } else if (userId) {
+      // Case 2: Retrieve the last message for each chat involving the user
+      const lastMessages = await Message.aggregate([
+        {
+          $match: {
+            $or: [
+              { senderId: new mongoose.Types.ObjectId(userId) },
+              { receiverId: new mongoose.Types.ObjectId(userId) }
+            ]
+          }
+        },
+        {
+          $sort: { timestamp: -1 } // Sort by timestamp in descending order
+        },
+        {
+          $group: {
+            _id: "$chatId",
+            lastMessage: { $first: "$$ROOT" } // Get the latest message per chatId
+          }
+        },
+        {
+          $replaceRoot: { newRoot: "$lastMessage" } // Replace root with the last message document
+        }
+      ]);
+
+      return res.status(200).json(lastMessages);
+    } else {
+      // Handle missing parameters
+      return res.status(400).json({ error: "Either chatId or userId must be provided." });
+    }
   } catch (error) {
     console.error("Error retrieving messages:", error);
     res.status(500).json({ error: "Error retrieving messages." });
   }
 };
+

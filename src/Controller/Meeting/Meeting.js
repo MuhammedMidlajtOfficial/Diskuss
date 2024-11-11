@@ -6,8 +6,6 @@ const mongoose = require("mongoose");
 const Contact = require('../../models/contact.model')
 
 
-
-
 // CreateMeeting controller 
 const CreateMeeting = async (req, res) => {
     try {
@@ -162,7 +160,10 @@ const getMeetingsByIds = async (req, res) => {
          
         // Find the user's profile by userId and populate meetings if referenced in schema
         // console.log(userId);
-        const userInfo = await Profile.findOne({ _id:userId }).populate('meetings');
+        const userInfo = await Profile.findOne({ _id:userId }).populate({
+            path:'meetings',
+            strictPopulate: false, 
+        });
      
         //  console.log("user info from line no 167",userInfo);
          
@@ -172,7 +173,7 @@ const getMeetingsByIds = async (req, res) => {
         }
 
         // Extract meeting IDs from the user's profile
-        const meetingIds = userInfo.meetings.map(meeting => meeting._id);
+        const meetingIds = userInfo?.meetings?.map(meeting => meeting._id);
         // console.log("meeting ids from line no 176",meetingIds);
         
         // Find meetings in MeetingBase collection that match the extracted meeting IDs

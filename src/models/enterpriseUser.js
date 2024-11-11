@@ -41,24 +41,33 @@ const enterpriseUserSchema = new mongoose.Schema({
         type:String,
         default : ''
       },
-      socialMedia: {
-        whatsappNo: {
-          type:String,
-          default : ''
-        },
-        facebookLink: {
-          type:String,
-          default : ''
-        },
-        instagramLink: {
-          type:String,
-          default : ''
-        },
-        twitterLink: {
-          type:String,
-          default : ''
-        },
-      }
+    socialMedia: {
+      whatsappNo: {
+        type:String,
+        default : ''
+      },
+      facebookLink: {
+        type:String,
+        default : ''
+      },
+      instagramLink: {
+        type:String,
+        default : ''
+      },
+      twitterLink: {
+        type:String,
+        default : ''
+      },
+    },
+    empCards:[ {
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'EnterpriseEmployeeCard' 
+    } ],
+    empId :[ {
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'EnterpriseEmployee' 
+    } ]
+
 },{ timestamps:true })
 
 module.exports = mongoose.model('EnterpriseUser',enterpriseUserSchema)
