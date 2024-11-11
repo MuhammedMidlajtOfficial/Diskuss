@@ -21,7 +21,8 @@ exports.sendMessage = async (req, res) => {
     // Check if both users exist
     const [senderExists, receiverExists] = await Promise.all([
       Contact.findById(senderObjectId),
-      User.findById(receiverObjectId),
+      Contact.findById(receiverObjectId),
+
     ]);
 
     console.log("Sender Exists:", senderExists);
