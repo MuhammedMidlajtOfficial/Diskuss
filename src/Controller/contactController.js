@@ -1,5 +1,7 @@
 // controllers/ContactController.js
 const { individualUserCollection } = require('../DBConfig');
+const enterpriseEmployeModel = require('../models/enterpriseEmploye.model');
+const enterpriseUser = require('../models/enterpriseUser');
 const ContactService = require('../services/contact.service');
 // const Joi = require('joi');
 
@@ -105,9 +107,21 @@ const createContact = async (req, res) => {
 
         if (!email || !name  || !phnNumber || !contactOwnerId) {
             return res.status(400).json({ message: "All fields are required" });
-        }
+        } 
 
-        const existUser = await individualUserCollection.findOne({ phnNumber })
+        let existUser;
+
+        const IndividualUser = await individualUserCollection.findOne({ phnNumber });
+        const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+        const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
+
+        if (IndividualUser) {
+            existUser = IndividualUser;
+        } else if (EnterpriseUser) {
+            existUser = EnterpriseUser;
+        } else if (EnterpriseEmpUser) {
+            existUser = EnterpriseEmpUser;
+        }
         console.log(existUser);
 
         let newContact;
