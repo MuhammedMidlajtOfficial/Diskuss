@@ -61,6 +61,7 @@ mongoose.connect(process.env.MongoDBURL,{
       type: String,
       default: '',
       unique: true,
+      sparse: true, // Add sparse index
       validate: {
         validator: function(v) {
           return /^\d{10}$/.test(v);  // Adjust regex as needed for format
