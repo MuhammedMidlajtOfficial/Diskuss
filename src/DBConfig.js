@@ -58,8 +58,15 @@ mongoose.connect(process.env.MongoDBURL,{
       default : ''
     },
     phnNumber: {
-      type:String,
-      default : ''
+      type: String,
+      default: '',
+      unique: true,
+      validate: {
+        validator: function(v) {
+          return /^\d{10}$/.test(v);  // Adjust regex as needed for format
+        },
+        message: props => `${props.value} is not a valid phone number!`
+      }
     },
     address: {
       type:String,
