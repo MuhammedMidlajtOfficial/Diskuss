@@ -1,21 +1,25 @@
 // controllers/ContactController.js
+const { individualUserCollection } = require('../DBConfig');
+const enterpriseEmployeModel = require('../models/enterpriseEmploye.model');
+const enterpriseUser = require('../models/enterpriseUser');
 const ContactService = require('../services/contact.service');
-const Joi = require('joi');
+// const Joi = require('joi');
 
-// Define a schema for validating contact data
-const contactSchema = Joi.object({
-    name: Joi.string().required(),
-    designation: Joi.string().optional().default(''),
-    mobile: Joi.string().required(),
-    email: Joi.string().email().required(),
-    website: Joi.string().optional().default(''),
-    businessCategory: Joi.string().default(''),
-    scheduled: Joi.boolean().default(false),
-    scheduledTime: Joi.string().optional().default(''),
-    notes: Joi.string().optional().default(''),
-    userId: Joi.string().default(''), // Optional if not required during creation
-    contactOwnerId: Joi.string().required()
-  });
+// // Define a schema for validating contact data
+// const contactSchema = Joi.object({
+//     name: Joi.string().required(),
+//     designation: Joi.string().optional().default(''),
+//     mobile: Joi.string().required(),
+//     email: Joi.string().email().required(),
+//     website: Joi.string().optional().default(''),
+//     businessCategory: Joi.string().default(''),
+//     scheduled: Joi.boolean().default(false),
+//     scheduledTime: Joi.string().optional().default(''),
+//     notes: Joi.string().optional().default(''),
+//     userId: Joi.string().default(''), // Optional if not required during creation
+//     contactOwnerId: Joi.string().required(),
+//     inDiskuss: Joi.boolean().default(false)
+//   });
 
 
 /**
@@ -32,7 +36,6 @@ const getAllContacts = async (req, res) => {
         return res.status(500).json({ error: e.message });
     }
 };
-
 
 /**
  * Get an Contact by ID
@@ -55,7 +58,6 @@ const getContactById = async (req, res) => {
     }
 };
 
-
 /**
  * Create a new Contact
  * @param {Request} req
@@ -63,26 +65,110 @@ const getContactById = async (req, res) => {
  * @returns {Promise<Response>}
  * @example
  */
-const createContact = async (req, res) => {
-    try {
+// const createContact = async (req, res) => {
+//     try {
 
-         // Validate incoming request body
-        const { error } = contactSchema.validate(req.body);
+//          // Validate incoming request body
+//         const { error } = contactSchema.validate(req.body);
 
-        if (error) {
-            return res.status(400).json({ message: error.details[0].message });
-        }
+//         if (error) {
+//             return res.status(400).json({ message: error.details[0].message });
+//         }
 
-        const newContact = await ContactService.createContact(req.body);
+//         const newContact = await ContactService.createContact(req.body);
 
-        // Check if required fields are provided
-        if (!newContact) {
-            return res.status(400).json({ message: "All fields are required." });
-        }
+//         // Check if required fields are provided
+//         if (!newContact) {
+//             return res.status(400).json({ message: "All fields are required." });
+//         }
 
  
+//         // Respond with success and the created Contact
+//         res.status(201).json({ message: "Contact created successfully", Contact: newContact });
+//     } catch (e) {
+//         return res.status(500).json({ error: e.message });
+//     }
+// };
+
+const createContact = async (req, res) => {
+    try {
+        const {
+            name,
+            designation,
+            phnNumber,
+            email,
+            website,
+            businessCategory,
+            scheduled,
+            scheduledTime,
+            notes,
+            contactOwnerId,
+        } = req.body
+
+        if (!email || !name  || !phnNumber || !contactOwnerId) {
+            return res.status(400).json({ message: "All fields are required" });
+        } 
+
+        let existUser;
+
+        const IndividualUser = await individualUserCollection.findOne({ phnNumber });
+        const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+        const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
+
+        if (IndividualUser) {
+            existUser = IndividualUser;
+        } else if (EnterpriseUser) {
+            existUser = EnterpriseUser;
+        } else if (EnterpriseEmpUser) {
+            existUser = EnterpriseEmpUser;
+        }
+        console.log(existUser);
+
+        let newContact;
+
+        if(existUser){
+            const contactDetails = {
+                name,
+                designation,
+                phnNumber,
+                email,
+                website,
+                businessCategory,
+                scheduled,
+                scheduledTime,
+                notes,
+                userId : existUser._id,
+                contactOwnerId,
+                isDiskussUser:true
+            }
+            newContact = await ContactService.createContact(contactDetails);
+
+            await individualUserCollection.updateOne(
+                { _id: contactOwnerId },
+                { 
+                    $push: { contacts: newContact._id },
+                    
+                } // Update with $push operator
+            );
+        }else{
+            const contactDetails = {
+                name,
+                designation,
+                phnNumber,
+                email,
+                website,
+                businessCategory,
+                scheduled,
+                scheduledTime,
+                notes,
+                contactOwnerId,
+                isDiskussUser: false
+            }
+            newContact = await ContactService.createContact(contactDetails);
+        }
+        
         // Respond with success and the created Contact
-        res.status(201).json({ message: "Contact created successfully", Contact: newContact });
+        return res.status(201).json({ message: "Contact created successfully", Contact: newContact });
     } catch (e) {
         return res.status(500).json({ error: e.message });
     }
@@ -149,7 +235,6 @@ const deleteContact = async (req, res) => {
     }
 };
 
-
 /**
  * Get Contacts by User ID
  * @param {Request} req
@@ -187,7 +272,6 @@ const getSearchedContact = async (req, res) => {
         console.error("Error fetching contacts by search query");
         return res.status(500).json({ error: error.message });    }
 }
-
 
 
 module.exports = {
