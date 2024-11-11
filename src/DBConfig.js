@@ -60,8 +60,6 @@ mongoose.connect(process.env.MongoDBURL,{
     phnNumber: {
       type: String,
       default: '',
-      unique: true,
-      required:false,
     },
     address: {
       type:String,

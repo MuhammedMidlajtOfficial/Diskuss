@@ -49,10 +49,11 @@ module.exports.postIndividualSignup = async (req, res) => {
       return res.status(409).json({ message :"A user with this email address already exists. Please login instead"}); // Correct response handling
     }
     // Validate OTP
-    const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
-    if (response.length === 0 || otp !== response[0].otp) {
-      return res.status(400).json({ success: false, message: 'The OTP is not valid' }); // Correct response handling
+    const otpRecord = await otpCollection.findOne({ email }).sort({ createdAt: -1 });
+    if (!otpRecord || otpRecord.otp !== otp) {
+      return res.status(400).json({ success: false, message: 'The OTP is not valid or has expired' });
     }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
     // Create a new user
