@@ -139,7 +139,6 @@ exports.getMessages = async (req, res) => {
                 { $arrayElemAt: ["$receiverInfo.name", 0] },
                 "Unknown Receiver"
               ]
-            },
 
             }
           }
