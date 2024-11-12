@@ -276,11 +276,9 @@ module.exports.updateProfile = async (req, res) => {
         { $set: { isDiskussUser: true, userId: user._id } }
       );
       if(contact){
-        res.status(200).json({ message: "Contact updated successfully.", contact });
-      }else{
-        res.status(400).json({ message: "Error: Contact update failed." });
+        return res.status(200).json({ Contact_message: "Contact updated successfully." , Profile_message: "Profile updated successfully.", contact });
       }
-      return res.status(200).json({ message: "Profile updated successfully." });
+      return res.status(400).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
     } else {
       return res.status(400).json({ message: "Error: Profile update failed." });
     }
