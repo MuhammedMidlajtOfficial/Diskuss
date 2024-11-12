@@ -1,7 +1,7 @@
 const UserSubscriptionService = require('../../services/Subscription/userSubscription.service');
 const { findOneByPlanId } = require('../../services/Subscription/subscriptionPlan.service');
 const { razorpay } = require('../../services/Razorpay/razorpay');
-const CryptoJS = require('crypto-js');
+const crypto = require('crypto');
 require('dotenv')
 
 /**
@@ -102,8 +102,8 @@ const verifyPayment = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     // Generate the signature to verify the payment authenticity
-    const generatedSignature = CryptoJS
-      .createHmac('sha256', process.env.RAZORPAY_API_SECRET )  // Use your Razorpay key secret
+    const generatedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_API_SECRET)  // Use your Razorpay key secret
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 
