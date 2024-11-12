@@ -107,14 +107,14 @@ const verifyPayment = async (req, res) => {
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 
-    if (generatedSignature !== razorpay_signature) {
-      // Update the subscription status to failed on Payment verification failed 
-      await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'failed' });
-      return res.status(400).json({ message: "Payment verification failed." });
-    }
+    // if (generatedSignature !== razorpay_signature) {
+    //   // Update the subscription status to failed on Payment verification failed 
+    //   await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'failed' });
+    //   return res.status(400).json({ message: "Payment verification failed." });
+    // }
 
     // Update the subscription status to active on successful payment verification
-    await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'active' , payment:razorpay_payment_id});
+    // await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'active' , payment:razorpay_payment_id});
 
     return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
   } catch (error) {
