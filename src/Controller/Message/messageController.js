@@ -20,7 +20,7 @@ exports.sendMessage = async (req, res) => {
 
     const [sender, receiver] = await Promise.all([
       User.findById(senderObjectId),
-      Contact.findById(receiverObjectId),
+      Contact.findById({ userId: receiverObjectId }),
     ]);
 
     console.log("Sender:", sender);
@@ -110,7 +110,7 @@ exports.getMessages = async (req, res) => {
           $lookup: {
             from: "contacts", // Make sure "contacts" is the correct collection name for contacts
             localField: "receiverId",
-            foreignField: "_id",
+            foreignField: "userId",
             as: "receiverInfo"
           }
         },
