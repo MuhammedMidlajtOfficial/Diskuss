@@ -29,6 +29,10 @@ const enterpriseUserSchema = new mongoose.Schema({
         type:String,
         default : ''
     },
+    phnNumber: {
+      type:String,
+      default : ''
+    },
     aboutUs: {
         type:String,
         default : ''
