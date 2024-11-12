@@ -12,34 +12,28 @@ exports.setSocketIO = (socketIO) => {
 exports.sendMessage = async (req, res) => {
   const { senderId, receiverId, content } = req.body;
   console.log("Request Body:", req.body);
-  
+
   try {
     console.log("Checking for users...");
-    // Convert senderId and receiverId to ObjectId format
-    const senderObjectId =new mongoose.Types.ObjectId(senderId);
-    const receiverObjectId =new mongoose.Types.ObjectId(receiverId);
+    const senderObjectId = new mongoose.Types.ObjectId(senderId);
+    const receiverObjectId = new mongoose.Types.ObjectId(receiverId);
 
-    // Check if both users exist
-    const [senderExists, receiverExists] = await Promise.all([
+    const [sender, receiver] = await Promise.all([
       User.findById(senderObjectId),
       Contact.findById(receiverObjectId),
-
     ]);
 
-    console.log("Sender Exists:", senderExists);
-    console.log("Receiver Exists:", receiverExists);
+    console.log("Sender:", sender);
+    console.log("Receiver:", receiver);
 
-    // If either sender or receiver does not exist, return error
-    if (!senderExists || !receiverExists) {
+    if (!sender || !receiver) {
       return res.status(404).json({
         error: "Sender or receiver not found. Please check the user IDs and try again.",
       });
     }
 
-    // Generate chatId for one-on-one chat (concatenate sorted IDs to ensure consistency)
-    // const chatId = [senderId, receiverId].sort().join("-");
+    const chatId = [senderId, receiverId].sort().join("-");
 
-    // Create a new message
     const message = await Message.create({
       chatId,
       senderId,
@@ -48,15 +42,22 @@ exports.sendMessage = async (req, res) => {
       timestamp: Date.now(),
     });
 
-    // Emit the message to the specified chatId
-    io.to(chatId).emit("receiveMessage", message);
-    res.status(201).json(message);
+    io.to(chatId).emit("receiveMessage", {
+      ...message.toObject(),
+      senderName: sender.username,
+      receiverName: receiver.name,
+    });
+
+    res.status(201).json({
+      ...message.toObject(),
+      senderName: sender.username,
+      receiverName: receiver.name,
+    });
   } catch (error) {
     console.error("Error sending message:", error.message || error);
     res.status(500).json({ error: "Error sending message.", details: error.message });
   }
 };
-
 
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
@@ -64,11 +65,21 @@ exports.getMessages = async (req, res) => {
 
   try {
     if (chatId) {
-      // Case 1: Retrieve all messages for a specific chat
+      // const messages = await Message.find({ chatId })
+      //   .sort({ timestamp: 1 })
+      //   .populate({ path: "senderId", select: "username name" }) // ensure username and name are selected
+      //   .populate({ path: "receiverId", select: "name" }); // ensure name is selected
+
+      // return res.status(200).json(
+      //   messages.map((message) => ({
+      //     ...message.toObject(),
+      //     senderName: message.senderId?.username || message.senderId?.name || "Unknown Sender",
+      //     receiverName: message.receiverId?.name || "Unknown Receiver",
+      //   }))
+      // );
       const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
       return res.status(200).json(messages);
     } else if (userId) {
-      // Case 2: Retrieve the last message for each chat involving the user
       const lastMessages = await Message.aggregate([
         {
           $match: {
@@ -78,23 +89,52 @@ exports.getMessages = async (req, res) => {
             ]
           }
         },
-        {
-          $sort: { timestamp: -1 } // Sort by timestamp in descending order
-        },
+        { $sort: { timestamp: -1 } },
         {
           $group: {
             _id: "$chatId",
-            lastMessage: { $first: "$$ROOT" } // Get the latest message per chatId
+            lastMessage: { $first: "$$ROOT" }
+          }
+        },
+        { $replaceRoot: { newRoot: "$lastMessage" } },
+        {
+          $lookup: {
+            from: "users", // Make sure "users" is the correct collection name for users
+            localField: "senderId",
+            foreignField: "_id",
+            as: "senderInfo"
           }
         },
         {
-          $replaceRoot: { newRoot: "$lastMessage" } // Replace root with the last message document
-        }
+          $lookup: {
+            from: "contacts", // Make sure "contacts" is the correct collection name for contacts
+            localField: "receiverId",
+            foreignField: "_id",
+            as: "receiverInfo"
+          }
+        },
+        {
+          $addFields: {
+            senderName: {
+              $ifNull: [
+                { $arrayElemAt: ["$senderInfo.username", 0] },
+                { $arrayElemAt: ["$senderInfo.name", 0] },
+                "Unknown Sender"
+              ]
+            },
+            receiverName: {
+              $ifNull: [
+                { $arrayElemAt: ["$receiverInfo.name", 0] },
+                "Unknown Receiver"
+              ]
+            }
+          }
+        },
+        { $project: { senderInfo: 0, receiverInfo: 0 } }
       ]);
 
       return res.status(200).json(lastMessages);
     } else {
-      // Handle missing parameters
       return res.status(400).json({ error: "Either chatId or userId must be provided." });
     }
   } catch (error) {
