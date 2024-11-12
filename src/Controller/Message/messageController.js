@@ -120,7 +120,7 @@ exports.getMessages = async (req, res) => {
           $lookup: {
             from: "contacts",
             localField: "receiverId",
-            foreignField: "contacts.userId",
+            foreignField: "userId",
 
             as: "receiverInfo"
           }
@@ -169,4 +169,3 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ error: "Error retrieving messages." });
   }
 };
-
