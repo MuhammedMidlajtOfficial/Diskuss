@@ -14,28 +14,27 @@ exports.sendMessage = async (req, res) => {
   console.log("Request Body:", req.body);
 
   try {
-    console.log("Checking for users...");
-    const senderObjectId = new mongoose.Types.ObjectId(senderId);
-    const receiverObjectId = new mongoose.Types.ObjectId(receiverId);
-
-    const [sender, receiver] = await Promise.all([
-
-      User.findById(senderObjectId),
-      Contact.findById({ userId: receiverObjectId }),
-    ]);
-
-    console.log("Sender:", sender);
-    console.log("Receiver:", receiver);
-
-    if (!sender || !receiver) {
-      return res.status(404).json({
-        error: "Sender or receiver not found. Please check the user IDs and try again.",
-      });
+    // Ensure senderId is from the User collection
+    const sender = await User.findById(senderId);
+    if (!sender) {
+      return res.status(404).json({ error: "Sender not found" });
     }
 
-    // Generate chatId for one-on-one chat (concatenate sorted IDs to ensure consistency)
+    // Find the receiver in the Contact collection by the userId (contactOwnerId)
+    const contact = await Contact.findOne({ contactOwnerId: senderId, 'contacts.userId': receiverId });
+    if (!contact) {
+      return res.status(404).json({ error: "Receiver not found in contact list" });
+    }
+
+    const receiver = await User.findById(receiverId);
+    if (!receiver) {
+      return res.status(404).json({ error: "Receiver user not found" });
+    }
+
+    // Generate chatId by sorting senderId and receiverId to ensure consistency
     const chatId = [senderId, receiverId].sort().join("-");
 
+    // Create the message
     const message = await Message.create({
       chatId,
       senderId,
@@ -44,10 +43,11 @@ exports.sendMessage = async (req, res) => {
       timestamp: Date.now(),
     });
 
+    // Emit the message to the respective chat room (chatId)
     io.to(chatId).emit("receiveMessage", {
       ...message.toObject(),
-      senderName: sender.username,
-      receiverName: receiver.name,
+      senderName: sender.username,  // Assuming sender has a 'username' field
+      receiverName: receiver.name,   // Assuming receiver has a 'name' field
     });
 
     res.status(201).json({
@@ -60,6 +60,8 @@ exports.sendMessage = async (req, res) => {
     res.status(500).json({ error: "Error sending message.", details: error.message });
   }
 };
+
+
 
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
@@ -101,7 +103,7 @@ exports.getMessages = async (req, res) => {
         { $replaceRoot: { newRoot: "$lastMessage" } },
         {
           $lookup: {
-            from: "users", // Make sure "users" is the correct collection name for users
+            from: "users", // Fetch sender details from 'users' collection
             localField: "senderId",
             foreignField: "_id",
             as: "senderInfo"
@@ -109,9 +111,9 @@ exports.getMessages = async (req, res) => {
         },
         {
           $lookup: {
-            from: "contacts", // Make sure "contacts" is the correct collection name for contacts
+            from: "contacts",
             localField: "receiverId",
-            foreignField: "userId",
+            foreignField: "contacts.userId",
             as: "receiverInfo"
           }
         },
@@ -124,10 +126,23 @@ exports.getMessages = async (req, res) => {
                 "Unknown Sender"
               ]
             },
+            senderProfileImage: {
+              $ifNull: [
+                { $arrayElemAt: ["$senderInfo.profileImage", 0] },
+                "defaultProfilePic.png" // Default image if none is found
+              ]
+            },
             receiverName: {
               $ifNull: [
+                { $arrayElemAt: ["$receiverInfo.username", 0] },
                 { $arrayElemAt: ["$receiverInfo.name", 0] },
                 "Unknown Receiver"
+              ]
+            },
+            receiverProfileImage: {
+              $ifNull: [
+                { $arrayElemAt: ["$receiverInfo.profileImage", 0] },
+                "defaultProfilePic.png"
               ]
             }
           }
