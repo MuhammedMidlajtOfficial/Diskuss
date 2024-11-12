@@ -102,22 +102,26 @@ exports.getMessages = async (req, res) => {
           $group: {
             _id: "$chatId",
             lastMessage: { $first: "$$ROOT" }
+
           }
         },
         { $replaceRoot: { newRoot: "$lastMessage" } },
         {
           $lookup: {
-            from: "users", // Make sure "users" is the correct collection name for users
+            from: "users", // Fetch sender details from 'users' collection
             localField: "senderId",
             foreignField: "_id",
             as: "senderInfo"
+
           }
         },
+        { $replaceRoot: { newRoot: "$lastMessage" } },
         {
           $lookup: {
-            from: "contacts", // Make sure "contacts" is the correct collection name for contacts
+            from: "contacts",
             localField: "receiverId",
             foreignField: "userId",
+
             as: "receiverInfo"
           }
         },
@@ -130,11 +134,26 @@ exports.getMessages = async (req, res) => {
                 "Unknown Sender"
               ]
             },
+
+            senderProfileImage: {
+              $ifNull: [
+                { $arrayElemAt: ["$senderInfo.profileImage", 0] },
+                "defaultProfilePic.png" // Default image if none is found
+              ]
+            },
             receiverName: {
               $ifNull: [
+                { $arrayElemAt: ["$receiverInfo.username", 0] },
                 { $arrayElemAt: ["$receiverInfo.name", 0] },
                 "Unknown Receiver"
               ]
+            },
+            receiverProfileImage: {
+              $ifNull: [
+                { $arrayElemAt: ["$receiverInfo.profileImage", 0] },
+                "defaultProfilePic.png"
+              ]
+
             }
           }
         },
