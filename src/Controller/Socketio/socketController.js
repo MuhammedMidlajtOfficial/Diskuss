@@ -10,9 +10,19 @@ exports.setSocketIO = (socketIO) => {
     socket.on("error", (err) => {
       console.error("Socket error:", err);
     });
-  
+
     socket.on("connect_error", (err) => {
       console.error("Connection error:", err);
+    });
+
+    // When a user joins a chat room
+    socket.on("joinChat", (chatId) => {
+      socket.join(chatId);
+      const msg = "Welcome to the chat room ${chatId}!";
+      socket.emit("chat message", msg); 
+      console.log(
+        `User with socket ID ${socket.id} joined chat room ${chatId}`
+      );
     });
 
     // Track user connection
@@ -20,12 +30,9 @@ exports.setSocketIO = (socketIO) => {
       connectedUsers.set(userId, socket.id);
       console.log(`User ${userId} connected with socket ID ${socket.id}`);
 
-      // When a user joins a chat room
-      socket.on("joinChat", (chatId) => {
-        socket.join(chatId);
-        console.log(
-          `User with socket ID ${socket.id} joined chat room ${chatId}`
-        );
+      // Handle chat messages
+      socket.on("chat message", ({ room, msg }) => {
+        io.to(room).emit("chat message", msg);
       });
 
       // Notify other clients about the user's online status
