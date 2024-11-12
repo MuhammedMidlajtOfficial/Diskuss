@@ -163,5 +163,6 @@ module.exports = {
     findOneById,
     createUserSubscription,
     updateUserSubscriptionById,
-    deleteUserSubscriptionById
+    deleteUserSubscriptionById,
+    updateSubscriptionStatus
 };
