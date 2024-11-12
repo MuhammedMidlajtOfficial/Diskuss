@@ -62,6 +62,7 @@ const createContact = async (req, res) => {
         if (!email || !name || !phnNumber || !contactOwnerId) {
             return res.status(400).json({ message: "All fields are required" });
         }
+        console.log('contactOwnerId',contactOwnerId);
 
         let existUser;
 
