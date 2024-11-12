@@ -109,12 +109,12 @@ const verifyPayment = async (req, res) => {
 
     if (generatedSignature !== razorpay_signature) {
       // Update the subscription status to failed on Payment verification failed 
-      await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, 'failed');
+      await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'failed' });
       return res.status(400).json({ message: "Payment verification failed." });
     }
 
     // Update the subscription status to active on successful payment verification
-    await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, 'active');
+    await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'active' , payment:razorpay_payment_id});
 
     return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
   } catch (error) {
@@ -150,6 +150,10 @@ const updateUserSubscription = async (req, res) => {
       //make it error free if we found the iinvalid enum in updateData
       if(updateData.status && !['active', 'inactive', 'canceled'].includes(updateData.status)){
         return res.status(400).json({ message: "Invalid status provided for update." });
+      }
+
+      if(!userSubscription_id){
+        return res.status(400).json({ message:"Invalid userSubscription id" })
       }
 
       // Call the update function
