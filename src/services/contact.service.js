@@ -1,6 +1,4 @@
-// services/ContactService.js
-const Contact  = require('../models/contact.model');
-
+const Contact = require('../models/contact.model');
 
 /**
  * Find all Contacts
@@ -16,16 +14,20 @@ const findAllContacts = async () => {
     }
 };
 
-
 /**
- * Get an Contact by ID
- * @param {String} ContactId - The unique identifier of the Contact to retrieve.
- * @returns {Promise<Object>} - Returns the found Contact.
- * @throws {Error} - Throws an error if the Contact is not found.
+ * Get a Contact by Owner ID and Contact ID
+ * @param {String} contactOwnerId - The unique identifier of the contact owner.
+ * @param {String} contactId - The unique identifier of the individual contact within contacts array.
+ * @returns {Promise<Object>} - Returns the found contact object.
+ * @throws {Error} - Throws an error if the contact is not found.
  */
-const findContactById = async (ContactId) => {
+const findContactById = async (contactOwnerId, contactId) => {
     try {
-        const contact = await Contact.findById(ContactId).exec();
+        const contactOwner = await Contact.findById(contactOwnerId).exec();
+        if (!contactOwner) {
+            throw new Error("Contact owner not found");
+        }
+        const contact = contactOwner.contacts.id(contactId);
         if (!contact) {
             throw new Error("Contact not found");
         }
@@ -36,16 +38,21 @@ const findContactById = async (ContactId) => {
     }
 };
 
-
 /**
- * Create a new Contact
- * @returns {Promise<Object>} - Returns the created Contact.
+ * Create a new Contact for a Contact Owner
+ * @param {String} contactOwnerId - The unique identifier of the contact owner.
+ * @param {Object} contactData - The contact data to add.
+ * @returns {Promise<Object>} - Returns the created Contact within the contacts array.
  */
-const createContact = async (ContactData) => {
+const createContact = async (contactOwnerId, contactData) => {
     try {
-        const newContact = await new Contact(ContactData);
-        const savedContact = await newContact.save();
-        return savedContact;
+        const contactOwner = await Contact.findById(contactOwnerId).exec();
+        if (!contactOwner) {
+            throw new Error("Contact owner not found");
+        }
+        contactOwner.contacts.push(contactData);
+        await contactOwner.save();
+        return contactOwner.contacts[contactOwner.contacts.length - 1]; // Return the last added contact
     } catch (error) {
         console.error("Error creating Contact:", error);
         throw error;
@@ -53,20 +60,26 @@ const createContact = async (ContactData) => {
 };
 
 /**
- * Update an Contact by ID
- * @param {String} ContactId - The unique identifier of the Contact to update.
- * @param {Object} updateData - The data to update the Contact.
- * @returns {Promise<Object>} - Returns the updated Contact.
- * @throws {Error} - Throws an error if the Contact is not found or if there's an issue with the update.
+ * Update a Contact by Owner ID and Contact ID
+ * @param {String} contactOwnerId - The unique identifier of the contact owner.
+ * @param {String} contactId - The unique identifier of the contact to update.
+ * @param {Object} updateData - The data to update the contact with.
+ * @returns {Promise<Object>} - Returns the updated Contact within the contacts array.
+ * @throws {Error} - Throws an error if the Contact is not found.
  */
-const updateContact = async (ContactId, updateData) => {
+const updateContact = async (contactOwnerId, contactId, updateData) => {
     try {
-        const updatedContact = await Contact.findByIdAndUpdate(ContactId, updateData, { new: true }).exec();
-        console.log("updated Contact: ", updatedContact)
-        if (!updatedContact) {
+        const contactOwner = await Contact.findById(contactOwnerId).exec();
+        if (!contactOwner) {
+            throw new Error("Contact owner not found");
+        }
+        const contact = contactOwner.contacts.id(contactId);
+        if (!contact) {
             throw new Error("Contact not found");
         }
-        return updatedContact;
+        Object.assign(contact, updateData); // Update contact fields with new data
+        await contactOwner.save();
+        return contact;
     } catch (error) {
         console.error("Error updating Contact:", error);
         throw error;
@@ -74,55 +87,70 @@ const updateContact = async (ContactId, updateData) => {
 };
 
 /**
- * Delete an Contact by ID
- * @param {String} ContactId - The unique identifier of the Contact to delete.
+ * Delete a Contact by Owner ID and Contact ID
+ * @param {String} contactOwnerId - The unique identifier of the contact owner.
+ * @param {String} contactId - The unique identifier of the contact to delete.
  * @returns {Promise<Object>} - Returns the deleted Contact for confirmation.
- * @throws {Error} - Throws an error if the Contact is not found or if there's an issue with the deletion.
+ * @throws {Error} - Throws an error if the Contact is not found.
  */
-const deleteContact = async (ContactId) => {
+const deleteContact = async (contactOwnerId, contactId) => {
     try {
-        const deletedContact = await Contact.findByIdAndDelete(ContactId).exec();
-        if (!deletedContact) {
+        const contactOwner = await Contact.findById(contactOwnerId).exec();
+        if (!contactOwner) {
+            throw new Error("Contact owner not found");
+        }
+        const contact = contactOwner.contacts.id(contactId);
+        if (!contact) {
             throw new Error("Contact not found");
         }
-        return deletedContact; // Return the deleted Contact for confirmation
+        contact.remove(); // Remove the contact from the contacts array
+        await contactOwner.save();
+        return contact; // Return the deleted contact for confirmation
     } catch (error) {
         console.error("Error deleting Contact:", error);
         throw error;
     }
 };
 
+/**
+ * Find all Contacts by Owner User ID
+ * @param {String} userId - The unique identifier of the contact owner.
+ * @returns {Promise<Object[]>} - Returns all contacts for a given owner.
+ */
 const findContactsByOwnerUserId = async (userId) => {
-    try{
-        const contact = await Contact.find({contactOwnerId: userId}).exec();
-        console.log("contact by userId: ", contact)
-        if (!contact) {
-            throw new Error("Contact not found");
+    try {
+        const contactOwner = await Contact.findOne({ contactOwnerId: userId }).exec();
+        if (!contactOwner) {
+            throw new Error("Contact owner not found");
         }
-        return contact;
-        
-    } catch(error){
-        console.error("Error fetching contacts by user id: ", error)
-        throw error
+        return contactOwner.contacts;
+    } catch (error) {
+        console.error("Error fetching contacts by user id:", error);
+        throw error;
     }
-}
+};
 
+/**
+ * Find Contacts by Phone Number Search
+ * @param {String} number - The phone number to search.
+ * @returns {Promise<Object[]>} - Returns contacts matching the search.
+ */
 const findContactsByNumberSearch = async (number) => {
-    try{
+    try {
         const regex = new RegExp(number, 'i'); // 'i' for case-insensitive search
-        const contact = await Contact.find({ mobile: regex }).populate('userId contactOwnerId');
-        console.log("contact by userId: ", contact)
-        if (!contact) {
-            throw new Error("Contact not found");
-        }
-        return contact;
+        const contactOwners = await Contact.find({ "contacts.phnNumber": regex }).populate('contactOwnerId').exec();
         
-    } catch(error){
-        console.error("Error fetching contacts by user id: ", error)
-        throw error
-    }
-}
+        // Flatten results to just matching contacts
+        const matchingContacts = contactOwners.flatMap(contactOwner => 
+            contactOwner.contacts.filter(contact => regex.test(contact.phnNumber))
+        );
 
+        return matchingContacts;
+    } catch (error) {
+        console.error("Error fetching contacts by phone number:", error);
+        throw error;
+    }
+};
 
 module.exports = {
     findAllContacts,
