@@ -32,6 +32,7 @@ exports.sendMessage = async (req, res) => {
       });
     }
 
+    // Generate chatId for one-on-one chat (concatenate sorted IDs to ensure consistency)
     const chatId = [senderId, receiverId].sort().join("-");
 
     const message = await Message.create({
