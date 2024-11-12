@@ -2,6 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
+const Contact = require("../../models/contact.model");
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
@@ -20,8 +21,10 @@ exports.sendMessage = async (req, res) => {
 
     // Check if both users exist
     const [senderExists, receiverExists] = await Promise.all([
+
       User.findById(senderObjectId),
-      User.findById(receiverObjectId),
+      Contact.findById(receiverObjectId),
+
     ]);
 
     console.log("Sender Exists:", senderExists);
