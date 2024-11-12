@@ -11,33 +11,24 @@ exports.setSocketIO = (socketIO) => {
 // Send message
 exports.sendMessage = async (req, res) => {
   const { senderId, receiverId, content } = req.body;
-  console.log("Request Body:", req.body);
 
   try {
-
-    // Ensure senderId is from the User collection
+    // Ensure senderId exists in the User collection
     const sender = await User.findById(senderId);
     if (!sender) {
       return res.status(404).json({ error: "Sender not found" });
     }
 
-    // Find the receiver in the Contact collection by the userId (contactOwnerId)
-    const contact = await Contact.findOne({ contactOwnerId: senderId, 'contacts.userId': receiverId });
-    if (!contact) {
-      return res.status(404).json({ error: "Receiver not found in contact list" });
-    }
-
+    // Ensure receiverId exists in the User collection
     const receiver = await User.findById(receiverId);
     if (!receiver) {
-      return res.status(404).json({ error: "Receiver user not found" });
-
+      return res.status(404).json({ error: "Receiver not found" });
     }
 
-    // Generate chatId by sorting senderId and receiverId to ensure consistency
+    // Generate a single consistent chatId
     const chatId = [senderId, receiverId].sort().join("-");
 
-
-    // Create the message
+    // Create the message in the database
     const message = await Message.create({
       chatId,
       senderId,
@@ -46,18 +37,18 @@ exports.sendMessage = async (req, res) => {
       timestamp: Date.now(),
     });
 
-
     // Emit the message to the respective chat room (chatId)
     io.to(chatId).emit("receiveMessage", {
       ...message.toObject(),
-      senderName: sender.username,  // Assuming sender has a 'username' field
-      receiverName: receiver.name,   // Assuming receiver has a 'name' field
+      senderName: sender.username,
+      receiverName: receiver.username,
     });
 
+    // Send response
     res.status(201).json({
       ...message.toObject(),
       senderName: sender.username,
-      receiverName: receiver.name,
+      receiverName: receiver.username,
     });
   } catch (error) {
     console.error("Error sending message:", error.message || error);
@@ -67,26 +58,19 @@ exports.sendMessage = async (req, res) => {
 
 
 
+
+
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
   const { chatId, userId } = req.query;
 
   try {
     if (chatId) {
-      // const messages = await Message.find({ chatId })
-      //   .sort({ timestamp: 1 })
-      //   .populate({ path: "senderId", select: "username name" }) // ensure username and name are selected
-      //   .populate({ path: "receiverId", select: "name" }); // ensure name is selected
-
-      // return res.status(200).json(
-      //   messages.map((message) => ({
-      //     ...message.toObject(),
-      //     senderName: message.senderId?.username || message.senderId?.name || "Unknown Sender",
-      //     receiverName: message.receiverId?.name || "Unknown Receiver",
-      //   }))
-      // );
-      const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
-      return res.status(200).json(messages);
+      const messages = await Message.find({
+        chatId,
+      }).sort({ timestamp: 1 });
+  
+      res.status(200).json(messages);
     } else if (userId) {
       const lastMessages = await Message.aggregate([
         {
