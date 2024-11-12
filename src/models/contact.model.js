@@ -11,7 +11,7 @@ const contactSchema = new mongoose.Schema({
   scheduled: { type: Boolean, default: false },
   scheduledTime: { type: Date },
   notes: { type: String},
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required:false }, // Reference to the user who created the contact
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required:false, default:'' }, // Reference to the user who created the contact
   contactOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the owner of the contact
   isDiskussUser: { type:Boolean , default:false}
 }, {
