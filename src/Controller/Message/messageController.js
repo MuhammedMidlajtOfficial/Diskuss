@@ -14,6 +14,7 @@ exports.sendMessage = async (req, res) => {
   console.log("Request Body:", req.body);
 
   try {
+
     // Ensure senderId is from the User collection
     const sender = await User.findById(senderId);
     if (!sender) {
@@ -29,10 +30,12 @@ exports.sendMessage = async (req, res) => {
     const receiver = await User.findById(receiverId);
     if (!receiver) {
       return res.status(404).json({ error: "Receiver user not found" });
+
     }
 
     // Generate chatId by sorting senderId and receiverId to ensure consistency
     const chatId = [senderId, receiverId].sort().join("-");
+
 
     // Create the message
     const message = await Message.create({
@@ -42,6 +45,7 @@ exports.sendMessage = async (req, res) => {
       content,
       timestamp: Date.now(),
     });
+
 
     // Emit the message to the respective chat room (chatId)
     io.to(chatId).emit("receiveMessage", {
@@ -98,6 +102,7 @@ exports.getMessages = async (req, res) => {
           $group: {
             _id: "$chatId",
             lastMessage: { $first: "$$ROOT" }
+
           }
         },
         { $replaceRoot: { newRoot: "$lastMessage" } },
@@ -107,13 +112,16 @@ exports.getMessages = async (req, res) => {
             localField: "senderId",
             foreignField: "_id",
             as: "senderInfo"
+
           }
         },
+        { $replaceRoot: { newRoot: "$lastMessage" } },
         {
           $lookup: {
             from: "contacts",
             localField: "receiverId",
             foreignField: "contacts.userId",
+
             as: "receiverInfo"
           }
         },
@@ -126,6 +134,7 @@ exports.getMessages = async (req, res) => {
                 "Unknown Sender"
               ]
             },
+
             senderProfileImage: {
               $ifNull: [
                 { $arrayElemAt: ["$senderInfo.profileImage", 0] },
@@ -144,6 +153,7 @@ exports.getMessages = async (req, res) => {
                 { $arrayElemAt: ["$receiverInfo.profileImage", 0] },
                 "defaultProfilePic.png"
               ]
+
             }
           }
         },
