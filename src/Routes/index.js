@@ -11,8 +11,8 @@ const userSubscriptionRouter = require('./Subscription/UserSubscriptionRouter.js
 const referralRouter = require('./Referral/ReferralRouter.js');
 const actionRouter = require('./Referral/ActionRotuer.js');
 const referralLevelRouter = require('./Referral/ReferralLevelRouter.js');
-const contactRouter = require("./contactRouter.js")
 const MeetingRoute = require("./Meeting/MeetingRouter.js");
+const contactRouter = require("./Contact/contactRouter.js");
 const enterpriseEmployee = require('./EnterpriseEmployee/enterpriseEmployeeRouter.js');
 
 const router = express.Router();

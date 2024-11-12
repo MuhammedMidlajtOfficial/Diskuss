@@ -23,6 +23,7 @@ exports.sendMessage = async (req, res) => {
     const [senderExists, receiverExists] = await Promise.all([
       User.findById(senderObjectId),
       Contact.findById(receiverObjectId),
+
     ]);
 
     console.log("Sender Exists:", senderExists);
@@ -36,7 +37,7 @@ exports.sendMessage = async (req, res) => {
     }
 
     // Generate chatId for one-on-one chat (concatenate sorted IDs to ensure consistency)
-    const chatId = [senderId, receiverId].sort().join("-");
+    // const chatId = [senderId, receiverId].sort().join("-");
 
     // Create a new message
     const message = await Message.create({

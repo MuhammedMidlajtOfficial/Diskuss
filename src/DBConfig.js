@@ -58,14 +58,18 @@ mongoose.connect(process.env.MongoDBURL,{
       default : ''
     },
     phnNumber: {
-      type:String,
-      default : ''
+      type: String,
+      default: '',
     },
     address: {
       type:String,
       default : ''
     },
     contacts : {
+      type : Array,
+      default : []
+    },
+    meetings : {
       type : Array,
       default : []
     },
