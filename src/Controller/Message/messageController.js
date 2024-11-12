@@ -19,6 +19,7 @@ exports.sendMessage = async (req, res) => {
     const receiverObjectId = new mongoose.Types.ObjectId(receiverId);
 
     const [sender, receiver] = await Promise.all([
+
       User.findById(senderObjectId),
       Contact.findById(receiverObjectId),
     ]);

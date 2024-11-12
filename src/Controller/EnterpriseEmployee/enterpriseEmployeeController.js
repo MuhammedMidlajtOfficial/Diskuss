@@ -3,6 +3,7 @@ const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployeCardModel = require('../../models/enterpriseEmployeCard.model');
 const mailSender = require('../../util/mailSender');
+const Contact  = require('../../models/contact.model');
 
 
 module.exports.getCardForUser = async (req, res) => {
@@ -178,6 +179,68 @@ module.exports.createCard = async (req, res) => {
     }
 };
 
+module.exports.updateProfile = async (req, res) => {
+    try {
+      const { userId, image, phnNumber, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body;
+  
+      const isUserExist = await enterpriseEmployeModel.findOne({ _id: userId }).exec();
+      if (!isUserExist) {
+        return res.status(401).json({ message: "User not found" });
+      }
+  
+      let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
+  
+      // Upload image to S3 if a new image is provided
+      if (image) {
+        const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+        const fileName = `${userId}-profile.jpg`; // Create a unique file name based on user ID
+        const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+        imageUrl = uploadResult.Location; // URL of the uploaded image
+      }
+  
+      // Update profile
+        const user = await enterpriseEmployeModel.updateOne(
+            { _id: userId },
+            {
+            $set: {
+                image: imageUrl,
+                role,
+                username: name,
+                website,
+                phnNumber,
+                address,
+                "socialMedia.whatsappNo": whatsappNo,
+                "socialMedia.facebookLink": facebookLink,
+                "socialMedia.instagramLink": instagramLink,
+                "socialMedia.twitterLink": twitterLink,
+            },
+            }
+        );
+        if (user.modifiedCount > 0) {
+            const forNumber = await enterpriseUser.findOne({ _id: userId }).select('phnNumber').exec();
+            const existingContact = await Contact.find({ phnNumber: forNumber.phnNumber });
+            if (existingContact) {
+                const contact = await Contact.updateOne(
+                    { phnNumber: forNumber.phnNumber },
+                    { $set: { isDiskussUser: true, userId: forNumber._id } }
+                );
+                if (contact.modifiedCount > 0) {
+                    console.log("Contact updated successfully, Profile updated successfully");
+                    return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
+                } else {
+                    console.log("Error: Contact update failed, Profile updated successfully");
+                    return res.status(400).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
+                }
+            } else {
+                console.log("Error: Contact not found.");
+                return res.status(404).json({ Contact_message: "Error: Contact not found." });
+            }
+        }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+};
 
 async function sendVerificationEmail(email,newEmail,newPassword) {
     try {
