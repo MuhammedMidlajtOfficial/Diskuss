@@ -105,31 +105,27 @@ const findOneById = async (userId) => {
 
   const updateSubscriptionStatus = async (razorpay_order_id, updateData) => {
     try {
-      // console.log("id : ",id);
-      
-      const userSubscription = await UserSubscription.findOne({razorpayOrderId : razorpay_order_id}).exec();
-       
-      // console.log(userSubscription);
+      // Find the user subscription by razorpayOrderId
+      const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
       
       if (!userSubscription) {
         throw new Error("User Subscription plan not found");
       }
-      const updatedUserSubscription = await UserSubscription.updateOne(
-        { _id: razorpay_order_id },
-        { $set: updateData },
-        { new: true }
-      ).exec(); // Find and update the UserSubscription plan
-
-      updatedUserSubscription.save(); // Save the updated UserSubscription plan
-
   
-      return updatedUserSubscription; // Return the updated UserSubscription
+      // Update the subscription plan status with the new data
+      const updatedUserSubscription = await UserSubscription.updateOne(
+        { razorpayOrderId: razorpay_order_id }, // Search by razorpayOrderId, not _id
+        { $set: updateData }, // Update the subscription with the new data
+        { new: true }
+      ).exec();
+  
+      return updatedUserSubscription; // Return the result of the update operation
     } catch (error) {
       console.error("Error updating UserSubscription:", error);
       throw error; // Re-throw the error for higher-level handling
     }
   };
-
+  
 
   
 /**
