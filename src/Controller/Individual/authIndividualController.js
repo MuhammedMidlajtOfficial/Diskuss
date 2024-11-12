@@ -7,6 +7,7 @@ const { individualUserCollection } = require('../../DBConfig');
 const otpGenerator = require("otp-generator");
 const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
 const { createProfile } = require('../Profile/profileController');
+const contactModel = require('../../models/contact.model');
 
 
 module.exports.postIndividualLogin = async (req, res) => {
@@ -270,6 +271,15 @@ module.exports.updateProfile = async (req, res) => {
     );
 
     if (user.modifiedCount > 0) {
+      const contact = await contactModel.updateOne(
+        { phoneNumber: user?.phoneNumber },
+        { $set: { isDiskussUser: true, userId: user._id } }
+      );
+      if(contact){
+        res.status(200).json({ message: "Contact updated successfully.", contact });
+      }else{
+        res.status(400).json({ message: "Error: Contact update failed." });
+      }
       return res.status(200).json({ message: "Profile updated successfully." });
     } else {
       return res.status(400).json({ message: "Error: Profile update failed." });
