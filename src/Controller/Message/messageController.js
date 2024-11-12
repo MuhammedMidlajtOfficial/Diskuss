@@ -115,7 +115,6 @@ exports.getMessages = async (req, res) => {
 
           }
         },
-        { $replaceRoot: { newRoot: "$lastMessage" } },
         {
           $lookup: {
             from: "contacts",
@@ -134,24 +133,11 @@ exports.getMessages = async (req, res) => {
                 "Unknown Sender"
               ]
             },
-
-            senderProfileImage: {
-              $ifNull: [
-                { $arrayElemAt: ["$senderInfo.profileImage", 0] },
-                "defaultProfilePic.png" // Default image if none is found
-              ]
-            },
+            
             receiverName: {
               $ifNull: [
-                { $arrayElemAt: ["$receiverInfo.username", 0] },
                 { $arrayElemAt: ["$receiverInfo.name", 0] },
                 "Unknown Receiver"
-              ]
-            },
-            receiverProfileImage: {
-              $ifNull: [
-                { $arrayElemAt: ["$receiverInfo.profileImage", 0] },
-                "defaultProfilePic.png"
               ]
 
             }
