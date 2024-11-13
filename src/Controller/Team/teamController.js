@@ -1,11 +1,27 @@
 const enterpriseUser = require("../../models/enterpriseUser");
 const teamModel = require("../../models/team.model");
 
+module.exports.getAllTeamById = async (req, res) => {
+    try {
+        const teamOwnerId= req.params.id
+        if( !teamOwnerId ){
+            return res.status(400).json({ message: "teamOwnerId is required" });
+        }
+
+        const team = await teamModel.findOne({ teamOwnerId })
+        if (!team) {
+            return res.status(404).json({ message: "Team not found" });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Failed to fetch team", error });
+    }
+};
 
 module.exports.createTeam = async (req, res) => {
     try {
-        const { teamName, permissions, teamMembersId, TLPermissions, teamLead } = teamData = req.body
-        if( !teamName || !permissions || !teamMembersId || !teamLead || !TLPermissions ){
+        const { teamOwnerId, teamName, permissions, teamMembersId, TLPermissions, teamLead } = teamData = req.body
+        if( !teamOwnerId || !teamName || !permissions || !teamMembersId || !teamLead || !TLPermissions ){
             return res.status(400).json({ message: "All fields are required" });
         }
 
