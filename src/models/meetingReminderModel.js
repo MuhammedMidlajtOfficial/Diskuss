@@ -10,3 +10,6 @@ const notificationSchema = new mongoose.Schema({
 
 // Export the model
 module.exports = mongoose.model('Notification', notificationSchema);
+
+
+
