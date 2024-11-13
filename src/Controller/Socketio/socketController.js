@@ -1,5 +1,5 @@
 let io;
-const connectedUsers = new Map(); 
+const connectedUsers = new Map();
 
 // Set up the Socket.IO instance and handle user connections
 exports.setSocketIO = (socketIO) => {
@@ -7,11 +7,33 @@ exports.setSocketIO = (socketIO) => {
 
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
+    socket.on("error", (err) => {
+      console.error("Socket error:", err);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Connection error:", err);
+    });
+
+    // When a user joins a chat room
+    socket.on("joinChat", (chatId) => {
+      socket.join(chatId);
+      const msg = "Welcome to the chat room ${chatId}!";
+      socket.emit("chat message", msg); 
+      console.log(
+        `User with socket ID ${socket.id} joined chat room ${chatId}`
+      );
+    });
 
     // Track user connection
     socket.on("registerUser", (userId) => {
       connectedUsers.set(userId, socket.id);
       console.log(`User ${userId} connected with socket ID ${socket.id}`);
+
+      // Handle chat messages
+      socket.on("chat message", ({ room, msg }) => {
+        io.to(room).emit("chat message", msg);
+      });
 
       // Notify other clients about the user's online status
       socket.broadcast.emit("userConnected", { userId, status: "online" });
