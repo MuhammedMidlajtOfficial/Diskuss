@@ -77,14 +77,14 @@ exports.getMessages = async (req, res) => {
     if (chatId) {
       const messages = await Message.find({ chatId })
         .sort({ timestamp: 1 })
-        .populate("senderId", "name username") // Populate sender name and username
-        .populate("receiverId", "name username"); // Populate receiver name only
+        // .populate("senderId", "name username") // Populate sender name and username
+        // .populate("receiverId", "name username"); // Populate receiver name only
 
       return res.status(200).json(
         messages.map((message) => ({
           ...message.toObject(),
-          senderName: message.senderId?.name || message.senderId?.username || "Unknown Sender",
-          receiverName: message.receiverId?.name ||message.receiverId?.username || "Unknown Receiver",
+          // senderName: message.senderId?.name || message.senderId?.username || "Unknown Sender",
+          // receiverName: message.receiverId?.name ||message.receiverId?.username || "Unknown Receiver",
         }))
       );
     } else if (userId) {
@@ -164,6 +164,13 @@ exports.getMessages = async (req, res) => {
                 { $arrayElemAt: ["$receiverUserInfo.image", 0] }, // Profile picture for receiver
                 "" // Default to empty if not available
               ]
+            },
+            name: {
+              $cond: {
+                if: { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
+            then: { $ifNull: [{ $arrayElemAt: ["$receiverInfo.name", 0] }, "Unknown Receiver"] },
+            else: { $ifNull: [{ $arrayElemAt: ["$senderInfo.username", 0] }, "Unknown Sender"] }
+              }
             }
           }
         },
