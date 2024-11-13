@@ -3,6 +3,7 @@ const express = require('express');
 const authIndividualRouter = require('./Individual/authIndividualRouter.js')
 const authEnterpriseRouter = require('./Enterprise/authEnterpriseRouter.js')
 const cardRouter = require('./Card/cardRoutes.js')
+const cardEnterpriseRouter = require('./cardEnterprise/cardEnterpriseRoute.js')
 const subscriptionPlanRouter = require('./Subscription/SubscriptionPlanRouter.js')
 const serviceRoutes = require('./serviceRouter.js')
 const messageRoute = require("./Message/messageRoute.js");
@@ -37,6 +38,10 @@ const defaultRoutes = [
   {
     path: '/card',
     route: cardRouter,
+  },
+  {
+    path: '/cardEnterprise',
+    route: cardEnterpriseRouter,
   },
   {
     path: "/subscription-plan",
