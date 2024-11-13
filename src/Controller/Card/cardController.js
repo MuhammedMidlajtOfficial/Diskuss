@@ -80,7 +80,10 @@ module.exports.createCard = async (req, res) => {
   try {
     const result = await newCard.save();
     if (result) {
-      await individualUserCollection.updateOne({ _id: userId }, { $inc: { cardNo: 1 } });
+      await individualUserCollection.updateOne(
+        { _id: userId },
+        { $inc: { cardNo: 1 } }  // Increment cardNo by 1
+      );
     }
     res.status(201).json({ message: "Card added successfully", entryId: result._id });
   } catch (error) {

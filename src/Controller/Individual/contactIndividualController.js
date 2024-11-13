@@ -128,7 +128,7 @@ const createContact = async (req, res) => {
  */
 const updateContact = async (req, res) => {
     try {
-        const contact_id = req.params.id
+        const { contact_id } = req.params;
         const updateData = req.body;
 
         const updatedContact = await ContactService.updateContact(contact_id, updateData);
