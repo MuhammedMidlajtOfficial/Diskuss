@@ -69,7 +69,7 @@ const createContact = async (contactOwnerId, contactData) => {
  */
 const updateContact = async (contactOwnerId, contactId, updateData) => {
     try {
-        const contactOwner = await Contact.findById(contactOwnerId).exec();
+        const contactOwner = await Contact.findOne(contactOwnerId).exec();
         if (!contactOwner) {
             throw new Error("Contact owner not found");
         }
