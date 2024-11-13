@@ -78,11 +78,13 @@ exports.getMessages = async (req, res) => {
       // .populate("senderId", "name username") // Populate sender name and username
       // .populate("receiverId", "name username"); // Populate receiver name only
 
+
       return res.status(200).json(
         messages.map((message) => ({
           ...message.toObject(),
           // senderName: message.senderId?.name || message.senderId?.username || "Unknown Sender",
           // receiverName: message.receiverId?.name ||message.receiverId?.username || "Unknown Receiver",
+
         }))
       );
     } else if (userId) {
