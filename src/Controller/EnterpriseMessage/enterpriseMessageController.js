@@ -1,8 +1,8 @@
 let io;
 const mongoose = require("mongoose");
 const enterpriseMessage = require("../../models/enterpriseMessage.model");
-const {EnterpriseUser} = require("../../models/enterpriseUser");
-const {ContactEnterprise} = require("../../models/contact.individul.model");
+const EnterpriseUser = require("../../models/enterpriseUser");
+const ContactEnterprise = require("../../models/contact.individul.model");
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
