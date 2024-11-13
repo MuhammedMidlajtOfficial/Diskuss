@@ -6,7 +6,7 @@ const enterpriseUser = require("../../models/enterpriseUser");
 const { otpCollection } = require('../../DBConfig');
 const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
-const Contact  = require('../../models/contact.model');
+const Contact  = require('../../models/contact.individul.model');
 
 
 module.exports.postEnterpriseLogin = async (req, res) => {

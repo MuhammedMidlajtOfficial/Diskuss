@@ -2,7 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-const Contact = require("../../models/contact.model");
+const Contact = require("../../models/contact.individul.model");
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
@@ -77,6 +77,7 @@ exports.getMessages = async (req, res) => {
       const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
       // .populate("senderId", "name username") // Populate sender name and username
       // .populate("receiverId", "name username"); // Populate receiver name only
+
 
 
       return res.status(200).json(
@@ -168,6 +169,7 @@ exports.getMessages = async (req, res) => {
                 { $arrayElemAt: ["$receiverUserInfo.image", 0] }, // Profile picture for receiver
                 "", // Default to empty if not available
               ],
+
             },
             name: {
               $cond: {
@@ -187,6 +189,7 @@ exports.getMessages = async (req, res) => {
               },
             },
           },
+
         },
         { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
       ]);

@@ -3,7 +3,7 @@ const moment = require('moment');
 const cron = require('node-cron');
 const {individualUserCollection: Profile} = require('../../models/individualUser')
 const mongoose = require("mongoose");
-const Contact = require('../../models/contact.model')
+const Contact = require('../../models/contact.individul.model')
 
 
 // CreateMeeting controller 
