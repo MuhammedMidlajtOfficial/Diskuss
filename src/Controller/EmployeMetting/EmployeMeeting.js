@@ -1,7 +1,7 @@
-const MeetingBase = require("../../models/MeetingModel")
+const MeetingBase = require("../../models/EnterpriseMeetingModel")
 const moment = require('moment');
 const cron = require('node-cron');
-const {individualUserCollection: Profile} = require('../../models/individualUser')
+const {EnterpriseUserCollection: Profile} = require('../../models/enterpriseUser')
 const mongoose = require("mongoose");
 const Contact = require('../../models/contact.individul.model')
 const Notification = require('../../models/NotificationModel')
@@ -71,6 +71,9 @@ const CreateMeeting = async (req, res) => {
         //  console.log(meetingOwner);
          
         try {
+            
+            
+    
             var ownerProfile = await Profile.findOneAndUpdate(
                 { _id: meetingOwner },
                 { $push: { meetings: savedMeeting._id } },
@@ -430,7 +433,7 @@ const UpdateMeeting = async (req, res) => {
                         sender:updatedData.meetingOwner,
                         receiver: userId,
                         type: 'meeting',
-                        content: `You have been invited to a meeting titled "${meetingTitle}" on ${selectedDate} at ${startTime} created by ${ownerProfile.username}.`,
+                        content: `You have been invited to a meeting titled "${updatedMeeting.meetingTitle}" on ${updatedMeeting.selectedDate} at ${updatedMeeting.startTime} created by ${ownerProfile.username}.`,
                         status: 'unread'
                     });
                     await notification.save();

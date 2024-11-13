@@ -3,6 +3,7 @@ const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployeCardModel = require('../../models/enterpriseEmployeCard.model');
 const mailSender = require('../../util/mailSender');
+const Contact  = require('../../models/contact.individul.model');
 
 
 module.exports.getCardForUser = async (req, res) => {
@@ -18,39 +19,6 @@ module.exports.getCardForUser = async (req, res) => {
         res.status(500).json({ message: "Failed to get card", error });
     }
 };
-
-module.exports.getCardForEnterprise = async (req, res) => {
-    try {
-        const { id: userId } = req.params;
-        const user = await enterpriseUser.findOne({ _id : userId }).populate('empCards');
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        console.log(user.empCards);
-        return res.status(200).json({ cards:user.empCards })
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Failed to fetch employee cards", error });
-    }
-};
-
-module.exports.getUserOfEnterprise = async (req, res) => {
-    try {
-        const { id: userId } = req.params;
-        const user = await enterpriseUser.findOne({ _id : userId }).populate({
-            path: 'empId',
-            strictPopulate: false, 
-        } )
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        console.log(user);
-        return res.status(200).json({ employee:user.empId })
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Failed to fetch employee", error });
-    }
-}
 
 module.exports.getContactOfEmployee = async (req, res) => {
     try {
@@ -73,7 +41,6 @@ module.exports.getContactOfEmployee = async (req, res) => {
 module.exports.createCard = async (req, res) => {
     const {
         enterpriseId,
-        userPersonalEmail,
         email,
         businessName,
         empName,
@@ -91,7 +58,7 @@ module.exports.createCard = async (req, res) => {
 
     try {
         // Check for missing fields
-        if (!email || !passwordRaw || !userPersonalEmail || !enterpriseId || !businessName || !empName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
+        if (!email || !passwordRaw || !enterpriseId || !businessName || !empName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -159,15 +126,18 @@ module.exports.createCard = async (req, res) => {
         if (result) {
             await enterpriseUser.updateOne(
                 { _id: enterpriseId },
-                { $push: { 
-                    empCards: result._id,
-                    empId: newUser._id
-                } }
+                { 
+                    $push: { 
+                        empCards: result._id,
+                        empId: newUser._id,
+                    },
+                    $inc: { cardNo: 1 }  // Increment cardNo by 1
+                }
             );
 
             res.status(201).json({ message: "Card added successfully", entryId: result._id });
 
-            sendVerificationEmail(userPersonalEmail,newUser.email,passwordRaw)
+            sendVerificationEmail(email,newUser.email,passwordRaw)
         } else {
             return res.status(500).json({ message: "Failed to save card" });
         }
@@ -178,6 +148,68 @@ module.exports.createCard = async (req, res) => {
     }
 };
 
+module.exports.updateProfile = async (req, res) => {
+    try {
+      const { userId, image, mobile, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body;
+  
+      const isUserExist = await enterpriseEmployeModel.findOne({ _id: userId }).exec();
+      if (!isUserExist) {
+        return res.status(401).json({ message: "User not found" });
+      }
+  
+      let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
+  
+      // Upload image to S3 if a new image is provided
+      if (image) {
+        const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+        const fileName = `${userId}-profile.jpg`; // Create a unique file name based on user ID
+        const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+        imageUrl = uploadResult.Location; // URL of the uploaded image
+      }
+  
+      // Update profile
+        const user = await enterpriseEmployeModel.updateOne(
+            { _id: userId },
+            {
+            $set: {
+                image: imageUrl,
+                role,
+                username: name,
+                website,
+                mobile,
+                address,
+                "socialMedia.whatsappNo": whatsappNo,
+                "socialMedia.facebookLink": facebookLink,
+                "socialMedia.instagramLink": instagramLink,
+                "socialMedia.twitterLink": twitterLink,
+            },
+            }
+        );
+        if (user.modifiedCount > 0) {
+            const forNumber = await enterpriseEmployeModel.findOne({ _id: userId }).select('mobile').exec();
+            const existingContact = await Contact.find({ phnNumber: forNumber.mobile });
+            if (existingContact) {
+                const contact = await Contact.updateOne(
+                    { phnNumber: forNumber.mobile },
+                    { $set: { isDiskussUser: true, userId: forNumber._id } }
+                );
+                if (contact.modifiedCount > 0) {
+                    console.log("Contact updated successfully, Profile updated successfully");
+                    return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
+                } else {
+                    console.log("Error: Contact update failed, Profile updated successfully");
+                    return res.status(400).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
+                }
+            } else {
+                console.log("Error: Contact not found.");
+                return res.status(404).json({ Contact_message: "Error: Contact not found." });
+            }
+        }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+};
 
 async function sendVerificationEmail(email,newEmail,newPassword) {
     try {

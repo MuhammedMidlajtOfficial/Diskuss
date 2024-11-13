@@ -1,6 +1,7 @@
 const UserSubscriptionService = require('../../services/Subscription/userSubscription.service');
 const { findOneByPlanId } = require('../../services/Subscription/subscriptionPlan.service');
 const { razorpay } = require('../../services/Razorpay/razorpay');
+const crypto = require('crypto');
 require('dotenv')
 
 /**
@@ -102,20 +103,20 @@ const verifyPayment = async (req, res) => {
 
     // Generate the signature to verify the payment authenticity
     const generatedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_API_SECRET )  // Use your Razorpay key secret
+      .createHmac('sha256', process.env.RAZORPAY_API_SECRET)  // Use your Razorpay key secret
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 
     if (generatedSignature !== razorpay_signature) {
       // Update the subscription status to failed on Payment verification failed 
-      await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, 'failed');
+      await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'failed' });
       return res.status(400).json({ message: "Payment verification failed." });
     }
 
     // Update the subscription status to active on successful payment verification
-    await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, 'active');
+    await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'active' , payment:razorpay_payment_id});
 
-    res.json({ message: "Payment verified and subscription activated successfully." });
+    return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
   } catch (error) {
     console.error("Payment verification failed:", error);
     res.status(500).json({ error: error.message });
@@ -149,6 +150,10 @@ const updateUserSubscription = async (req, res) => {
       //make it error free if we found the iinvalid enum in updateData
       if(updateData.status && !['active', 'inactive', 'canceled'].includes(updateData.status)){
         return res.status(400).json({ message: "Invalid status provided for update." });
+      }
+
+      if(!userSubscription_id){
+        return res.status(400).json({ message:"Invalid userSubscription id" })
       }
 
       // Call the update function

@@ -3,9 +3,9 @@ const enterpriseEmployeeController = require('../../Controller/EnterpriseEmploye
 const enterpriseEmployeeRouter = express.Router()
 
 enterpriseEmployeeRouter.get('/getCardForUser/:id', enterpriseEmployeeController.getCardForUser)
-enterpriseEmployeeRouter.get('/getCardForEnterprise/:id', enterpriseEmployeeController.getCardForEnterprise)
-enterpriseEmployeeRouter.get('/getUserOfEnterprise/:id', enterpriseEmployeeController.getUserOfEnterprise)
 enterpriseEmployeeRouter.get('/getContactOfEmployee/:id', enterpriseEmployeeController.getContactOfEmployee)
 enterpriseEmployeeRouter.post('/createProfile', enterpriseEmployeeController.createCard)
+
+enterpriseEmployeeRouter.patch('/updateProfile', enterpriseEmployeeController.updateProfile)
 
 module.exports = enterpriseEmployeeRouter

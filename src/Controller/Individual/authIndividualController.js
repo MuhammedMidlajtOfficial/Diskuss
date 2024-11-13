@@ -7,6 +7,7 @@ const { individualUserCollection } = require('../../DBConfig');
 const otpGenerator = require("otp-generator");
 const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
 const { createProfile } = require('../Profile/profileController');
+const Contact  = require('../../models/contact.individul.model');
 
 
 module.exports.postIndividualLogin = async (req, res) => {
@@ -49,10 +50,11 @@ module.exports.postIndividualSignup = async (req, res) => {
       return res.status(409).json({ message :"A user with this email address already exists. Please login instead"}); // Correct response handling
     }
     // Validate OTP
-    const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
-    if (response.length === 0 || otp !== response[0].otp) {
-      return res.status(400).json({ success: false, message: 'The OTP is not valid' }); // Correct response handling
+    const otpRecord = await otpCollection.findOne({ email }).sort({ createdAt: -1 });
+    if (!otpRecord || otpRecord.otp !== otp) {
+      return res.status(400).json({ success: false, message: 'The OTP is not valid or has expired' });
     }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
     // Create a new user
@@ -267,13 +269,25 @@ module.exports.updateProfile = async (req, res) => {
         },
       }
     );
-
-    if (user.modifiedCount > 0) {
-      return res.status(200).json({ message: "Profile updated successfully." });
+    
+    const forNumber = await individualUserCollection.findOne({ _id: userId }).select('phnNumber').exec();
+    const existingContact = await Contact.find({ phnNumber: forNumber.phnNumber });
+    if (existingContact) {
+      const contact = await Contact.updateOne(
+        { phnNumber: forNumber.phnNumber },
+        { $set: { isDiskussUser: true, userId: forNumber._id } }
+      );
+      if (contact.modifiedCount > 0) {
+        console.log("Contact updated successfully, Profile updated successfully");
+        return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
+      } else {
+        console.log("Error: Contact update failed, Profile updated successfully");
+        return res.status(400).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
+      }
     } else {
-      return res.status(400).json({ message: "Error: Profile update failed." });
+      console.log("Error: Contact not found.");
+      return res.status(404).json({ Contact_message: "Error: Contact not found." });
     }
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });

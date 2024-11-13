@@ -1,3 +1,4 @@
+const { string } = require('joi')
 const mongoose = require('mongoose')
 
 const enterpriseUserSchema = new mongoose.Schema({
@@ -28,6 +29,10 @@ const enterpriseUserSchema = new mongoose.Schema({
     image: {
         type:String,
         default : ''
+    },
+    phnNumber: {
+      type:String,
+      default : ''
     },
     aboutUs: {
         type:String,
@@ -66,8 +71,15 @@ const enterpriseUserSchema = new mongoose.Schema({
     empId :[ {
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'EnterpriseEmployee' 
-    } ]
+    } ],
+    meetings: [
+      {
+        type: String,
+        ref: "EnterpriseMeeting", // Reference to Meeting model
+        required: false,
+      },
+    ],
 
 },{ timestamps:true })
 
-module.exports = mongoose.model('EnterpriseUser',enterpriseUserSchema)
+module.exports.EnterpriseUserCollection = mongoose.model('EnterpriseUser',enterpriseUserSchema)
