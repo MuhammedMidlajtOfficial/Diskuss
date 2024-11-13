@@ -63,13 +63,15 @@ exports.sendMessage = async (req, res) => {
 
     // Emit the message to the respective chat room (chatId)
     io.to(chatId).emit("receiveMessage", {
-      ...enterpriseMessage.toObject(),
+      ...message.toObject(),
+
       senderName: sender.username, // Assuming sender has a 'username' field
       receiverName: receiver.username, // Assuming receiver has a 'name' field
     });
 
     res.status(201).json({
-      ...enterpriseMessage.toObject(),
+      ...message.toObject(),
+
       senderName: sender.username,
       receiverName: receiver.username,
     });
