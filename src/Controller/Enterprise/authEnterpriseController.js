@@ -63,6 +63,7 @@ module.exports.postEnterpriseLogin = async (req, res) => {
   }
 };
 
+
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
     const { companyName, industryType, email, otp } = req.body
