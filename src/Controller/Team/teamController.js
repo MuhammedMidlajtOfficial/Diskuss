@@ -4,8 +4,8 @@ const teamModel = require("../../models/team.model");
 
 module.exports.createTeam = async (req, res) => {
     try {
-        const { teamName, permissions, teamMembersId, teamLead } = teamData = req.body
-        if( !teamName || !permissions || !teamMembersId || !teamLead ){
+        const { teamName, permissions, teamMembersId, TLPermissions, teamLead } = teamData = req.body
+        if( !teamName || !permissions || !teamMembersId || !teamLead || !TLPermissions ){
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -21,7 +21,7 @@ module.exports.createTeam = async (req, res) => {
 
 module.exports.editTeam = async (req, res) => {
     try {
-        const { teamId, teamName, permissions, teamMembersId, teamLead } = req.body;
+        const { teamId, teamName, permissions, teamMembersId, TLPermissions, teamLead } = req.body;
 
         const teamExist = await teamModel.findOne({ _id: teamId });
         if (!teamExist) {
@@ -30,7 +30,7 @@ module.exports.editTeam = async (req, res) => {
 
         const updateResult = await teamModel.updateOne(
             { _id: teamId },
-            { teamName, permissions, teamMembersId, teamLead }
+            { teamName, permissions, teamMembersId, teamLead, TLPermissions }
         );
 
         if (updateResult.modifiedCount === 0) {

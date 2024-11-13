@@ -30,6 +30,10 @@ const teamSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: ['EnterpriseEmployee', 'EnterpriseUser']
+  },
+  TLPermissions:{
+    type: String,
+    required: true,
   }
 });
 
