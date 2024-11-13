@@ -1,6 +1,5 @@
 const { individualUserCollection } = require('../../DBConfig');
 const Contact = require('../../models/contact.individul.model');
-const enterpriseUser = require('../../models/enterpriseUser');
 const ContactService = require('../../services/contact.Individual.service');
 
 /**
@@ -61,53 +60,65 @@ const createContact = async (req, res) => {
         if (!email || !name || !phnNumber || !contactOwnerId) {
             return res.status(400).json({ message: "All fields are required" });
         }
+        console.log('contactOwnerId',contactOwnerId);
 
-        console.log('contactOwnerId', contactOwnerId);
 
-        const existUser = await enterpriseUser.findOne({ phnNumber });
+        const existUser = await individualUserCollection.findOne({ phnNumber });
+        // const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+        // const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
 
-        if (!existUser) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        console.log('existUser:', existUser);
-
-        if (!mongoose.Types.ObjectId.isValid(existUser._id)) {
-            return res.status(400).json({ message: "Invalid user ID format" });
-        }
+        // existUser = IndividualUser || EnterpriseUser || EnterpriseEmpUser;
 
         let newContact;
 
-        const contactDetails = {
-            contactOwnerId,
-            contacts: [{
-                name,
-                designation,
-                phnNumber,
-                email,
-                website,
-                businessCategory,
-                scheduled,
-                scheduledTime,
-                notes,
-                userId: existUser._id,
-                isDiskussUser: true
-            }]
-        };
-
-        newContact = await Contact.create(contactDetails);
-
-        await enterpriseUser.updateOne(
-            { _id: contactOwnerId },
-            { $push: { contacts: newContact._id } }
-        );
-
+        if (existUser) {
+            const contactDetails = {
+                contactOwnerId,
+                contacts: [{
+                    name,
+                    designation,
+                    phnNumber,
+                    email,
+                    website,
+                    businessCategory,
+                    scheduled,
+                    scheduledTime,
+                    notes,
+                    userId: existUser._id,
+                    isDiskussUser: true
+                }]
+            };
+            
+            newContact = await Contact.create(contactDetails); // Create the document without nesting in another object
+        
+            await individualUserCollection.updateOne(
+                { _id: contactOwnerId },
+                { $push: { contacts: newContact._id } }
+            );
+        } else {
+            const contactDetails = {
+                contactOwnerId,
+                contacts: [{
+                    name,
+                    designation,
+                    phnNumber,
+                    email,
+                    website,
+                    businessCategory,
+                    scheduled,
+                    scheduledTime,
+                    notes,
+                    isDiskussUser: false
+                }]
+            };
+        
+            newContact = await Contact.create(contactDetails); // Create without an extra nesting level
+        }
         return res.status(201).json({ message: "Contact created successfully", contact: newContact });
     } catch (e) {
         return res.status(500).json({ error: e.message });
     }
 };
-
 
 /**
  * Update a Contact
