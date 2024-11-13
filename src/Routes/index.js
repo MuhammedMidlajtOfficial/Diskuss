@@ -14,6 +14,7 @@ const referralLevelRouter = require('./Referral/ReferralLevelRouter.js');
 const contactRouter = require("./contactRouter.js")
 const MeetingRoute = require("./Meeting/MeetingRouter.js");
 const enterpriseEmployee = require('./EnterpriseEmployee/enterpriseEmployeeRouter.js');
+const notification = require('./Notification/NotificationRouter.js')
 
 const router = express.Router();
 
@@ -73,6 +74,10 @@ const defaultRoutes = [
   {
     path: '/enterpriseEmployee',
     route: enterpriseEmployee,
+  },
+  {
+    path: '/notification',
+    route: notification,
   },
 ];
 

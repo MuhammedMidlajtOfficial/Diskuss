@@ -10,6 +10,7 @@ const UserSubscriptionSchema = new mongoose.Schema({
     status: { type: String, enum: ['active', 'inactive', 'canceled', 'pending', 'failed'], default: 'active' },
 }, { timestamps: true });
 
+
 // // Middleware to ensure only one membership type is active
 // subscriptionPlanSchema.pre("save", function (next) {
 //   // Track active membership flags
@@ -22,5 +23,7 @@ const UserSubscriptionSchema = new mongoose.Schema({
   
 //   next();
 // });
+
+
 
 module.exports = mongoose.model("UserSubscription", UserSubscriptionSchema);
