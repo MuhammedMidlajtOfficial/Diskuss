@@ -1,8 +1,6 @@
-const { individualUserCollection } = require('../DBConfig');
-const Contact = require('../models/contact.model');
-const enterpriseEmployeModel = require('../models/enterpriseEmploye.model');
-const enterpriseUser = require('../models/enterpriseUser');
-const ContactService = require('../services/contact.service');
+const { individualUserCollection } = require('../../DBConfig');
+const Contact = require('../../models/contact.individul.model');
+const ContactService = require('../../services/contact.Individual.service');
 
 /**
  * Get all Contacts
@@ -64,13 +62,12 @@ const createContact = async (req, res) => {
         }
         console.log('contactOwnerId',contactOwnerId);
 
-        let existUser;
 
-        const IndividualUser = await individualUserCollection.findOne({ phnNumber });
-        const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
-        const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
+        const existUser = await individualUserCollection.findOne({ phnNumber });
+        // const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+        // const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
 
-        existUser = IndividualUser || EnterpriseUser || EnterpriseEmpUser;
+        // existUser = IndividualUser || EnterpriseUser || EnterpriseEmpUser;
 
         let newContact;
 

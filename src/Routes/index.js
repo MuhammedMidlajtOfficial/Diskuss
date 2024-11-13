@@ -12,7 +12,8 @@ const referralRouter = require('./Referral/ReferralRouter.js');
 const actionRouter = require('./Referral/ActionRotuer.js');
 const referralLevelRouter = require('./Referral/ReferralLevelRouter.js');
 const MeetingRoute = require("./Meeting/MeetingRouter.js");
-const contactRouter = require("./Contact/contactRouter.js");
+const individualContactRouter = require("./Contact/contactIndividualRouter.js");
+const enterpriseContactRouter = require("./Contact/contactIndividualRouter.js");
 const enterpriseEmployee = require('./EnterpriseEmployee/enterpriseEmployeeRouter.js');
 
 const router = express.Router();
@@ -55,8 +56,12 @@ const defaultRoutes = [
     route: referralLevelRouter
   },
   {
-    path: '/contact',
-    route: contactRouter
+    path: '/individualContact',
+    route: individualContactRouter
+  },
+  {
+    path: '/enterpriseContact',
+    route: enterpriseContactRouter
   },
   {
     path: '/meeting',
