@@ -70,6 +70,7 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
         type:String,
         default : ''
       },
+      
     }
 } ,{ timestamps: true });
 

@@ -63,6 +63,7 @@ module.exports.postEnterpriseLogin = async (req, res) => {
   }
 };
 
+
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
     const { companyName, industryType, email, otp } = req.body
@@ -340,12 +341,15 @@ module.exports.updateProfile = async (req, res) => {
 
 module.exports.getProfile = async (req, res) => {
   try {
-    let { id: userId } = req.params;
+    const { id: userId } = req.params;
+    
+    // Log userId to verify the format received
+    console.log(`Received userId: "${userId}"`);
 
-    // Trim whitespace and ensure valid format
-    userId = userId.trim();
 
+    // Validate if cleanUserId is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.log('cleanUserId',userId);
       return res.status(400).json({ message: 'Invalid user ID format' });
     }
 
