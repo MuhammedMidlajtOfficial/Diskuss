@@ -19,10 +19,7 @@ const contactSchema = new mongoose.Schema({
       required: true, 
       match: /.+\@.+\..+/ // Regex for email validation
     },
-    website: { 
-      type: String, 
-      match: /^(https?:\/\/)?([\da-z\.-]+\.[a-z\.]{2,6})([\/\w \.-]*)*\/?$/ 
-    }, // Regex for URL validation
+    website: { type: String,default:''},
     businessCategory: { type: String },
     scheduled: { type: Boolean, default: false },
     scheduledTime: { type: Date },

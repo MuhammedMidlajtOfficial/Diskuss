@@ -1,4 +1,4 @@
-const Contact = require('../models/contact.individul.model');
+const Contact = require('../models/contact.enterprise.model');
 
 /**
  * Find all Contacts

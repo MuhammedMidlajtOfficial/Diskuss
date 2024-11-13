@@ -1,8 +1,8 @@
 const { individualUserCollection } = require('../../DBConfig');
-const Contact = require('../../models/contact.individul.model');
+const Contact = require('../../models/contact.enterprise.model');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const enterpriseUser = require('../../models/enterpriseUser');
-const ContactService = require('../../services/contact.Individual.service');
+const ContactService = require('../../services/contact.enterprise.service');
 
 /**
  * Get all Contacts
