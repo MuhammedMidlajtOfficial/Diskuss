@@ -2,7 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-const Contact = require("../../models/contact.individul.model");
+const ContactIndividual = require("../../models/contact.individul.model");
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
@@ -11,8 +11,6 @@ exports.setSocketIO = (socketIO) => {
 // Send message
 exports.sendMessage = async (req, res) => {
   const { senderId, receiverId, content } = req.body;
-  console.log("Request Body:", req.body);
-
   try {
     // Ensure senderId is from the User collection
     const sender = await User.findById(senderId);
@@ -20,15 +18,30 @@ exports.sendMessage = async (req, res) => {
       return res.status(404).json({ error: "Sender not found" });
     }
 
-    // Find the receiver in the Contact collection by the userId (contactOwnerId)
-    const contact = await Contact.findOne({
-      contactOwnerId: senderId,
-      "contacts.userId": receiverId,
-    });
+    // Convert senderId and receiverId to ObjectId
+    const senderObjectId = new mongoose.Types.ObjectId(senderId);
+    const receiverObjectId = new mongoose.Types.ObjectId(receiverId);
+
+    // Log the ObjectId conversion
+    console.log("senderObjectId:", senderObjectId);
+    console.log("receiverObjectId:", receiverObjectId);
+
+    // Build the query
+    const query = {
+      contactOwnerId: senderObjectId,
+      "contacts.userId": receiverObjectId, 
+    };
+
+    // Log the query structure
+    console.log("Running query:", JSON.stringify(query, null, 2));
+
+    // Find the receiver in ContactIndividual by contactOwnerId and contacts.userId
+    const contact = await ContactIndividual.findOne(query);
+
+    console.log("Contact document:", contact);
+
     if (!contact) {
-      return res
-        .status(404)
-        .json({ error: "Receiver not found in contact list" });
+      return res.status(404).json({ error: "Receiver not found in contact list" });
     }
 
     const receiver = await User.findById(receiverId);
@@ -116,7 +129,7 @@ exports.getMessages = async (req, res) => {
         },
         {
           $lookup: {
-            from: "contacts",
+            from: "contactindividuals",
             let: { receiverId: "$receiverId" },
             pipeline: [
               { $unwind: "$contacts" },
