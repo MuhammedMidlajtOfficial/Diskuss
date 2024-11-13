@@ -20,38 +20,7 @@ module.exports.getCardForUser = async (req, res) => {
     }
 };
 
-module.exports.getCardForEnterprise = async (req, res) => {
-    try {
-        const { id: userId } = req.params;
-        const user = await enterpriseUser.findOne({ _id : userId }).populate('empCards');
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        console.log(user.empCards);
-        return res.status(200).json({ cards:user.empCards })
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Failed to fetch employee cards", error });
-    }
-};
 
-module.exports.getUserOfEnterprise = async (req, res) => {
-    try {
-        const { id: userId } = req.params;
-        const user = await enterpriseUser.findOne({ _id : userId }).populate({
-            path: 'empId',
-            strictPopulate: false, 
-        } )
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        console.log(user);
-        return res.status(200).json({ employee:user.empId })
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Failed to fetch employee", error });
-    }
-}
 
 module.exports.getContactOfEmployee = async (req, res) => {
     try {
