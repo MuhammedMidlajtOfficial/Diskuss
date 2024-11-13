@@ -169,23 +169,23 @@ exports.getMessages = async (req, res) => {
                 "", // Default to empty if not available
               ],
             },
-            name: {
-              $cond: {
-                if: { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
-                then: {
-                  $ifNull: [
-                    { $arrayElemAt: ["$receiverInfo.name", 0] },
-                    "Unknown Receiver",
-                  ],
-                },
-                else: {
-                  $ifNull: [
-                    { $arrayElemAt: ["$senderInfo.username", 0] },
-                    "Unknown Sender",
-                  ],
-                },
-              },
-            },
+            // name: {
+            //   $cond: {
+            //     if: { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
+            //     then: {
+            //       $ifNull: [
+            //         { $arrayElemAt: ["$receiverInfo.name", 0] },
+            //         "Unknown Receiver",
+            //       ],
+            //     },
+            //     else: {
+            //       $ifNull: [
+            //         { $arrayElemAt: ["$senderInfo.username", 0] },
+            //         "Unknown Sender",
+            //       ],
+            //     },
+            //   },
+            // },
           },
         },
         { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
