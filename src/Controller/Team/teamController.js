@@ -20,20 +20,34 @@ module.exports.getAllTeamById = async (req, res) => {
 
 module.exports.createTeam = async (req, res) => {
     try {
-        const { teamOwnerId, teamName, permissions, teamMembersId, TLPermissions, teamLead } = teamData = req.body
-        if( !teamOwnerId || !teamName || !permissions || !teamMembersId || !teamLead || !TLPermissions ){
+        const { teamOwnerId, teamName, permissions, teamMembersId, TLPermissions, teamLead } = req.body;
+        
+        // Check for missing required fields
+        if (!teamOwnerId || !teamName || !permissions || !teamMembersId || !teamLead || !TLPermissions) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const team = await teamModel.create({ teamData })
+        // Create the team document directly with the unpacked team data
+        const team = await teamModel.create({
+            teamOwnerId,
+            teamName,
+            permissions,
+            teamMembersId,
+            TLPermissions,
+            teamLead
+        });
+
         if (!team) {
             return res.status(404).json({ message: "Team creation failed" });
         }
+
+        res.status(201).json({ message: "Team created successfully", team });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Failed to add team", error });
     }
 };
+
 
 module.exports.editTeam = async (req, res) => {
     try {
