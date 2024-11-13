@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const otpGenerator = require("otp-generator")
+const mongoose = require('mongoose');
 
 const enterpriseUser = require("../../models/enterpriseUser");
 const { otpCollection } = require('../../DBConfig');
@@ -336,16 +337,26 @@ module.exports.updateProfile = async (req, res) => {
   }
 };
 
-module.exports.getProfile = async (req, res ) => {
+
+module.exports.getProfile = async (req, res) => {
   try {
-    const { id: userId } = req.params;
-    const user = await enterpriseUser.findOne({ _id : userId });
+    let { id: userId } = req.params;
+
+    // Trim whitespace and ensure valid format
+    userId = userId.trim();
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID format' });
+    }
+
+    const user = await enterpriseUser.findOne({ _id: userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    return res.status(200).json({ user })
+
+    return res.status(200).json({ user });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: 'Server error' });
   }
-}
+};

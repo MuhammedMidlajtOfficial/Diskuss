@@ -1,23 +1,43 @@
 const mongoose = require("mongoose");
 
 const teamSchema = new mongoose.Schema({
-  teamName:{
-    type:String,
-    required:true
-  },
-  permissions:{
-    type:String,
-    required:true
-  },
-  teamMembersId:[ {
+  teamOwnerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'EnterpriseEmployee',
-    required:true
-  } ],
+    ref:'EnterpriseUser'
+  },
+  teamName: {
+    type: String,
+    required: true
+  },
+  permissions: {
+    type: String,
+    required: true
+  },
+  teamMembersId: [
+    {
+      type: String,
+      required: true,
+      // refPath: 'teamMemberType'  // Dynamic reference based on teamMemberType field
+    }
+  ],
+  // teamMemberType: {
+  //   type: String,
+  //   required: true,
+  //   enum: ['EnterpriseEmployee', 'EnterpriseUser']  // Restrict to specific models
+  // },
   teamLead: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'EnterpriseEmployee',
-    required:true
+    type: String,
+    required: true,
+    // refPath: 'teamLeadType'  // Dynamic reference based on teamLeadType field
+  },
+  // teamLeadType: {
+  //   type: String,
+  //   required: true,
+  //   enum: ['EnterpriseEmployee', 'EnterpriseUser']
+  // },
+  TLPermissions:{
+    type: String,
+    required: true,
   }
 });
 

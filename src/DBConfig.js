@@ -69,10 +69,11 @@ mongoose.connect(process.env.MongoDBURL,{
       type : Array,
       default : []
     },
-    meetings : {
-      type : Array,
-      default : []
-    },
+    meetings : [{
+      type: String,
+      ref: "Meeting", // Reference to Meeting model
+      required: false,
+    }],
     socialMedia: {
       whatsappNo: {
         type:String,

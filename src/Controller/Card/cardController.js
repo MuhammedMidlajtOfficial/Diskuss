@@ -6,7 +6,8 @@ module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id
     
-    if(!await(isValidUserId(userId))){
+    const isUserExist = individualUserCollection.findOne({ _id:userId })
+    if(!isUserExist){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
@@ -40,7 +41,8 @@ module.exports.createCard = async (req, res) => {
     website
   } = req.body;
 
-  if (!isValidUserId(userId)) {
+  const isUserExist = individualUserCollection.findOne({ _id:userId })
+  if(!isUserExist){
     return res.status(400).json({ message: 'Invalid user ID' });
   }
 
@@ -78,7 +80,10 @@ module.exports.createCard = async (req, res) => {
   try {
     const result = await newCard.save();
     if (result) {
-      await individualUserCollection.updateOne({ _id: userId }, { $inc: { cardNo: 1 } });
+      await individualUserCollection.updateOne(
+        { _id: userId },
+        { $inc: { cardNo: 1 } }  // Increment cardNo by 1
+      );
     }
     res.status(201).json({ message: "Card added successfully", entryId: result._id });
   } catch (error) {
@@ -106,7 +111,8 @@ module.exports.updateCard = async (req, res) => {
       website
     } = req.body;
 
-    if (!isValidUserId(userId)) {
+    const isUserExist = individualUserCollection.findOne({ _id:userId })
+    if(!isUserExist){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
@@ -166,7 +172,8 @@ module.exports.updateCard = async (req, res) => {
 module.exports.deleteCard = async (req, res) => {
   const { userId, cardId } = req.body;
 
-  if (!isValidUserId(userId)) {
+  const isUserExist = individualUserCollection.findOne({ _id:userId })
+  if(!isUserExist){
     return res.status(400).json({ message: 'Invalid user ID' });
   }
 
@@ -191,7 +198,9 @@ module.exports.deleteCard = async (req, res) => {
 
 async function isValidUserId(userId) {
   try {
-      const objectId = typeof userId === 'string' && ObjectId.isValid(userId) ? new ObjectId(userId) : userId;
+      const objectId = ObjectId.isValid(userId) ? new ObjectId(userId) : null;
+      if (!objectId) return false; // If userId is not a valid ObjectId, return false
+
       const user = await individualUserCollection.findOne({ _id: objectId });
       return user !== null;
   } catch (error) {
@@ -199,3 +208,4 @@ async function isValidUserId(userId) {
       return false;
   }
 }
+

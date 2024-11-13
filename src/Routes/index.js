@@ -16,6 +16,8 @@ const individualContactRouter = require("./Contact/contactIndividualRouter.js");
 const enterpriseContactRouter = require("./Contact/contactIndividualRouter.js");
 const enterpriseEmployee = require('./EnterpriseEmployee/enterpriseEmployeeRouter.js');
 const enterpriseMessage = require("./EnterpriseMessage/enterpriseMessageRoute.js");
+const teamRouter = require('./Team/teamRouter.js');
+
 
 const router = express.Router();
 
@@ -83,6 +85,10 @@ const defaultRoutes = [
   {
     path: '/enterpriseMessage',
     route: enterpriseMessage,
+  },
+  {
+    path: '/team',
+    route: teamRouter,
   },
 ];
 

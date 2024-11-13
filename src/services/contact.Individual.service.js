@@ -69,7 +69,7 @@ const createContact = async (contactOwnerId, contactData) => {
  */
 const updateContact = async (contactOwnerId, contactId, updateData) => {
     try {
-        const contactOwner = await Contact.findById(contactOwnerId).exec();
+        const contactOwner = await Contact.findOne(contactOwnerId).exec();
         if (!contactOwner) {
             throw new Error("Contact owner not found");
         }
@@ -95,22 +95,36 @@ const updateContact = async (contactOwnerId, contactId, updateData) => {
  */
 const deleteContact = async (contactOwnerId, contactId) => {
     try {
+        // Find the contact owner document
         const contactOwner = await Contact.findById(contactOwnerId).exec();
+        
+        // If the contact owner is not found, throw an error
         if (!contactOwner) {
             throw new Error("Contact owner not found");
         }
+        
+        // Find the specific contact in the contacts array
         const contact = contactOwner.contacts.id(contactId);
+        
+        // If the contact is not found, throw an error
         if (!contact) {
             throw new Error("Contact not found");
         }
-        contact.remove(); // Remove the contact from the contacts array
+        
+        // Remove the contact from the array
+        contact.remove();
+        
+        // Save the updated contact owner document
         await contactOwner.save();
-        return contact; // Return the deleted contact for confirmation
+        
+        // Return the deleted contact for confirmation
+        return contact;
     } catch (error) {
-        console.error("Error deleting Contact:", error);
+        console.error("Error deleting contact:", error);
         throw error;
     }
 };
+
 
 /**
  * Find all Contacts by Owner User ID
