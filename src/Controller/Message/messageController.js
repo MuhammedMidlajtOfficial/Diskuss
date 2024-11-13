@@ -171,23 +171,24 @@ exports.getMessages = async (req, res) => {
               ],
 
             },
-            name: {
-              $cond: {
-                if: { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
-                then: {
-                  $ifNull: [
-                    { $arrayElemAt: ["$receiverInfo.name", 0] },
-                    "Unknown Receiver",
-                  ],
-                },
-                else: {
-                  $ifNull: [
-                    { $arrayElemAt: ["$senderInfo.username", 0] },
-                    "Unknown Sender",
-                  ],
-                },
-              },
-            },
+            // name: {
+            //   $cond: {
+            //     if: { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
+            //     then: {
+            //       $ifNull: [
+            //         { $arrayElemAt: ["$receiverInfo.name", 0] },
+            //         "Unknown Receiver",
+            //       ],
+            //     },
+            //     else: {
+            //       $ifNull: [
+            //         { $arrayElemAt: ["$senderInfo.username", 0] },
+            //         "Unknown Sender",
+            //       ],
+            //     },
+            //   },
+            // },
+
           },
 
         },
