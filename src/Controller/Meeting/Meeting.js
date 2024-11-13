@@ -430,7 +430,7 @@ const UpdateMeeting = async (req, res) => {
                         sender:updatedData.meetingOwner,
                         receiver: userId,
                         type: 'meeting',
-                        content: `You have been invited to a meeting titled "${meetingTitle}" on ${selectedDate} at ${startTime} created by ${ownerProfile.username}.`,
+                        content: `You have been invited to a meeting titled "${updatedMeeting.meetingTitle}" on ${updatedMeeting.selectedDate} at ${updatedMeeting.startTime} created by ${ownerProfile.username}.`,
                         status: 'unread'
                     });
                     await notification.save();
