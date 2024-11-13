@@ -17,8 +17,8 @@ const messageSchema = new mongoose.Schema({
   chatId: { type: String, required: true },
   senderId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   receiverId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
-  senderName: { type: String, default: 'Unknown Sender' },
-  receiverName: { type: String, default: 'Unknown Receiver' },
+  // senderName: { type: String, default: 'Unknown Sender',required: true },
+  // receiverName: { type: String, default: 'Unknown Receiver',required: true },
   content: { type: String, required: true },
   timestamp: { type: Date, default: Date.now }
 });

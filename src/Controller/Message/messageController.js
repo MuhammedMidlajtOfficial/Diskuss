@@ -51,13 +51,13 @@ exports.sendMessage = async (req, res) => {
     io.to(chatId).emit("receiveMessage", {
       ...message.toObject(),
       senderName: sender.username,  // Assuming sender has a 'username' field
-      receiverName: receiver.name,   // Assuming receiver has a 'name' field
+      receiverName: receiver.username,   // Assuming receiver has a 'name' field
     });
 
     res.status(201).json({
       ...message.toObject(),
       senderName: sender.username,
-      receiverName: receiver.name,
+      receiverName: receiver.username,
     });
   } catch (error) {
     console.error("Error sending message:", error.message || error);
@@ -67,26 +67,28 @@ exports.sendMessage = async (req, res) => {
 
 
 
+
+
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
   const { chatId, userId } = req.query;
 
   try {
     if (chatId) {
-      // const messages = await Message.find({ chatId })
-      //   .sort({ timestamp: 1 })
-      //   .populate({ path: "senderId", select: "username name" }) // ensure username and name are selected
-      //   .populate({ path: "receiverId", select: "name" }); // ensure name is selected
+      const messages = await Message.find({ chatId })
+        .sort({ timestamp: 1 })
+        // .populate("senderId", "name username") // Populate sender name and username
+        // .populate("receiverId", "name username"); // Populate receiver name only
 
-      // return res.status(200).json(
-      //   messages.map((message) => ({
-      //     ...message.toObject(),
-      //     senderName: message.senderId?.username || message.senderId?.name || "Unknown Sender",
-      //     receiverName: message.receiverId?.name || "Unknown Receiver",
-      //   }))
-      // );
-      const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
-      return res.status(200).json(messages);
+
+      return res.status(200).json(
+        messages.map((message) => ({
+          ...message.toObject(),
+          // senderName: message.senderId?.name || message.senderId?.username || "Unknown Sender",
+          // receiverName: message.receiverId?.name ||message.receiverId?.username || "Unknown Receiver",
+
+        }))
+      );
     } else if (userId) {
       const lastMessages = await Message.aggregate([
         {
@@ -102,26 +104,40 @@ exports.getMessages = async (req, res) => {
           $group: {
             _id: "$chatId",
             lastMessage: { $first: "$$ROOT" }
-
           }
         },
         { $replaceRoot: { newRoot: "$lastMessage" } },
         {
           $lookup: {
-            from: "users", // Fetch sender details from 'users' collection
+            from: "users", // Ensure "users" is correct for sender info
             localField: "senderId",
             foreignField: "_id",
             as: "senderInfo"
-
           }
         },
         {
           $lookup: {
             from: "contacts",
-            localField: "receiverId",
-            foreignField: "userId",
-
+            let: { receiverId: "$receiverId" },
+            pipeline: [
+              { $unwind: "$contacts" },
+              { $match: { $expr: { $eq: ["$contacts.userId", "$$receiverId"] } } },
+              {
+                $addFields: {
+                  name: "$contacts.name",
+                  username: "$contacts.username"
+                }
+              }
+            ],
             as: "receiverInfo"
+          }
+        },
+        {
+          $lookup: {
+            from: "users", // To fetch the profile picture of the receiver
+            localField: "receiverId", // Receiver's ID
+            foreignField: "_id",
+            as: "receiverUserInfo"
           }
         },
         {
@@ -129,24 +145,44 @@ exports.getMessages = async (req, res) => {
             senderName: {
               $ifNull: [
                 { $arrayElemAt: ["$senderInfo.username", 0] },
-                { $arrayElemAt: ["$senderInfo.name", 0] },
                 "Unknown Sender"
               ]
             },
-            
             receiverName: {
               $ifNull: [
                 { $arrayElemAt: ["$receiverInfo.name", 0] },
+                { $arrayElemAt: ["$receiverInfo.username", 0] },
                 "Unknown Receiver"
               ]
+            },
+            senderProfilePic: {
+              $ifNull: [
+                { $arrayElemAt: ["$senderInfo.image", 0] }, // Profile picture for sender
+                "" // Default to empty if not available
+              ]
+            },
+            receiverProfilePic: {
+              $ifNull: [
+                { $arrayElemAt: ["$receiverUserInfo.image", 0] }, // Profile picture for receiver
+                "" // Default to empty if not available
+              ]
+            },
+            name: {
+              $cond: {
+                if: { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
+            then: { $ifNull: [{ $arrayElemAt: ["$receiverInfo.name", 0] }, "Unknown Receiver"] },
+            else: { $ifNull: [{ $arrayElemAt: ["$senderInfo.username", 0] }, "Unknown Sender"] }
+              }
 
             }
           }
         },
-        { $project: { senderInfo: 0, receiverInfo: 0 } }
+        { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } }
       ]);
-
+      
+      console.log("Last Messages Result (Processed):", JSON.stringify(lastMessages, null, 2));
       return res.status(200).json(lastMessages);
+      
     } else {
       return res.status(400).json({ error: "Either chatId or userId must be provided." });
     }
@@ -155,3 +191,4 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ error: "Error retrieving messages." });
   }
 };
+
