@@ -76,7 +76,7 @@ module.exports.editTeam = async (req, res) => {
 
 module.exports.deleteTeam = async (req, res) => {
     try {
-        const { teamId } = req.body;
+        const teamId = req.params.id;
 
         const teamExist = await teamModel.findOne({ _id: teamId });
         if (!teamExist) {
