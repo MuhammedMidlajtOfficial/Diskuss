@@ -3,12 +3,11 @@ const bcrypt = require('bcrypt');
 const otpGenerator = require("otp-generator")
 const mongoose = require('mongoose');
 
-const enterpriseUser = require("../../models/enterpriseUser");
 const { otpCollection } = require('../../DBConfig');
 const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const Contact  = require('../../models/contact.individul.model');
-
+const enterpriseUser = require('../../models/enterpriseUser');
 
 module.exports.postEnterpriseLogin = async (req, res) => {
   try {

@@ -9,6 +9,10 @@ module.exports.getAllTeamById = async (req, res) => {
         }
 
         const team = await teamModel.find({ teamOwnerId })
+                .populate({
+                    path: 'teamMembersId',
+                    model: userModel,  // Dynamically choose model for teamMembersId
+                })
         if (!team) {
             return res.status(404).json({ message: "Team not found" });
         }
@@ -27,7 +31,7 @@ module.exports.getMembersOfTeam = async (req, res) => {
         }
         console.log(teamId);
         const teamMembers = await teamModel.findOne({ _id:teamId })
-        
+
         console.log(teamMembers);
         if (!teamMembers) {
             return res.status(404).json({ message: "Team not found" });

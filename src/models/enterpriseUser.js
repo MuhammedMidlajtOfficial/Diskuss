@@ -82,4 +82,4 @@ const enterpriseUserSchema = new mongoose.Schema({
 
 },{ timestamps:true })
 
-module.exports.EnterpriseUserCollection = mongoose.model('EnterpriseUser',enterpriseUserSchema)
+module.exports = mongoose.model('EnterpriseUser',enterpriseUserSchema)
