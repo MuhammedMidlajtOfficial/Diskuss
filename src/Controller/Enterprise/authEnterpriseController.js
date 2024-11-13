@@ -340,9 +340,11 @@ module.exports.updateProfile = async (req, res) => {
 
 module.exports.getProfile = async (req, res) => {
   try {
-    const { id: userId } = req.params;
+    let { id: userId } = req.params;
 
-    // Validate if userId is a valid ObjectId
+    // Trim whitespace and ensure valid format
+    userId = userId.trim();
+
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: 'Invalid user ID format' });
     }
