@@ -6,7 +6,7 @@ router.post('/createTeam',teamController.createTeam)
 router.patch('/editTeam',teamController.editTeam)
 router.delete('/deleteTeam/:id',teamController.deleteTeam)
 
-router.get('/getTeam/:id',teamController.getAllTeamById)
+router.get('/getAllTeam/:id',teamController.getAllTeamById)
 router.get('/getMembersOfTeam/:id',teamController.getMembersOfTeam)
 
 router.get('/getCardForEnterprise/:id', teamController.getCardForEnterprise)
