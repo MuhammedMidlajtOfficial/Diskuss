@@ -32,6 +32,7 @@ exports.setSocketIO = (socketIO) => {
       // Handle sending messages
       socket.on("sendMessage", ({ receiverId, msg }) => {
         io.to(receiverId).emit("receiveMessage", msg); // Emit "receiveMessage" for received messages
+
       });
 
       // Notify other clients about the user's online status
