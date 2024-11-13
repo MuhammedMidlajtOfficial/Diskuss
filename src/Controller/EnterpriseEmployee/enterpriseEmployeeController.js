@@ -20,8 +20,6 @@ module.exports.getCardForUser = async (req, res) => {
     }
 };
 
-
-
 module.exports.getContactOfEmployee = async (req, res) => {
     try {
         const { id: empId } = req.params;
@@ -128,10 +126,13 @@ module.exports.createCard = async (req, res) => {
         if (result) {
             await enterpriseUser.updateOne(
                 { _id: enterpriseId },
-                { $push: { 
-                    empCards: result._id,
-                    empId: newUser._id
-                } }
+                { 
+                    $push: { 
+                        empCards: result._id,
+                        empId: newUser._id,
+                    },
+                    $inc: { cardNo: 1 }  // Increment cardNo by 1
+                }
             );
 
             res.status(201).json({ message: "Card added successfully", entryId: result._id });
