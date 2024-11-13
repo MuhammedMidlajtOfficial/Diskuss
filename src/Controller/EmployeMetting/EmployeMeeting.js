@@ -1,7 +1,8 @@
 const MeetingBase = require("../../models/EnterpriseMeetingModel")
 const moment = require('moment');
 const cron = require('node-cron');
-const {EnterpriseUserCollection: Profile} = require('../../models/enterpriseUser')
+const {Profile} = require('../../models/enterpriseUser')
+
 const mongoose = require("mongoose");
 const Contact = require('../../models/contact.individul.model')
 const Notification = require('../../models/NotificationModel')
