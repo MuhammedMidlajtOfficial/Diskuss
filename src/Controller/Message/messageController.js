@@ -2,7 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-const Contact = require("../../models/contact.model");
+const Contact = require("../../models/contact.individul.model");
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
