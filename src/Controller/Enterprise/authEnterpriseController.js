@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const otpGenerator = require("otp-generator")
+const mongoose = require('mongoose');
 
 const enterpriseUser = require("../../models/enterpriseUser");
 const { otpCollection } = require('../../DBConfig');
@@ -335,6 +336,7 @@ module.exports.updateProfile = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 module.exports.getProfile = async (req, res) => {
   try {

@@ -26,7 +26,8 @@ module.exports.getMembersOfTeam = async (req, res) => {
             return res.status(400).json({ message: "teamId is required" });
         }
         console.log(teamId);
-        const teamMembers = await teamModel.findOne({ _id:teamId }).populate('teamMembersId')
+        const teamMembers = await teamModel.findOne({ _id:teamId })
+        
         console.log(teamMembers);
         if (!teamMembers) {
             return res.status(404).json({ message: "Team not found" });
