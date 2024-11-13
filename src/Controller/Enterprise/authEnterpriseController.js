@@ -345,16 +345,14 @@ module.exports.getProfile = async (req, res) => {
     // Log userId to verify the format received
     console.log(`Received userId: "${userId}"`);
 
-    // Trim any extraneous whitespace just in case
-    const cleanUserId = userId.trim();
 
     // Validate if cleanUserId is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(cleanUserId)) {
-      console.log('cleanUserId',cleanUserId);
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.log('cleanUserId',userId);
       return res.status(400).json({ message: 'Invalid user ID format' });
     }
 
-    const user = await enterpriseUser.findOne({ _id: cleanUserId });
+    const user = await enterpriseUser.findOne({ _id: userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
