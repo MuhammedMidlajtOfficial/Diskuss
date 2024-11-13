@@ -69,7 +69,7 @@ const IndividualUserSchema = new mongoose.Schema({
       default : ''
     },
   },
-  meetings: [
+    meetings: [
     {
       type: String,
       ref: "Meeting", // Reference to Meeting model

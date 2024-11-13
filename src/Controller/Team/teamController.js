@@ -8,10 +8,31 @@ module.exports.getAllTeamById = async (req, res) => {
             return res.status(400).json({ message: "teamOwnerId is required" });
         }
 
-        const team = await teamModel.findOne({ teamOwnerId })
+        const team = await teamModel.find({ teamOwnerId })
         if (!team) {
             return res.status(404).json({ message: "Team not found" });
         }
+        return res.status(200).json({ team })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Failed to fetch team", error });
+    }
+};
+
+module.exports.getMembersOfTeam = async (req, res) => {
+    try {
+        const teamId= req.params.id
+        if( !teamId ){
+            return res.status(400).json({ message: "teamId is required" });
+        }
+        console.log(teamId);
+        const teamMembers = await teamModel.findOne({ _id:teamId })
+        
+        console.log(teamMembers);
+        if (!teamMembers) {
+            return res.status(404).json({ message: "Team not found" });
+        }
+        return res.status(200).json({ teamMembers })
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Failed to fetch team", error });
@@ -76,7 +97,7 @@ module.exports.editTeam = async (req, res) => {
 
 module.exports.deleteTeam = async (req, res) => {
     try {
-        const { teamId } = req.body;
+        const teamId = req.params.id;
 
         const teamExist = await teamModel.findOne({ _id: teamId });
         if (!teamExist) {
