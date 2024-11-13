@@ -340,16 +340,21 @@ module.exports.updateProfile = async (req, res) => {
 
 module.exports.getProfile = async (req, res) => {
   try {
-    let { id: userId } = req.params;
+    const { id: userId } = req.params;
+    
+    // Log userId to verify the format received
+    console.log(`Received userId: "${userId}"`);
 
-    // Trim whitespace and ensure valid format
-    userId = userId.trim();
+    // Trim any extraneous whitespace just in case
+    const cleanUserId = userId.trim();
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    // Validate if cleanUserId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(cleanUserId)) {
+      console.log('cleanUserId',cleanUserId);
       return res.status(400).json({ message: 'Invalid user ID format' });
     }
 
-    const user = await enterpriseUser.findOne({ _id: userId });
+    const user = await enterpriseUser.findOne({ _id: cleanUserId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
