@@ -120,10 +120,11 @@ const deleteContact = async (contactOwnerId, contactId) => {
 const findContactsByOwnerUserId = async (userId) => {
     try {
         const contactOwner = await Contact.find({ contactOwnerId: userId }).exec();
+        console.log(contactOwner);
         if (!contactOwner) {
             throw new Error("Contact owner not found");
         }
-        return contactOwner.contacts;
+        return contactOwner;
     } catch (error) {
         console.error("Error fetching contacts by user id:", error);
         throw error;
