@@ -4,6 +4,7 @@ const enterpriseMessage = require("../../models/enterpriseMessage.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const ContactEnterprise = require("../../models/contact.enterprise.model")
 
+
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
 };

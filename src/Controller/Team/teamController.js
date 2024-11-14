@@ -1,20 +1,39 @@
+const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/enterpriseUser");
 const teamModel = require("../../models/team.model");
 
 module.exports.getAllTeamById = async (req, res) => {
     try {
-        const teamOwnerId= req.params.id
-        if( !teamOwnerId ){
+        const teamOwnerId = req.params.id;
+        if (!teamOwnerId) {
             return res.status(400).json({ message: "teamOwnerId is required" });
         }
 
-        const team = await teamModel.find({ teamOwnerId })
-        if (!team) {
+        // Find team by teamOwnerId
+        const team = await teamModel.find({ teamOwnerId });
+        if (!team || team.length === 0) {
             return res.status(404).json({ message: "Team not found" });
         }
-        return res.status(200).json({ team })
+
+        // Extract teamMembersId from the first team object (assuming only one)
+        const teamMembersId = team[0].teamMembersId;
+
+        // Fetch team members from EnterpriseUser and EnterpriseEmployee collections
+        const [enterpriseUsers, enterpriseEmployees] = await Promise.all([
+            enterpriseUser.find({ _id: { $in: teamMembersId } }),
+            enterpriseEmployeModel.find({ _id: { $in: teamMembersId } })
+        ]);
+
+        // Attach detailed member info to the response
+        const teamWithDetails = {
+            ...team[0]._doc,
+            enterpriseUsers,
+            enterpriseEmployees
+        };
+
+        return res.status(200).json({ team: teamWithDetails });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Failed to fetch team", error });
     }
 };
@@ -27,7 +46,7 @@ module.exports.getMembersOfTeam = async (req, res) => {
         }
         console.log(teamId);
         const teamMembers = await teamModel.findOne({ _id:teamId })
-        
+
         console.log(teamMembers);
         if (!teamMembers) {
             return res.status(404).json({ message: "Team not found" });
