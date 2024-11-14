@@ -13,6 +13,7 @@ exports.setSocketIO = (socketIO) => {
     });
 
     socket.on("connect_error", (err) => {
+      console.log("connect error", err);
       console.error("Connection error:", err);
     });
 
@@ -34,10 +35,12 @@ exports.setSocketIO = (socketIO) => {
       connectedUsers.set(userId, socket.id);
       console.log(`User ${userId} connected with socket ID ${socket.id}`);
 
-      // Handle sending messages
-      socket.on("sendMessage", ({ receiverId, msg }) => {
-        io.to(receiverId).emit("receiveMessage", msg); // Emit "receiveMessage" for received messages
-
+      // When a user joins a chat room
+      socket.on("joinChat", (chatId) => {
+        socket.join(chatId);
+        console.log(
+          `User with socket ID ${socket.id} joined chat room ${chatId}`
+        );
       });
 
       // Notify other clients about the user's online status
