@@ -84,6 +84,23 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
+//Mark Messages as Read
+exports.markMessagesAsRead = async (req, res) => {
+  const { chatId, userId } = req.body;
+
+  try {
+    const result = await enterpriseMessage.updateMany(
+      { chatId, receiverId: userId, isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    res.status(200).json({ message: "Messages marked as read", result });
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+    res.status(500).json({ error: "Failed to mark messages as read." });
+  }
+};
+
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
   const { chatId, userId } = req.query;
@@ -91,20 +108,21 @@ exports.getMessages = async (req, res) => {
   try {
     if (chatId) {
       const messages = await enterpriseMessage.find({ chatId }).sort({ timestamp: 1 });
-      // .populate("senderId", "name username") // Populate sender name and username
-      // .populate("receiverId", "name username"); // Populate receiver name only
 
+      // Get unread messages count for the current user in this chat
+      const unreadCount = await enterpriseMessage.countDocuments({
+        chatId,
+        receiverId: userId,
+        isRead: false,
+      });
 
-
-      return res.status(200).json(
-        messages.map((message) => ({
+      return res.status(200).json({
+        messages: messages.map((message) => ({
           ...message.toObject(),
-          // senderName: message.senderId?.name || message.senderId?.username || "Unknown Sender",
-          // receiverName: message.receiverId?.name ||message.receiverId?.username || "Unknown Receiver",
-
-        }))
-      );
-    } else if (userId) {
+        })),
+        unreadCount,
+      });
+    }else if (userId) {
       const lastMessages = await enterpriseMessage.aggregate([
         {
           $match: {
@@ -185,28 +203,21 @@ exports.getMessages = async (req, res) => {
                 { $arrayElemAt: ["$receiverUserInfo.image", 0] }, // Profile picture for receiver
                 "", // Default to empty if not available
               ],
-
             },
-            // name: {
-            //   $cond: {
-            //     if: { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
-            //     then: {
-            //       $ifNull: [
-            //         { $arrayElemAt: ["$receiverInfo.name", 0] },
-            //         "Unknown Receiver",
-            //       ],
-            //     },
-            //     else: {
-            //       $ifNull: [
-            //         { $arrayElemAt: ["$senderInfo.username", 0] },
-            //         "Unknown Sender",
-            //       ],
-            //     },
-            //   },
-            // },
-
           },
-
+        },
+        {
+          $addFields: {
+            unreadCount: {
+              $size: {
+                $filter: {
+                  input: "$$ROOT",
+                  as: "message",
+                  cond: { $and: [{ $eq: ["$$message.isRead", false] }, { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }] }
+                }
+              }
+            },
+          },
         },
         { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
       ]);
