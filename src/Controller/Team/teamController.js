@@ -1,4 +1,3 @@
-const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/enterpriseUser");
 const teamModel = require("../../models/team.model");
 
@@ -9,29 +8,9 @@ module.exports.getAllTeamById = async (req, res) => {
             return res.status(400).json({ message: "teamOwnerId is required" });
         }
 
-        // Find team by teamOwnerId
-        const team = await teamModel.find({ teamOwnerId });
-        if (!team || team.length === 0) {
-            return res.status(404).json({ message: "Team not found" });
-        }
+        const team = await teamModel.find()
 
-        // Extract teamMembersId from the first team object (assuming only one)
-        const teamMembersId = team[0].teamMembersId;
-
-        // Fetch team members from EnterpriseUser and EnterpriseEmployee collections
-        const [enterpriseUsers, enterpriseEmployees] = await Promise.all([
-            enterpriseUser.find({ _id: { $in: teamMembersId } }),
-            enterpriseEmployeModel.find({ _id: { $in: teamMembersId } })
-        ]);
-
-        // Attach detailed member info to the response
-        const teamWithDetails = {
-            ...team[0]._doc,
-            enterpriseUsers,
-            enterpriseEmployees
-        };
-
-        return res.status(200).json({ team: teamWithDetails });
+        return res.status(200).json({ team });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to fetch team", error });
@@ -91,7 +70,7 @@ module.exports.createTeam = async (req, res) => {
 
 module.exports.editTeam = async (req, res) => {
     try {
-        const { teamId, teamName, permissions, teamMembersId, TLPermissions, teamLead } = req.body;
+        const { teamId, teamName, permissions, teamMembers, TLPermissions, teamLead } = req.body;
 
         const teamExist = await teamModel.findOne({ _id: teamId });
         if (!teamExist) {
@@ -100,7 +79,7 @@ module.exports.editTeam = async (req, res) => {
 
         const updateResult = await teamModel.updateOne(
             { _id: teamId },
-            { teamName, permissions, teamMembersId, teamLead, TLPermissions }
+            { teamName, permissions, teamMembers, teamLead, TLPermissions }
         );
 
         if (updateResult.modifiedCount === 0) {

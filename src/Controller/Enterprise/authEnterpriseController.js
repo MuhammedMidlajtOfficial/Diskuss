@@ -309,7 +309,7 @@ module.exports.updateProfile = async (req, res) => {
     );
 
     if (user.modifiedCount > 0) {
-      const forNumber = await enterpriseEmployeModel.findOne({ _id: userId }).select('phnNumber').exec();
+      const forNumber = await enterpriseUser.findOne({ _id: userId }).select('phnNumber').exec();
       const existingContact = await Contact.find({ phnNumber: forNumber.phnNumber });
       if (existingContact) {
         const contact = await Contact.updateOne(
@@ -320,7 +320,7 @@ module.exports.updateProfile = async (req, res) => {
           console.log("Contact updated successfully, Profile updated successfully");
           return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
         } else {
-          console.log("Error: Contact update failed, Profile updated successfully");
+          console.log(" Contact not updated , Profile updated successfully");
           return res.status(400).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
         }
       } else {
