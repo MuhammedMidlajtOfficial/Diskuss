@@ -321,7 +321,7 @@ module.exports.updateProfile = async (req, res) => {
           return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
         } else {
           console.log(" Contact not updated , Profile updated successfully");
-          return res.status(400).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
+          return res.status(200).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
         }
       } else {
         console.log("Error: Contact not found.");
