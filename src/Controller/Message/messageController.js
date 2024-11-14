@@ -58,8 +58,6 @@ exports.sendMessage = async (req, res) => {
 
 
 
-
-
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
   const { chatId, userId } = req.query;
