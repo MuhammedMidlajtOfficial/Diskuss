@@ -124,110 +124,117 @@ exports.getMessages = async (req, res) => {
       });
     }else if (userId) {
       const lastMessages = await enterpriseMessage.aggregate([
-        {
-          $match: {
-            $or: [
-              { senderId: new mongoose.Types.ObjectId(userId) },
-              { receiverId: new mongoose.Types.ObjectId(userId) },
-            ],
-          },
-        },
-        { $sort: { timestamp: -1 } },
-        {
-          $group: {
-            _id: "$chatId",
-            lastMessage: { $first: "$$ROOT" },
-          },
-        },
-        { $replaceRoot: { newRoot: "$lastMessage" } },
-        {
-          $lookup: {
-            from: "enterpriseusers", // Ensure "users" is correct for sender info
-            localField: "senderId",
-            foreignField: "_id",
-            as: "senderInfo",
-          },
-        },
-        {
-          $lookup: {
-            from: "contactenterprises",
-            let: { receiverId: "$receiverId" },
-            pipeline: [
-              { $unwind: "$contacts" },
-              {
-                $match: {
-                  $expr: { $eq: ["$contacts.userId", "$$receiverId"] },
-                },
+          {
+              $match: {
+                  $or: [
+                      { senderId: new mongoose.Types.ObjectId(userId) },
+                      { receiverId: new mongoose.Types.ObjectId(userId) },
+                  ],
               },
-              {
-                $addFields: {
-                  name: "$contacts.name",
-                  username: "$contacts.username",
-                },
+          },
+          { $sort: { timestamp: -1 } },
+          {
+              $group: {
+                  _id: "$chatId",
+                  lastMessage: { $first: "$$ROOT" },
+                  messages: { $push: "$$ROOT" }  // Collect all messages for this chat
               },
-            ],
-            as: "receiverInfo",
           },
-        },
-        {
-          $lookup: {
-            from: "enterpriseusers", // To fetch the profile picture of the receiver
-            localField: "receiverId", // Receiver's ID
-            foreignField: "_id",
-            as: "receiverUserInfo",
+          { $replaceRoot: { newRoot: "$lastMessage" } },
+          {
+              $lookup: {
+                  from: "enterpriseusers",
+                  localField: "senderId",
+                  foreignField: "_id",
+                  as: "senderInfo",
+              },
           },
-        },
-        {
-          $addFields: {
-            senderName: {
-              $ifNull: [
-                { $arrayElemAt: ["$senderInfo.companyName", 0] },
-                "Unknown Sender",
-              ],
-            },
-            receiverName: {
-              $ifNull: [
-                { $arrayElemAt: ["$receiverInfo.name", 0] },
-                { $arrayElemAt: ["$receiverInfo.username", 0] },
-                "Unknown Receiver",
-              ],
-            },
-            senderProfilePic: {
-              $ifNull: [
-                { $arrayElemAt: ["$senderInfo.image", 0] }, // Profile picture for sender
-                "", // Default to empty if not available
-              ],
-            },
-            receiverProfilePic: {
-              $ifNull: [
-                { $arrayElemAt: ["$receiverUserInfo.image", 0] }, // Profile picture for receiver
-                "", // Default to empty if not available
-              ],
-            },
+          {
+              $lookup: {
+                  from: "contactenterprises",
+                  let: { receiverId: "$receiverId" },
+                  pipeline: [
+                      { $unwind: "$contacts" },
+                      {
+                          $match: {
+                              $expr: { $eq: ["$contacts.userId", "$$receiverId"] },
+                          },
+                      },
+                      {
+                          $addFields: {
+                              name: "$contacts.name",
+                              username: "$contacts.username",
+                          },
+                      },
+                  ],
+                  as: "receiverInfo",
+              },
           },
-        },
-        {
-          $addFields: {
-            unreadCount: {
-              $size: {
-                $filter: {
-                  input: "$$ROOT",
-                  as: "message",
-                  cond: { $and: [{ $eq: ["$$message.isRead", false] }, { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }] }
+          {
+              $lookup: {
+                  from: "enterpriseusers",
+                  localField: "receiverId",
+                  foreignField: "_id",
+                  as: "receiverUserInfo",
+              },
+          },
+          {
+              $addFields: {
+                  senderName: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$senderInfo.companyName", 0] },
+                          "Unknown Sender",
+                      ],
+                  },
+                  receiverName: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$receiverInfo.name", 0] },
+                          { $arrayElemAt: ["$receiverInfo.username", 0] },
+                          "Unknown Receiver",
+                      ],
+                  },
+                  senderProfilePic: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$senderInfo.image", 0] },
+                          "",
+                      ],
+                  },
+                  receiverProfilePic: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$receiverUserInfo.image", 0] },
+                          "",
+                      ],
+                  },
+              },
+          },
+          {
+            $addFields: {
+                unreadCount: {
+                    $size: {
+                        $filter: {
+                            input: { $ifNull: ["$messages", []] },  // Fallback to an empty array
+                            as: "message",
+                            cond: { 
+                                $and: [
+                                    { $eq: ["$$message.isRead", false] }, 
+                                    { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }
+                                ] 
+                            }
+                        }
+                    }
                 }
-              }
-            },
-          },
+            }
         },
-        { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
+          { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0, messages: 0 } },
       ]);
-
+  
       console.log(
-        "Last Messages Result (Processed):",
-        JSON.stringify(lastMessages, null, 2)
+          "Last Messages Result (Processed):",
+          JSON.stringify(lastMessages, null, 2)
       );
       return res.status(200).json(lastMessages);
-    } else {
+  }
+   else {
       return res
         .status(400)
         .json({ error: "Either chatId or userId must be provided." });
