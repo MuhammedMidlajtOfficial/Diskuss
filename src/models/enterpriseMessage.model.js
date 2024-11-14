@@ -8,4 +8,4 @@ const enterpriseMessageSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('enterpriseMessage', enterpriseMessageSchema);
+module.exports = mongoose.model('EnterpriseMessage', enterpriseMessageSchema);
