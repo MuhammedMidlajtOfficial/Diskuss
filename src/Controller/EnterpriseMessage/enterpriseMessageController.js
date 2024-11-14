@@ -2,7 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const enterpriseMessage = require("../../models/enterpriseMessage.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
-const ContactEnterprise = require("../../models/contact.individul.model");
+const ContactEnterprise = require("../../models/contact.enterprise.model")
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
@@ -44,7 +44,7 @@ exports.sendMessage = async (req, res) => {
       return res.status(404).json({ error: "Receiver not found in contact list" });
     }
 
-    const receiver = await User.findById(receiverId);
+    const receiver = await EnterpriseUser.findById(receiverId);
     if (!receiver) {
       return res.status(404).json({ error: "Receiver user not found" });
     }
@@ -123,7 +123,7 @@ exports.getMessages = async (req, res) => {
         { $replaceRoot: { newRoot: "$lastMessage" } },
         {
           $lookup: {
-            from: "EnterpriseUsers", // Ensure "users" is correct for sender info
+            from: "enterpriseusers", // Ensure "users" is correct for sender info
             localField: "senderId",
             foreignField: "_id",
             as: "senderInfo",
@@ -131,7 +131,7 @@ exports.getMessages = async (req, res) => {
         },
         {
           $lookup: {
-            from: "ContactEnterprises",
+            from: "contactenterprises",
             let: { receiverId: "$receiverId" },
             pipeline: [
               { $unwind: "$contacts" },
@@ -152,7 +152,7 @@ exports.getMessages = async (req, res) => {
         },
         {
           $lookup: {
-            from: "EnterpriseUsers", // To fetch the profile picture of the receiver
+            from: "enterpriseusers", // To fetch the profile picture of the receiver
             localField: "receiverId", // Receiver's ID
             foreignField: "_id",
             as: "receiverUserInfo",
@@ -162,7 +162,7 @@ exports.getMessages = async (req, res) => {
           $addFields: {
             senderName: {
               $ifNull: [
-                { $arrayElemAt: ["$senderInfo.username", 0] },
+                { $arrayElemAt: ["$senderInfo.companyName", 0] },
                 "Unknown Sender",
               ],
             },

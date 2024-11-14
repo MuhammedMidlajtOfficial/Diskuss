@@ -24,6 +24,11 @@ exports.setSocketIO = (socketIO) => {
       console.log(`User with socket ID ${socket.id} joined chat room ${chatId}`);
     });
 
+    // Handle chat messages
+    socket.on('chat message', ({ room, msg }) => {
+      io.to(room).emit('chat message', msg);
+  });
+
     // Track user connection
     socket.on("registerUser", (userId) => {
       connectedUsers.set(userId, socket.id);
