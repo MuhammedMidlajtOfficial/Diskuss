@@ -23,7 +23,7 @@ const findAllContacts = async () => {
  */
 const findContactById = async (contactOwnerId, contactId) => {
     try {
-        const contactOwner = await Contact.findById(contactOwnerId).exec();
+        const contactOwner = await Contact.find(contactOwnerId).exec();
         if (!contactOwner) {
             throw new Error("Contact owner not found");
         }
