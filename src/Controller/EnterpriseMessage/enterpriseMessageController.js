@@ -1,8 +1,9 @@
 let io;
 const mongoose = require("mongoose");
-const Message = require("../../models/messageModel");
-const { individualUserCollection: User } = require("../../DBConfig");
-const ContactIndividual = require("../../models/contact.individul.model");
+const enterpriseMessage = require("../../models/enterpriseMessage.model");
+const EnterpriseUser = require("../../models/enterpriseUser");
+const ContactEnterprise = require("../../models/contact.enterprise.model")
+
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
@@ -12,8 +13,8 @@ exports.setSocketIO = (socketIO) => {
 exports.sendMessage = async (req, res) => {
   const { senderId, receiverId, content } = req.body;
   try {
-    // Ensure senderId is from the User collection
-    const sender = await User.findById(senderId);
+    // Ensure senderId is from the EnterpriseUser collection
+    const sender = await EnterpriseUser.findById(senderId);
     if (!sender) {
       return res.status(404).json({ error: "Sender not found" });
     }
@@ -35,8 +36,8 @@ exports.sendMessage = async (req, res) => {
     // Log the query structure
     console.log("Running query:", JSON.stringify(query, null, 2));
 
-    // Find the receiver in ContactIndividual by contactOwnerId and contacts.userId
-    const contact = await ContactIndividual.findOne(query);
+    // Find the receiver in ContactEnterprise by contactOwnerId and contacts.userId
+    const contact = await ContactEnterprise.findOne(query);
 
     console.log("Contact document:", contact);
 
@@ -44,7 +45,7 @@ exports.sendMessage = async (req, res) => {
       return res.status(404).json({ error: "Receiver not found in contact list" });
     }
 
-    const receiver = await User.findById(receiverId);
+    const receiver = await EnterpriseUser.findById(receiverId);
     if (!receiver) {
       return res.status(404).json({ error: "Receiver user not found" });
     }
@@ -53,7 +54,7 @@ exports.sendMessage = async (req, res) => {
     const chatId = [senderId, receiverId].sort().join("-");
 
     // Create the message
-    const message = await Message.create({
+    const message = await enterpriseMessage.create({
       chatId,
       senderId,
       receiverId,
@@ -64,12 +65,14 @@ exports.sendMessage = async (req, res) => {
     // Emit the message to the respective chat room (chatId)
     io.to(chatId).emit("receiveMessage", {
       ...message.toObject(),
+
       senderName: sender.username, // Assuming sender has a 'username' field
       receiverName: receiver.username, // Assuming receiver has a 'name' field
     });
 
     res.status(201).json({
       ...message.toObject(),
+
       senderName: sender.username,
       receiverName: receiver.username,
     });
@@ -81,47 +84,28 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-//Mark Messages as Read
-exports.markMessagesAsRead = async (req, res) => {
-  const { chatId, userId } = req.body;
-
-  try {
-    const result = await Message.updateMany(
-      { chatId, receiverId: userId, isRead: false },
-      { $set: { isRead: true } }
-    );
-
-    res.status(200).json({ message: "Messages marked as read", result });
-  } catch (error) {
-    console.error("Error marking messages as read:", error);
-    res.status(500).json({ error: "Failed to mark messages as read." });
-  }
-};
-
-
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
   const { chatId, userId } = req.query;
 
   try {
     if (chatId) {
-      const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+      const messages = await enterpriseMessage.find({ chatId }).sort({ timestamp: 1 });
+      // .populate("senderId", "name username") // Populate sender name and username
+      // .populate("receiverId", "name username"); // Populate receiver name only
 
-      // Get unread messages count for the current user in this chat
-      const unreadCount = await Message.countDocuments({
-        chatId,
-        receiverId: userId,
-        isRead: false,
-      });
 
-      return res.status(200).json({
-        messages: messages.map((message) => ({
+
+      return res.status(200).json(
+        messages.map((message) => ({
           ...message.toObject(),
-        })),
-        unreadCount,
-      });
+          // senderName: message.senderId?.name || message.senderId?.username || "Unknown Sender",
+          // receiverName: message.receiverId?.name ||message.receiverId?.username || "Unknown Receiver",
+
+        }))
+      );
     } else if (userId) {
-      const lastMessages = await Message.aggregate([
+      const lastMessages = await enterpriseMessage.aggregate([
         {
           $match: {
             $or: [
@@ -140,7 +124,7 @@ exports.getMessages = async (req, res) => {
         { $replaceRoot: { newRoot: "$lastMessage" } },
         {
           $lookup: {
-            from: "users", // Ensure "users" is correct for sender info
+            from: "enterpriseusers", // Ensure "users" is correct for sender info
             localField: "senderId",
             foreignField: "_id",
             as: "senderInfo",
@@ -148,7 +132,7 @@ exports.getMessages = async (req, res) => {
         },
         {
           $lookup: {
-            from: "contactindividuals",
+            from: "contactenterprises",
             let: { receiverId: "$receiverId" },
             pipeline: [
               { $unwind: "$contacts" },
@@ -169,7 +153,7 @@ exports.getMessages = async (req, res) => {
         },
         {
           $lookup: {
-            from: "users", // To fetch the profile picture of the receiver
+            from: "enterpriseusers", // To fetch the profile picture of the receiver
             localField: "receiverId", // Receiver's ID
             foreignField: "_id",
             as: "receiverUserInfo",
@@ -179,7 +163,7 @@ exports.getMessages = async (req, res) => {
           $addFields: {
             senderName: {
               $ifNull: [
-                { $arrayElemAt: ["$senderInfo.username", 0] },
+                { $arrayElemAt: ["$senderInfo.companyName", 0] },
                 "Unknown Sender",
               ],
             },
@@ -203,21 +187,27 @@ exports.getMessages = async (req, res) => {
               ],
 
             },
+            // name: {
+            //   $cond: {
+            //     if: { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
+            //     then: {
+            //       $ifNull: [
+            //         { $arrayElemAt: ["$receiverInfo.name", 0] },
+            //         "Unknown Receiver",
+            //       ],
+            //     },
+            //     else: {
+            //       $ifNull: [
+            //         { $arrayElemAt: ["$senderInfo.username", 0] },
+            //         "Unknown Sender",
+            //       ],
+            //     },
+            //   },
+            // },
+
           },
+
         },
-          {
-            $addFields: {
-              unreadCount: {
-                $size: {
-                  $filter: {
-                    input: "$$ROOT",
-                    as: "message",
-                    cond: { $and: [{ $eq: ["$$message.isRead", false] }, { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }] }
-                  }
-                }
-              },
-            },
-          },
         { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
       ]);
 
@@ -236,4 +226,3 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ error: "Error retrieving messages." });
   }
 };
-

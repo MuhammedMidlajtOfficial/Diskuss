@@ -3,7 +3,7 @@ const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployeCardModel = require('../../models/enterpriseEmployeCard.model');
 const mailSender = require('../../util/mailSender');
-const Contact  = require('../../models/contact.model');
+const Contact  = require('../../models/contact.individul.model');
 
 
 module.exports.getCardForUser = async (req, res) => {
@@ -19,39 +19,6 @@ module.exports.getCardForUser = async (req, res) => {
         res.status(500).json({ message: "Failed to get card", error });
     }
 };
-
-module.exports.getCardForEnterprise = async (req, res) => {
-    try {
-        const { id: userId } = req.params;
-        const user = await enterpriseUser.findOne({ _id : userId }).populate('empCards');
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        console.log(user.empCards);
-        return res.status(200).json({ cards:user.empCards })
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Failed to fetch employee cards", error });
-    }
-};
-
-module.exports.getUserOfEnterprise = async (req, res) => {
-    try {
-        const { id: userId } = req.params;
-        const user = await enterpriseUser.findOne({ _id : userId }).populate({
-            path: 'empId',
-            strictPopulate: false, 
-        } )
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        console.log(user);
-        return res.status(200).json({ employee:user.empId })
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Failed to fetch employee", error });
-    }
-}
 
 module.exports.getContactOfEmployee = async (req, res) => {
     try {
@@ -74,7 +41,6 @@ module.exports.getContactOfEmployee = async (req, res) => {
 module.exports.createCard = async (req, res) => {
     const {
         enterpriseId,
-        userPersonalEmail,
         email,
         businessName,
         empName,
@@ -92,7 +58,7 @@ module.exports.createCard = async (req, res) => {
 
     try {
         // Check for missing fields
-        if (!email || !passwordRaw || !userPersonalEmail || !enterpriseId || !businessName || !empName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
+        if (!email || !passwordRaw || !enterpriseId || !businessName || !empName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -160,15 +126,18 @@ module.exports.createCard = async (req, res) => {
         if (result) {
             await enterpriseUser.updateOne(
                 { _id: enterpriseId },
-                { $push: { 
-                    empCards: result._id,
-                    empId: newUser._id
-                } }
+                { 
+                    $push: { 
+                        empCards: result._id,
+                        empId: newUser._id,
+                    },
+                    $inc: { cardNo: 1 }  // Increment cardNo by 1
+                }
             );
 
             res.status(201).json({ message: "Card added successfully", entryId: result._id });
 
-            sendVerificationEmail(userPersonalEmail,newUser.email,passwordRaw)
+            sendVerificationEmail(email,newUser.email,passwordRaw)
         } else {
             return res.status(500).json({ message: "Failed to save card" });
         }
@@ -181,7 +150,7 @@ module.exports.createCard = async (req, res) => {
 
 module.exports.updateProfile = async (req, res) => {
     try {
-      const { userId, image, phnNumber, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body;
+      const { userId, image, mobile, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body;
   
       const isUserExist = await enterpriseEmployeModel.findOne({ _id: userId }).exec();
       if (!isUserExist) {
@@ -207,7 +176,7 @@ module.exports.updateProfile = async (req, res) => {
                 role,
                 username: name,
                 website,
-                phnNumber,
+                mobile,
                 address,
                 "socialMedia.whatsappNo": whatsappNo,
                 "socialMedia.facebookLink": facebookLink,
@@ -217,11 +186,11 @@ module.exports.updateProfile = async (req, res) => {
             }
         );
         if (user.modifiedCount > 0) {
-            const forNumber = await enterpriseUser.findOne({ _id: userId }).select('phnNumber').exec();
-            const existingContact = await Contact.find({ phnNumber: forNumber.phnNumber });
+            const forNumber = await enterpriseEmployeModel.findOne({ _id: userId }).select('mobile').exec();
+            const existingContact = await Contact.find({ phnNumber: forNumber.mobile });
             if (existingContact) {
                 const contact = await Contact.updateOne(
-                    { phnNumber: forNumber.phnNumber },
+                    { phnNumber: forNumber.mobile },
                     { $set: { isDiskussUser: true, userId: forNumber._id } }
                 );
                 if (contact.modifiedCount > 0) {

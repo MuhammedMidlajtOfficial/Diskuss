@@ -1,23 +1,31 @@
 const mongoose = require("mongoose");
 
 const teamSchema = new mongoose.Schema({
-  teamName:{
-    type:String,
-    required:true
-  },
-  permissions:{
-    type:String,
-    required:true
-  },
-  teamMembersId:[ {
+  teamOwnerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'EnterpriseEmployee',
-    required:true
-  } ],
+    ref:'EnterpriseUser'
+  },
+  teamName: {
+    type: String,
+    required: true
+  },
+  permissions: {
+    type: String,
+    required: true
+  },
+  teamMembersId: [
+    {
+      type: String,
+      required: true,
+    }
+  ],
   teamLead: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'EnterpriseEmployee',
-    required:true
+    type: String,
+    required: true,
+  },
+  TLPermissions:{
+    type: String,
+    required: true,
   }
 });
 

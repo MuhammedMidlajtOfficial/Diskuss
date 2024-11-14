@@ -1,4 +1,4 @@
-const { individualUserCollection } = require("../../DBConfig");
+const enterpriseUser = require("../../models/enterpriseUser");
 const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
 
@@ -6,7 +6,7 @@ module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id
     
-    const isUserExist = individualUserCollection.findOne({ _id:userId })
+    const isUserExist = enterpriseUser.findOne({ _id:userId })
     if(!isUserExist){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
@@ -41,7 +41,7 @@ module.exports.createCard = async (req, res) => {
     website
   } = req.body;
 
-  const isUserExist = individualUserCollection.findOne({ _id:userId })
+  const isUserExist = enterpriseUser.findOne({ _id:userId })
   if(!isUserExist){
     return res.status(400).json({ message: 'Invalid user ID' });
   }
@@ -80,7 +80,7 @@ module.exports.createCard = async (req, res) => {
   try {
     const result = await newCard.save();
     if (result) {
-      await individualUserCollection.updateOne(
+      await enterpriseUser.updateOne(
         { _id: userId },
         { $inc: { cardNo: 1 } }  // Increment cardNo by 1
       );
@@ -111,7 +111,7 @@ module.exports.updateCard = async (req, res) => {
       website
     } = req.body;
 
-    const isUserExist = individualUserCollection.findOne({ _id:userId })
+    const isUserExist = enterpriseUser.findOne({ _id:userId })
     if(!isUserExist){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
@@ -172,7 +172,7 @@ module.exports.updateCard = async (req, res) => {
 module.exports.deleteCard = async (req, res) => {
   const { userId, cardId } = req.body;
 
-  const isUserExist = individualUserCollection.findOne({ _id:userId })
+  const isUserExist = enterpriseUser.findOne({ _id:userId })
   if(!isUserExist){
     return res.status(400).json({ message: 'Invalid user ID' });
   }
@@ -181,7 +181,7 @@ module.exports.deleteCard = async (req, res) => {
     const result = await Card.deleteOne({ userId, _id: cardId });
     console.log(result);
     if (result.deletedCount > 0) {
-      await individualUserCollection.updateOne(
+      await enterpriseUser.updateOne(
         { _id: userId },
         { $inc: { cardNo: -1 } }
       );
@@ -201,7 +201,7 @@ async function isValidUserId(userId) {
       const objectId = ObjectId.isValid(userId) ? new ObjectId(userId) : null;
       if (!objectId) return false; // If userId is not a valid ObjectId, return false
 
-      const user = await individualUserCollection.findOne({ _id: objectId });
+      const user = await enterpriseUser.findOne({ _id: objectId });
       return user !== null;
   } catch (error) {
       console.error('Error checking user ID:', error);

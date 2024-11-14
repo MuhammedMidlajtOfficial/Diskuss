@@ -7,41 +7,42 @@ exports.setSocketIO = (socketIO) => {
 
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
+
     socket.on("error", (err) => {
       console.error("Socket error:", err);
     });
-  
+
     socket.on("connect_error", (err) => {
       console.log("connect error", err);
       console.error("Connection error:", err);
     });
 
-    // Handle chat messages
-    socket.on('chat message', (data) => {
-      // console.log("chat message soceket with ", socket)
-      console.log("Data : ", data)
-      const parsedData = JSON.parse(data) 
-      console.log("ROOM : ", parsedData.room)
-      console.log("Message : ", parsedData.msg)
-      io.to(parsedData.room).emit('chat message', parsedData.msg);
+    // When a user joins a chat room
+    socket.on("joinChat", (chatId) => {
+      socket.join(chatId);
+      const msg = `Welcome to the chat room ${chatId}!`;
+      socket.emit("chat message", msg); 
+      console.log(`User with socket ID ${socket.id} joined chat room ${chatId}`);
     });
 
-     // When a user joins a chat room
-     socket.on("joinChat", (chatId) => {
-      socket.join(chatId);
-      
-      socket.emit("joinChat", chatId);
-      console.log(
-        `User with socket ID ${socket.id} [joined] chat room ${chatId}`
-      );
-    });
+    // Handle chat messages
+    socket.on('chat message', ({ room, msg }) => {
+      io.to(room).emit('chat message', msg);
+  });
 
     // Track user connection
     socket.on("registerUser", (userId) => {
       connectedUsers.set(userId, socket.id);
       console.log(`User ${userId} connected with socket ID ${socket.id}`);
 
-     
+      // When a user joins a chat room
+      socket.on("joinChat", (chatId) => {
+        socket.join(chatId);
+        console.log(
+          `User with socket ID ${socket.id} joined chat room ${chatId}`
+        );
+      });
+
       // Notify other clients about the user's online status
       socket.broadcast.emit("userConnected", { userId, status: "online" });
     });

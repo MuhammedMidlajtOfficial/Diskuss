@@ -1,7 +1,8 @@
-const MeetingBase = require("../../models/MeetingModel")
+const MeetingBase = require("../../models/EnterpriseMeetingModel")
 const moment = require('moment');
 const cron = require('node-cron');
-const {individualUserCollection: Profile} = require('../../models/individualUser')
+const Profile = require('../../models/enterpriseUser')
+
 const mongoose = require("mongoose");
 const Contact = require('../../models/contact.individul.model')
 const Notification = require('../../models/NotificationModel')
@@ -71,6 +72,9 @@ const CreateMeeting = async (req, res) => {
         //  console.log(meetingOwner);
          
         try {
+            
+            
+    
             var ownerProfile = await Profile.findOneAndUpdate(
                 { _id: meetingOwner },
                 { $push: { meetings: savedMeeting._id } },
