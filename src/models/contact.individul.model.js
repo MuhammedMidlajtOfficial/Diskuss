@@ -14,6 +14,7 @@ const contactSchema = new mongoose.Schema({
     scheduledTime: { type: Date },
     notes: { type: String},
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required:false, default:'' }, // Reference to the user who created the contact
+    image:{ type:String,  },
     isDiskussUser: { type:Boolean , default:false}
   } ]
 }, { timestamps: true });

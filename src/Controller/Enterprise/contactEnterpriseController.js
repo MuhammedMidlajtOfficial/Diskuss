@@ -90,7 +90,9 @@ const createContact = async (req, res) => {
             }]
         };
 
-        if (existUser) {
+        console.log('existUser._id-',existUser._id);
+        console.log('contactDetails',contactDetails);
+        if (existUser && existUser._id) {
             contactDetails.contacts[0].userId = existUser._id; // Assign userId only if existUser is found
         }
 

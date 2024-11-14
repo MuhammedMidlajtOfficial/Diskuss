@@ -13,7 +13,7 @@ const teamSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  teamMembersId: [
+  teamMembers: [
     {
       type: String,
       required: true,
