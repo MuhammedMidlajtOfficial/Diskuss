@@ -108,14 +108,6 @@ exports.getMessages = async (req, res) => {
   try {
     if (chatId) {
       const messages = await enterpriseMessage.find({ chatId }).sort({ timestamp: 1 });
-
-      // Get unread messages count for the current user in this chat
-      const unreadCount = await enterpriseMessage.countDocuments({
-        chatId,
-        receiverId: userId,
-        isRead: false,
-      });
-
       return res.status(200).json({
         messages: messages.map((message) => ({
           ...message.toObject(),
@@ -124,20 +116,15 @@ exports.getMessages = async (req, res) => {
       });
     }else if (userId) {
       const lastMessages = await enterpriseMessage.aggregate([
-        {
-          $match: {
-            $or: [
-              { senderId: new mongoose.Types.ObjectId(userId) },
-              { receiverId: new mongoose.Types.ObjectId(userId) },
-            ],
+          {
+              $match: {
+                  $or: [
+                      { senderId: new mongoose.Types.ObjectId(userId) },
+                      { receiverId: new mongoose.Types.ObjectId(userId) },
+                  ],
+              },
           },
-        },
-        { $sort: { timestamp: -1 } },
-        {
-          $group: {
-            _id: "$chatId",
-            lastMessage: { $first: "$$ROOT" },
-          },
+
         },
         { $replaceRoot: { newRoot: "$lastMessage" } },
         {
@@ -158,16 +145,86 @@ exports.getMessages = async (req, res) => {
                 $match: {
                   $expr: { $eq: ["$contacts.userId", "$$receiverId"] },
                 },
+
               },
-              {
-                $addFields: {
-                  name: "$contacts.name",
-                  username: "$contacts.username",
-                },
-              },
-            ],
-            as: "receiverInfo",
           },
+          {
+              $lookup: {
+                  from: "contactenterprises",
+                  let: { receiverId: "$receiverId" },
+                  pipeline: [
+                      { $unwind: "$contacts" },
+                      {
+                          $match: {
+                              $expr: { $eq: ["$contacts.userId", "$$receiverId"] },
+                          },
+                      },
+                      {
+                          $addFields: {
+                              name: "$contacts.name",
+                              username: "$contacts.username",
+                          },
+                      },
+                  ],
+                  as: "receiverInfo",
+              },
+          },
+
+          {
+              $lookup: {
+                  from: "enterpriseusers",
+                  localField: "receiverId",
+                  foreignField: "_id",
+                  as: "receiverUserInfo",
+              },
+          },
+          {
+              $addFields: {
+                  senderName: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$senderInfo.companyName", 0] },
+                          "Unknown Sender",
+                      ],
+                  },
+                  receiverName: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$receiverInfo.name", 0] },
+                          { $arrayElemAt: ["$receiverInfo.username", 0] },
+                          "Unknown Receiver",
+                      ],
+                  },
+                  senderProfilePic: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$senderInfo.image", 0] },
+                          "",
+                      ],
+                  },
+                  receiverProfilePic: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$receiverUserInfo.image", 0] },
+                          "",
+                      ],
+                  },
+              },
+          },
+          {
+            $addFields: {
+                unreadCount: {
+                    $size: {
+                        $filter: {
+                            input: { $ifNull: ["$messages", []] },  // Fallback to an empty array
+                            as: "message",
+                            cond: { 
+                                $and: [
+                                    { $eq: ["$$message.isRead", false] }, 
+                                    { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }
+                                ] 
+                            }
+                        }
+                    }
+                }
+            }
+
         },
         {
           $lookup: {
@@ -218,16 +275,18 @@ exports.getMessages = async (req, res) => {
               }
             },
           },
-        },
-        { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
-      ]);
 
+        },
+          { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0, messages: 0 } },
+      ]);
+  
       console.log(
-        "Last Messages Result (Processed):",
-        JSON.stringify(lastMessages, null, 2)
+          "Last Messages Result (Processed):",
+          JSON.stringify(lastMessages, null, 2)
       );
       return res.status(200).json(lastMessages);
-    } else {
+  }
+   else {
       return res
         .status(400)
         .json({ error: "Either chatId or userId must be provided." });

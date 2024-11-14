@@ -107,12 +107,14 @@ exports.getMessages = async (req, res) => {
     if (chatId) {
       const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
 
+
       // Get unread messages count for the current user in this chat
-      const unreadCount = await Message.countDocuments({
-        chatId,
-        receiverId: userId,
-        isRead: false,
-      });
+      // const unreadCount = await Message.countDocuments({
+      //   chatId,
+      //   receiverId: userId,
+      //   isRead: false,
+      // });
+
 
       return res.status(200).json({
         messages: messages.map((message) => ({
@@ -205,19 +207,22 @@ exports.getMessages = async (req, res) => {
             },
           },
         },
-          {
-            $addFields: {
-              unreadCount: {
-                $size: {
-                  $filter: {
-                    input: "$$ROOT",
-                    as: "message",
-                    cond: { $and: [{ $eq: ["$$message.isRead", false] }, { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }] }
-                  }
-                }
-              },
-            },
-          },
+
+          // {
+          //   $addFields: {
+          //     unreadCount: {
+          //       $size: {
+          //         $filter: {
+          //           input: "$$ROOT",
+          //           as: "message",
+          //           cond: { $and: [{ $eq: ["$$message.isRead", false] }, { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }] }
+          //         }
+          //       }
+          //     },
+          //   },
+          // },
+
+         
         { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
       ]);
 
