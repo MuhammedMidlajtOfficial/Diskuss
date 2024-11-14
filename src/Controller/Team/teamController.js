@@ -60,10 +60,10 @@ module.exports.getMembersOfTeam = async (req, res) => {
 
 module.exports.createTeam = async (req, res) => {
     try {
-        const { teamOwnerId, teamName, permissions, teamMembersId, TLPermissions, teamLead } = req.body;
+        const { teamOwnerId, teamName, permissions, teamMembers, TLPermissions, teamLead } = req.body;
         
         // Check for missing required fields
-        if (!teamOwnerId || !teamName || !permissions || !teamMembersId || !teamLead || !TLPermissions) {
+        if (!teamOwnerId || !teamName || !permissions || !teamMembers || !teamLead || !TLPermissions) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -72,7 +72,7 @@ module.exports.createTeam = async (req, res) => {
             teamOwnerId,
             teamName,
             permissions,
-            teamMembersId,
+            teamMembers,
             TLPermissions,
             teamLead
         });
