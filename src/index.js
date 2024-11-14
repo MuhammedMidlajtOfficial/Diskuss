@@ -11,6 +11,7 @@ const server = http.createServer(app);
 const socketController = require('./Controller/Socketio/socketController.js');
 const messageController = require('./Controller/Message/messageController');
 const groupmessageController = require('./Controller/Message/groupmessageController.js');
+const enterpriseMessageController = require('./Controller/EnterpriseMessage/enterpriseMessageController.js');
 const socketControllers = require('./Controller/Socket.io/NotificationSocketIo.js');
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
 // const authEnterpriseRouter = require('./Routes/Enterprise/authEnterpriseRouter.js')
@@ -39,6 +40,7 @@ const io = socketIo(server, {
 socketController.setSocketIO(io);
 messageController.setSocketIO(io);
 groupmessageController.setSocketIO(io);
+enterpriseMessageController.setSocketIO(io);
 // Initialize SocketController with Socket.io instance
 socketControllers.setSocketIO(io);
 
