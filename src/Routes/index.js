@@ -24,8 +24,6 @@ const Preferences = require('./Permission/PermissionModel.js')
 
 const analyticRouter = require("./Analytic/analyticRouter.js")
 
-const analyticRouter = require("./Analytic/analyticRouter.js")
-
 
 
 
