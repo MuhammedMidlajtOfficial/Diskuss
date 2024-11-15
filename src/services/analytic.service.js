@@ -1,59 +1,65 @@
-// services/ContactService.js
-const Analytic  = require('../models/analytics/analytic.model');
-
-
-/**
- * Find all Share
- */
-const findAllShareByUserId = async () => {
-    try {
-        const contacts = await A.find().exec();
-        return contacts;
-    } catch (error) {
-        console.error("Error fetching Contacts:", error);
-        throw error; // Re-throw the error for higher-level handling if needed
-    }
+const Analytic = require("../models/analytics/analytic.model")
+exports.logShare = async (cardId, userId) => {
+    const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
+    await share.save();
 };
 
-/**
- * Create a new Share
- * @returns {Promise<Object>} - Returns the created Contact.
- */
-const createShare = async (ShareData) => {
-    try {
-        const newShare = await new Analytic.Share(ShareData);
-        const savedShare = await newShare.save();
-        return savedShare;
-    } catch (error) {
-        console.error("Error creating Share:", error);
-        throw error;
+exports.logView = async (cardId, visitorId) => {
+    const now = new Date();
+    let isUnique = false;
+
+    const existingVisitor = await Analytic.Visitor.findOne({ cardId, visitorId });
+    if (!existingVisitor) {
+        isUnique = true;
+        const newVisitor = new Analytic.Visitor({ cardId, visitorId, firstVisit: now, lastVisit: now });
+        await newVisitor.save();
+    } else {
+        existingVisitor.lastVisit = now;
+        await existingVisitor.save();
     }
+
+    const view = new Analytic.View({ cardId, viewedAt: now, isUnique });
+    await view.save();
+
+    await Analytic.Share.updateOne({ cardId, isViewed: false }, { isViewed: true });
 };
 
-/**
- * Get an Contact by ID
- * @param {({ cardId, visitorId })<Object>} ContactId - The unique identifier of the Contact to retrieve.
- * @returns {Promise<Object>} - Returns the found Contact.
- * @throws {Error} - Throws an error if the Contact is not found.
- */
-const findVisitor = async ({ cardId, visitorId }) => {
-    try {
-
-        const visitor = await Visitor.findOne({ cardId, visitorId });
-        // const contact = await Contact.findById(ContactId).exec();
-        if (!visitor) {
-            throw new Error("Visitor not found");
-        }
-        return visitor;
-    } catch (error) {
-        console.error("Error fetching Visitor by ID:", error);
-        throw error;
-    }
+exports.logClick = async (cardId, userId, link) => {
+    const click = new Analytic.Click({ cardId, userId, link, clickedAt: new Date() });
+    await click.save();
 };
 
+exports.getAnalytics = async (cardId, period) => {
+    const now = new Date();
+    let startDate;
 
-module.exports = {
-    findAllShareByUserId,
-    createShare,
-    findVisitor
-}
+    switch (period) {
+        case 'today':
+            startDate = new Date(now.setHours(0, 0, 0, 0));
+            break;
+        case 'week':
+            startDate = new Date(now.setDate(now.getDate() - 7));
+            break;
+        case 'month':
+            startDate = new Date(now.setMonth(now.getMonth() - 1));
+            break;
+        default:
+            startDate = new Date(0);
+    }
+
+    const viewsCount = await Analytic.View.countDocuments({ cardId, viewedAt: { $gte: startDate } });
+    const uniqueVisitorsCount = await Analytic.Visitor.countDocuments({ cardId, firstVisit: { $gte: startDate } });
+    const totalShares = await Analytic.Share.countDocuments({ cardId, sharedAt: { $gte: startDate } });
+    const viewedShares = await Analytic.Share.countDocuments({ cardId, sharedAt: { $gte: startDate }, isViewed: true });
+    const unviewedShares = totalShares - viewedShares;
+    const clicksCount = await Analytic.Click.countDocuments({ cardId, clickedAt: { $gte: startDate } });
+    const clickThroughRate = viewsCount > 0 ? (clicksCount / viewsCount) * 100 : 0;
+
+    return {
+        views: viewsCount,
+        uniqueVisitors: uniqueVisitorsCount,
+        shares: { total: totalShares, viewed: viewedShares, unviewed: unviewedShares },
+        clicks: clicksCount,
+        clickThroughRate: clickThroughRate.toFixed(2),
+    };
+};
