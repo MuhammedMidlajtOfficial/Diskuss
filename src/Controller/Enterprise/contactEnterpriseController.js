@@ -93,11 +93,11 @@ const createContact = async (req, res) => {
             }]
         };
 
-        console.log('existUser._id:', existUser ? existUser._id : 'existUser is null');
+        console.log('existUser._id:', existUser ? existUser?._id : 'existUser is null');
         console.log('contactDetails:', contactDetails);
 
-        if (existUser && existUser._id) {
-            contactDetails.contacts[0].userId = existUser._id;
+        if (existUser && existUser?._id) {
+            contactDetails.contacts[0].userId = existUser?._id;
         }
 
         newContact = await Contact.create(contactDetails);
@@ -109,7 +109,7 @@ const createContact = async (req, res) => {
             if (updateUser) {
                 await enterpriseUser.updateOne(
                     { _id: contactOwnerId },
-                    { $push: { contacts: newContact._id } }
+                    { $push: { contacts: newContact?._id } }
                 );
                 console.log('Updated contact owner with new contact ID:', newContact._id);
             } else {
