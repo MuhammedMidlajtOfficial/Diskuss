@@ -23,7 +23,6 @@ const findOneById = async (userId) => {
     console.log("user subscription : ", userSubscriptions);
 
     return userSubscriptions;
-    return
   } catch (error) {
     console.error("Error fetching User Subscriptions plan:", error);
     throw error; // Re-throw the error for higher-level handling if needed

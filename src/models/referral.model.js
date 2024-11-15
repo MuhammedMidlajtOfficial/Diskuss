@@ -2,10 +2,19 @@ const mongoose = require("mongoose");
 
 
 const ReferralSchema = new mongoose.Schema({
-    referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
-    refereePhoneNo: { type: String, required: true },   // Reference to the referred user (user_id)
+    referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
+    inviteePhoneNo: { type: String, required: true }, 
+    invitee: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Reference to the referred user (user_id)
+    status: { type: String, enum: ['Invited', 'Registered', 'Card Created'], default: 'Invited' },
+    rewardsEarned: { type: Number, default: 0 }
 }, { timestamps: true });
 
+
+const rewardSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  totalCoins: { type: Number, default: 0 },
+  milestonesAchieved: { type: Array, default: [] }
+});
 // const ReferralSchema = new mongoose.Schema({
 //     referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
 //     refereeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },   // Reference to the referred user (user_id)
@@ -49,6 +58,7 @@ const ReferralLevelSchema = new mongoose.Schema({
   // Export the model based on the schema
   module.exports = {
     ReferralLevel: mongoose.model('ReferralLevel', ReferralLevelSchema),
+    RewardSchema : mongoose.model('rewardSchema', rewardSchema),
     Action: mongoose.model('Action', ActionSchema),
     Incentive: mongoose.model('Incentive', IncentiveSchema),
     Referral: mongoose.model('Referral', ReferralSchema),

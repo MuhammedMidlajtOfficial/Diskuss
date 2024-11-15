@@ -18,6 +18,9 @@ const IndividualUserSchema = new mongoose.Schema({
       type: Boolean,
       default: false,
     },
+    referralCode: String,  // Unique referral code
+    coins: { type: Number, default: 0 },
+    invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }]
     
   }, { timestamps: true });
   
