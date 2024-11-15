@@ -109,11 +109,11 @@ exports.getMessages = async (req, res) => {
 
 
       // Get unread messages count for the current user in this chat
-      // const unreadCount = await Message.countDocuments({
-      //   chatId,
-      //   receiverId: userId,
-      //   isRead: false,
-      // });
+      const unreadCount = await Message.countDocuments({
+        chatId,
+        receiverId: userId,
+        isRead: false,
+      });
 
 
       return res.status(200).json({
@@ -137,12 +137,37 @@ exports.getMessages = async (req, res) => {
           $group: {
             _id: "$chatId",
             lastMessage: { $first: "$$ROOT" },
+            messages: { $push: "$$ROOT" }, // Collect all messages in the chat
           },
         },
-        { $replaceRoot: { newRoot: "$lastMessage" } },
+        {
+          $addFields: {
+            unreadCount: {
+              $size: {
+                $filter: {
+                  input: "$messages",
+                  as: "message",
+                  cond: {
+                    $and: [
+                      { $eq: ["$$message.isRead", false] },
+                      { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            lastMessage: 1, // Keep the last message field
+            unreadCount: 1, // Include the unread count
+          },
+        },
+        { $replaceRoot: { newRoot: { $mergeObjects: ["$lastMessage", { unreadCount: "$unreadCount" }] } } },
         {
           $lookup: {
-            from: "users", // Ensure "users" is correct for sender info
+            from: "users",
             localField: "senderId",
             foreignField: "_id",
             as: "senderInfo",
@@ -171,8 +196,8 @@ exports.getMessages = async (req, res) => {
         },
         {
           $lookup: {
-            from: "users", // To fetch the profile picture of the receiver
-            localField: "receiverId", // Receiver's ID
+            from: "users",
+            localField: "receiverId",
             foreignField: "_id",
             as: "receiverUserInfo",
           },
@@ -194,43 +219,25 @@ exports.getMessages = async (req, res) => {
             },
             senderProfilePic: {
               $ifNull: [
-                { $arrayElemAt: ["$senderInfo.image", 0] }, // Profile picture for sender
-                "", // Default to empty if not available
+                { $arrayElemAt: ["$senderInfo.image", 0] },
+                "",
               ],
             },
             receiverProfilePic: {
               $ifNull: [
-                { $arrayElemAt: ["$receiverUserInfo.image", 0] }, // Profile picture for receiver
-                "", // Default to empty if not available
+                { $arrayElemAt: ["$receiverUserInfo.image", 0] },
+                "",
               ],
-
             },
           },
         },
-
-          // {
-          //   $addFields: {
-          //     unreadCount: {
-          //       $size: {
-          //         $filter: {
-          //           input: "$$ROOT",
-          //           as: "message",
-          //           cond: { $and: [{ $eq: ["$$message.isRead", false] }, { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }] }
-          //         }
-          //       }
-          //     },
-          //   },
-          // },
-
-         
         { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
       ]);
-
-      console.log(
-        "Last Messages Result (Processed):",
-        JSON.stringify(lastMessages, null, 2)
-      );
+      
+      console.log("Last Messages Result (Processed):", JSON.stringify(lastMessages, null, 2));
       return res.status(200).json(lastMessages);
+      
+      
     } else {
       return res
         .status(400)
