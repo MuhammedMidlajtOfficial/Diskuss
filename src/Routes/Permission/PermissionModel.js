@@ -6,7 +6,7 @@ const { getNotificationPreferences, updateNotificationPreferences ,createNotific
 // Route to get notification preferences for a user
 router.get('/:userId', getNotificationPreferences);
 
-router.post('/:userId',createNotificationPreferences)
+router.post('/',createNotificationPreferences)
 
 // Route to update notification preferences for a user
 router.put('/:userId', updateNotificationPreferences);

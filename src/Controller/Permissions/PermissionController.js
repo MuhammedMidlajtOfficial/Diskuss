@@ -20,11 +20,11 @@ const createNotificationPreferences = async (req, res) => {
     // Create new notification preferences with default values
     const newPreferences = new NotificationPreferences({
       userId,
-      generalNotifications: false,
-      promotion: false,
-      discountAvailable: false,
-      billReminder: false,
-      appUpdate: false,
+      generalNotifications: true,
+      promotion: true,
+      discountAvailable: true,
+      billReminder: true,
+      appUpdate: true,
     });
 
     // Save the preferences to the database

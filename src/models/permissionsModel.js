@@ -9,23 +9,23 @@ const notificationPreferencesSchema = new mongoose.Schema({
   },
   generalNotifications: {
     type: Boolean,
-    default: false // Default to false, user can enable it
+    default: true // Default to false, user can enable it
   },
   appUpdate: {
     type: Boolean,
-    default: false // Default to false, user can enable it
+    default: true // Default to false, user can enable it
   },
   billReminder: {
     type: Boolean,
-    default: false // Default to false, user can enable it
+    default: true // Default to false, user can enable it
   },
   promotion: {
     type: Boolean,
-    default: false // Default to false, user can enable it
+    default: true // Default to false, user can enable it
   },
   discountAvailable: {
     type: Boolean,
-    default: false // Default to false, user can enable it
+    default: true // Default to false, user can enable it
   }
 }, { timestamps: true });
 
