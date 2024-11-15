@@ -1,9 +1,15 @@
 const mongoose = require("mongoose");
 
+
 const ReferralSchema = new mongoose.Schema({
     referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
-    refereeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },   // Reference to the referred user (user_id)
+    refereePhoneNo: { type: String, required: true },   // Reference to the referred user (user_id)
 }, { timestamps: true });
+
+// const ReferralSchema = new mongoose.Schema({
+//     referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
+//     refereeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },   // Reference to the referred user (user_id)
+// }, { timestamps: true });
 
 // // Middleware to ensure only one membership type is active
 // subscriptionPlanSchema.pre("save", function (next) {

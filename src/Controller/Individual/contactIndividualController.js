@@ -60,7 +60,7 @@ const createContact = async (req, res) => {
         if (!email || !name || !phnNumber || !contactOwnerId) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        console.log('contactOwnerId',contactOwnerId);
+        console.log('contactOwnerId-hereeeeeeee-',contactOwnerId);
 
 
         const existUser = await individualUserCollection.findOne({ phnNumber });
@@ -70,7 +70,7 @@ const createContact = async (req, res) => {
         // existUser = IndividualUser || EnterpriseUser || EnterpriseEmpUser;
 
         let newContact;
-
+        console.log('existUser--,',existUser);
         if (existUser) {
             const contactDetails = {
                 contactOwnerId,
@@ -88,6 +88,7 @@ const createContact = async (req, res) => {
                     isDiskussUser: true
                 }]
             };
+        console.log('existUser',existUser);
             
             newContact = await Contact.create(contactDetails); // Create the document without nesting in another object
         

@@ -20,7 +20,8 @@ const messageSchema = new mongoose.Schema({
   // senderName: { type: String, default: 'Unknown Sender',required: true },
   // receiverName: { type: String, default: 'Unknown Receiver',required: true },
   content: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now }
+  timestamp: { type: Date, default: Date.now },
+  isRead: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Message', messageSchema);
