@@ -19,7 +19,7 @@ const findOneById = async (userId) => {
   try {
     console.log("user id :", userId);
 
-    const userSubscriptions =  await UserSubscription.find({userId}).exec();
+    const userSubscriptions =  await UserSubscription.find({userId}).populate('userId').exec();
     console.log("user subscription : ", userSubscriptions);
 
     return userSubscriptions;
