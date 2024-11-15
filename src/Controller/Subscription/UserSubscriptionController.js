@@ -46,13 +46,14 @@ const createUserSubscription = async (req, res) => {
 
     // Retrieve subscription start and end dates
     const { startDate, endDate, newPlanId } = await getStartEndDate(planId);
-
+   
     const subscriptionPlan = await findOneByPlanId(planId)
     console.log("subscriptionPlan----",subscriptionPlan);
     const amount = parseFloat(subscriptionPlan.price.toString())
 
     // Shortened receipt ID to stay within 40 characters
     const receiptId = `recpt_${userId.toString().slice(-6)}_${newPlanId.toString().slice(-6)}`;
+
     const amountInPaisa = amount*100
     // Create a Razorpay order for the subscription amount
     const razorpayOrder = await razorpay.orders.create({
@@ -100,7 +101,7 @@ const createUserSubscription = async (req, res) => {
 const verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
+     
     // Generate the signature to verify the payment authenticity
     const generatedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_API_SECRET)  // Use your Razorpay key secret

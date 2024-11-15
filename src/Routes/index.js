@@ -21,6 +21,8 @@ const teamRouter = require('./Team/teamRouter.js');
 const notification = require('./Notification/NotificationRouter.js')
 const enterpriseMeeting = require('./EnterPriseMeeting/EnterPriseMeeting.js')
 
+const analyticRouter = require("./Analytic/analyticRouter.js")
+
 
 
 
@@ -107,6 +109,12 @@ const defaultRoutes = [
     path: '/notification',
     route: notification,
   },
+   
+  {
+    path: '/analytic',
+    route: analyticRouter
+  }
+  
 ];
 
 defaultRoutes.forEach((route) => {
