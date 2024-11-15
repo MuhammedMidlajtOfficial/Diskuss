@@ -20,6 +20,9 @@ const enterpriseMessage = require("./EnterpriseMessage/enterpriseMessageRoute.js
 const teamRouter = require('./Team/teamRouter.js');
 const notification = require('./Notification/NotificationRouter.js')
 const enterpriseMeeting = require('./EnterPriseMeeting/EnterPriseMeeting.js')
+const Preferences = require('./Permission/PermissionModel.js')
+
+const analyticRouter = require("./Analytic/analyticRouter.js")
 
 const analyticRouter = require("./Analytic/analyticRouter.js")
 
@@ -113,6 +116,11 @@ const defaultRoutes = [
   {
     path: '/analytic',
     route: analyticRouter
+  },
+  {
+    path: '/Preferences',
+    route: Preferences
+
   }
   
 ];

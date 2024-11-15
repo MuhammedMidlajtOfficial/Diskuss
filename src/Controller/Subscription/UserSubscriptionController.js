@@ -54,6 +54,7 @@ const createUserSubscription = async (req, res) => {
     // Shortened receipt ID to stay within 40 characters
     const receiptId = `recpt_${userId.toString().slice(-6)}_${newPlanId.toString().slice(-6)}`;
 
+
     const amountInPaisa = amount*100
     // Create a Razorpay order for the subscription amount
     const razorpayOrder = await razorpay.orders.create({
