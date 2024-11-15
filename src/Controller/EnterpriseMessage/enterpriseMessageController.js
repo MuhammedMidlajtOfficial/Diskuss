@@ -116,6 +116,8 @@ exports.getMessages = async (req, res) => {
         isRead: false,
       });
 
+
+
       return res.status(200).json({
         messages: messages.map((message) => ({
           ...message.toObject(),
@@ -124,115 +126,98 @@ exports.getMessages = async (req, res) => {
       });
     }else if (userId) {
       const lastMessages = await enterpriseMessage.aggregate([
-          {
-              $match: {
-                  $or: [
-                      { senderId: new mongoose.Types.ObjectId(userId) },
-                      { receiverId: new mongoose.Types.ObjectId(userId) },
-                  ],
-              },
-          },
-          { $sort: { timestamp: -1 } },
-          {
-              $group: {
-                  _id: "$chatId",
-                  lastMessage: { $first: "$$ROOT" },
-                  messages: { $push: "$$ROOT" }  // Collect all messages for this chat
-              },
-          },
-          { $replaceRoot: { newRoot: "$lastMessage" } },
-          {
-              $lookup: {
-                  from: "enterpriseusers",
-                  localField: "senderId",
-                  foreignField: "_id",
-                  as: "senderInfo",
-              },
-          },
-          {
-              $lookup: {
-                  from: "contactenterprises",
-                  let: { receiverId: "$receiverId" },
-                  pipeline: [
-                      { $unwind: "$contacts" },
-                      {
-                          $match: {
-                              $expr: { $eq: ["$contacts.userId", "$$receiverId"] },
-                          },
-                      },
-                      {
-                          $addFields: {
-                              name: "$contacts.name",
-                              username: "$contacts.username",
-                          },
-                      },
-                  ],
-                  as: "receiverInfo",
-              },
-          },
-          {
-              $lookup: {
-                  from: "enterpriseusers",
-                  localField: "receiverId",
-                  foreignField: "_id",
-                  as: "receiverUserInfo",
-              },
-          },
-          {
-              $addFields: {
-                  senderName: {
-                      $ifNull: [
-                          { $arrayElemAt: ["$senderInfo.companyName", 0] },
-                          "Unknown Sender",
-                      ],
-                  },
-                  receiverName: {
-                      $ifNull: [
-                          { $arrayElemAt: ["$receiverInfo.name", 0] },
-                          { $arrayElemAt: ["$receiverInfo.username", 0] },
-                          "Unknown Receiver",
-                      ],
-                  },
-                  senderProfilePic: {
-                      $ifNull: [
-                          { $arrayElemAt: ["$senderInfo.image", 0] },
-                          "",
-                      ],
-                  },
-                  receiverProfilePic: {
-                      $ifNull: [
-                          { $arrayElemAt: ["$receiverUserInfo.image", 0] },
-                          "",
-                      ],
-                  },
-              },
-          },
-        //   {
-        //     $addFields: {
-        //         unreadCount: {
-        //             $size: {
-        //                 $filter: {
-        //                     input: { $ifNull: ["$messages", []] },  // Fallback to an empty array
-        //                     as: "message",
-        //                     cond: { 
-        //                         $and: [
-        //                             { $eq: ["$$message.isRead", false] }, 
-        //                             { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }
-        //                         ] 
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // },
-          { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0, messages: 0 } },
-      ]);
-  
-      console.log(
-          "Last Messages Result (Processed):",
-          JSON.stringify(lastMessages, null, 2)
-      );
-      return res.status(200).json(lastMessages);
+
+        {
+            $match: {
+                $or: [
+                    { senderId: new mongoose.Types.ObjectId(userId) },
+                    { receiverId: new mongoose.Types.ObjectId(userId) },
+                ],
+            },
+        },
+        {
+            $sort: { timestamp: -1 }, // Sort messages by timestamp in descending order
+        },
+        {
+            $group: {
+                _id: "$chatId", // Group messages by chatId
+                lastMessage: { $first: "$$ROOT" }, // Get the latest message for each chat
+                messages: { $push: "$$ROOT" }, // Collect all messages for the chat
+            },
+        },
+        {
+            $addFields: {
+                unreadCount: {
+                    $size: {
+                        $filter: {
+                            input: "$messages",
+                            as: "message",
+                            cond: {
+                                $and: [
+                                    { $eq: ["$$message.isRead", false] },
+                                    { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] },
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        {
+            $lookup: {
+                from: "enterpriseusers",
+                localField: "lastMessage.senderId",
+                foreignField: "_id",
+                as: "senderInfo",
+            },
+        },
+        {
+            $lookup: {
+                from: "enterpriseusers",
+                localField: "lastMessage.receiverId",
+                foreignField: "_id",
+                as: "receiverInfo",
+            },
+        },
+        {
+            $addFields: {
+                senderName: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$senderInfo.companyName", 0] },
+                        "Unknown Sender",
+                    ],
+                },
+                receiverName: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$receiverInfo.companyName", 0] },
+                        "Unknown Receiver",
+                    ],
+                },
+                senderProfilePic: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$senderInfo.image", 0] },
+                        "",
+                    ],
+                },
+                receiverProfilePic: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$receiverInfo.image", 0] },
+                        "",
+                    ],
+                },
+            },
+        },
+        {
+            $project: {
+                messages: 0, // Remove the full messages array for optimization
+                senderInfo: 0,
+                receiverInfo: 0,
+            },
+        },
+    ]);
+    
+    return res.status(200).json(lastMessages);
+
   }
    else {
       return res
