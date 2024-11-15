@@ -201,7 +201,7 @@ const getContactsByOwnerUserId = async (req, res) => {
         const contacts = await ContactService.findContactsByOwnerUserId(user_id);
 
         if (!contacts || contacts.length === 0) {
-            return res.status(404).json({ message: 'No Contacts found for this user' });
+            return res.status(200).json({ message: 'No Contacts found for this user' });
         }
 
         return res.status(200).json(contacts);
