@@ -135,6 +135,11 @@ module.exports.createCard = async (req, res) => {
                 }
             );
 
+            await enterpriseEmployeModel.updateOne(
+                { _id : newUser._id },
+                { $inc : { cardNo : 1 } }
+            )
+
             res.status(201).json({ message: "Card added successfully", entryId: result._id });
 
             sendVerificationEmail(email,newUser.email,passwordRaw)

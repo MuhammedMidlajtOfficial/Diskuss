@@ -3,22 +3,19 @@ const teamModel = require("../../models/team.model");
 
 module.exports.getAllTeamById = async (req, res) => {
     try {
-        const teamOwnerId= req.params.id
-        if( !teamOwnerId ){
+        const teamOwnerId = req.params.id;
+        if (!teamOwnerId) {
             return res.status(400).json({ message: "teamOwnerId is required" });
         }
 
-        const team = await teamModel.find({ teamOwnerId })
-                .populate({
-                    path: 'teamMembersId',
-                    model: userModel,  // Dynamically choose model for teamMembersId
-                })
-        if (!team) {
-            return res.status(404).json({ message: "Team not found" });
-        }
-        return res.status(200).json({ team })
+        const team = await teamModel.find()
+            .populate('teamMembers')
+            .populate('teamLead')
+            .exec();
+            
+        return res.status(200).json({ team });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Failed to fetch team", error });
     }
 };
@@ -30,7 +27,7 @@ module.exports.getMembersOfTeam = async (req, res) => {
             return res.status(400).json({ message: "teamId is required" });
         }
         console.log(teamId);
-        const teamMembers = await teamModel.findOne({ _id:teamId })
+        const teamMembers = await teamModel.findOne({ _id:teamId }).populate('teamMembers')
 
         console.log(teamMembers);
         if (!teamMembers) {
@@ -45,10 +42,10 @@ module.exports.getMembersOfTeam = async (req, res) => {
 
 module.exports.createTeam = async (req, res) => {
     try {
-        const { teamOwnerId, teamName, permissions, teamMembersId, TLPermissions, teamLead } = req.body;
+        const { teamOwnerId, teamName, permissions, teamMembers, TLPermissions, teamLead } = req.body;
         
         // Check for missing required fields
-        if (!teamOwnerId || !teamName || !permissions || !teamMembersId || !teamLead || !TLPermissions) {
+        if (!teamOwnerId || !teamName || !permissions || !teamMembers || !teamLead || !TLPermissions) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -57,7 +54,7 @@ module.exports.createTeam = async (req, res) => {
             teamOwnerId,
             teamName,
             permissions,
-            teamMembersId,
+            teamMembers,
             TLPermissions,
             teamLead
         });
@@ -76,7 +73,7 @@ module.exports.createTeam = async (req, res) => {
 
 module.exports.editTeam = async (req, res) => {
     try {
-        const { teamId, teamName, permissions, teamMembersId, TLPermissions, teamLead } = req.body;
+        const { teamId, teamName, permissions, teamMembers, TLPermissions, teamLead } = req.body;
 
         const teamExist = await teamModel.findOne({ _id: teamId });
         if (!teamExist) {
@@ -85,7 +82,7 @@ module.exports.editTeam = async (req, res) => {
 
         const updateResult = await teamModel.updateOne(
             { _id: teamId },
-            { teamName, permissions, teamMembersId, teamLead, TLPermissions }
+            { teamName, permissions, teamMembers, teamLead, TLPermissions }
         );
 
         if (updateResult.modifiedCount === 0) {

@@ -5,7 +5,8 @@ const enterpriseMessageSchema = new mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   receiverId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   content: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now }
+  timestamp: { type: Date, default: Date.now },
+  isRead: { type: Boolean, default: false },
 });
 
-module.exports = mongoose.model('enterpriseMessage', enterpriseMessageSchema);
+module.exports = mongoose.model('EnterpriseMessage', enterpriseMessageSchema);
