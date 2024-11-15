@@ -63,3 +63,4 @@ exports.getAnalytics = async (cardId, period) => {
         clickThroughRate: clickThroughRate.toFixed(2),
     };
 };
+    
