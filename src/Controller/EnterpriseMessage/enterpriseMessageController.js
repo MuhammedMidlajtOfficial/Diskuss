@@ -108,6 +108,14 @@ exports.getMessages = async (req, res) => {
   try {
     if (chatId) {
       const messages = await enterpriseMessage.find({ chatId }).sort({ timestamp: 1 });
+      // // Get unread messages count for the current user in this chat
+      // const unreadCount = await enterpriseMessage.countDocuments({
+      //   chatId,
+      //   receiverId: userId,
+      //   isRead: false,
+      // });
+
+
       return res.status(200).json({
         messages: messages.map((message) => ({
           ...message.toObject(),
@@ -233,50 +241,62 @@ exports.getMessages = async (req, res) => {
             foreignField: "_id",
             as: "receiverUserInfo",
           },
-        },
-        {
-          $addFields: {
-            senderName: {
-              $ifNull: [
-                { $arrayElemAt: ["$senderInfo.companyName", 0] },
-                "Unknown Sender",
-              ],
-            },
-            receiverName: {
-              $ifNull: [
-                { $arrayElemAt: ["$receiverInfo.name", 0] },
-                { $arrayElemAt: ["$receiverInfo.username", 0] },
-                "Unknown Receiver",
-              ],
-            },
-            senderProfilePic: {
-              $ifNull: [
-                { $arrayElemAt: ["$senderInfo.image", 0] }, // Profile picture for sender
-                "", // Default to empty if not available
-              ],
-            },
-            receiverProfilePic: {
-              $ifNull: [
-                { $arrayElemAt: ["$receiverUserInfo.image", 0] }, // Profile picture for receiver
-                "", // Default to empty if not available
-              ],
-            },
+          {
+              $lookup: {
+                  from: "enterpriseusers",
+                  localField: "receiverId",
+                  foreignField: "_id",
+                  as: "receiverUserInfo",
+              },
           },
-        },
-        {
-          $addFields: {
-            unreadCount: {
-              $size: {
-                $filter: {
-                  input: "$$ROOT",
-                  as: "message",
-                  cond: { $and: [{ $eq: ["$$message.isRead", false] }, { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }] }
-                }
-              }
-            },
+          {
+              $addFields: {
+                  senderName: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$senderInfo.companyName", 0] },
+                          "Unknown Sender",
+                      ],
+                  },
+                  receiverName: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$receiverInfo.name", 0] },
+                          { $arrayElemAt: ["$receiverInfo.username", 0] },
+                          "Unknown Receiver",
+                      ],
+                  },
+                  senderProfilePic: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$senderInfo.image", 0] },
+                          "",
+                      ],
+                  },
+                  receiverProfilePic: {
+                      $ifNull: [
+                          { $arrayElemAt: ["$receiverUserInfo.image", 0] },
+                          "",
+                      ],
+                  },
+              },
           },
+        //   {
+        //     $addFields: {
+        //         unreadCount: {
+        //             $size: {
+        //                 $filter: {
+        //                     input: { $ifNull: ["$messages", []] },  // Fallback to an empty array
+        //                     as: "message",
+        //                     cond: { 
+        //                         $and: [
+        //                             { $eq: ["$$message.isRead", false] }, 
+        //                             { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] }
+        //                         ] 
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // },
 
-        },
           { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0, messages: 0 } },
       ]);
   
