@@ -70,7 +70,7 @@ const createContact = async (req, res) => {
         // existUser = IndividualUser || EnterpriseUser || EnterpriseEmpUser;
 
         let newContact;
-console.log('existUser--,',existUser);
+        console.log('existUser--,',existUser);
         if (existUser) {
             const contactDetails = {
                 contactOwnerId,

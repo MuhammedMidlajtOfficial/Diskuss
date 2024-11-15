@@ -103,11 +103,25 @@ const createContact = async (req, res) => {
         newContact = await Contact.create(contactDetails);
         console.log('newContact:', newContact);
 
-        if (existUser) {
+        console.log('existUser:', existUser);
+        if (existUser?.userType !== 'employee') {
             const updateUser = await enterpriseUser.findById(contactOwnerId);
             console.log('updateUser:', updateUser);
             if (updateUser) {
                 await enterpriseUser.updateOne(
+                    { _id: contactOwnerId },
+                    { $push: { contacts: newContact?._id } }
+                );
+                console.log('Updated contact owner with new contact ID:', newContact._id);
+            } else {
+                console.log('Contact owner not found');
+                return res.status(404).json({ message: "Contact owner not found" });
+            }
+        }else{
+            const updateUser = await enterpriseEmployeModel.findById(contactOwnerId);
+            console.log('updateUser:', updateUser);
+            if (updateUser) {
+                await enterpriseEmployeModel.updateOne(
                     { _id: contactOwnerId },
                     { $push: { contacts: newContact?._id } }
                 );
