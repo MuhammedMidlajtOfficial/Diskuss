@@ -9,7 +9,7 @@ if (!process.env.MongoDBURL) {
 }
 
 const MongoLocalURI = "mongodb://localhost:27017/diskuss"
-let localDb = true 
+let localDb = false 
 
 if (localDb){
   mongoose.connect(MongoLocalURI,{
