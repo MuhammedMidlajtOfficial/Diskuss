@@ -38,7 +38,7 @@ module.exports.getContactOfEmployee = async (req, res) => {
     try {
         const { id: empId } = req.params;
         const user = await enterpriseEmployeModel.findOne({ _id : empId }).populate({
-            path: 'Contact',
+            path: 'contacts',
             strictPopulate: false, 
         } )
         if (!user) {
