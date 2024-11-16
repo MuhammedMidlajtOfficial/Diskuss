@@ -9,8 +9,8 @@ if (!process.env.MongoDBURL) {
 }
 
 mongoose.connect(process.env.MongoDBURL,{
-  connectTimeoutMS: 20000, 
-  socketTimeoutMS: 45000,
+  connectTimeoutMS: 200000, 
+  socketTimeoutMS: 450000,
 })
   .then(() => {
     console.log('DB Connected');
@@ -32,7 +32,67 @@ mongoose.connect(process.env.MongoDBURL,{
       type: String,
       required: true,
     },
-  });
+    isSubscribed: {
+      type: Boolean,
+      default: false,
+    },
+    cardNo: {
+      type: Number,
+      required: true,
+      default : 0
+    },
+    image: {
+      type:String,
+      default : ''
+    },
+    role: {
+      type:String,
+      default : ''
+    },
+    name: {
+      type:String,
+      default : ''
+    },
+    website: {
+      type:String,
+      default : ''
+    },
+    phnNumber: {
+      type: String,
+      default: '',
+    },
+    address: {
+      type:String,
+      default : ''
+    },
+    contacts : {
+      type : Array,
+      default : []
+    },
+    meetings : [{
+      type: String,
+      ref: "Meeting", // Reference to Meeting model
+      required: false,
+    }],
+    socialMedia: {
+      whatsappNo: {
+        type:String,
+        default : ''
+      },
+      facebookLink: {
+        type:String,
+        default : ''
+      },
+      instagramLink: {
+        type:String,
+        default : ''
+      },
+      twitterLink: {
+        type:String,
+        default : ''
+      },
+    }
+  } ,{ timestamps: true });
 
   const otpSchema = new mongoose.Schema({
     email: {

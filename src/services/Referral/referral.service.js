@@ -11,6 +11,7 @@ const sendInvite = async (referrerId, inviteePhoneNo) => {
     });
     await referral.save();
     return referral;
+
 };
 
 // Register Invitee
@@ -77,6 +78,7 @@ module.exports = {
 //         throw error; // Re-throw the error for higher-level handling if needed
 //     }
 // };
+
 
 
 // /**

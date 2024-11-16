@@ -19,7 +19,11 @@ const findOneById = async (userId) => {
   try {
     console.log("user id :", userId);
 
-    const userSubscriptions =  await UserSubscription.find({userId}).populate('userId').exec();
+
+    const userSubscriptions =  await UserSubscription.find({userId})
+      .populate('userId')
+      .populate('planId')
+      .exec();
     console.log("user subscription : ", userSubscriptions);
 
     return userSubscriptions;
@@ -49,6 +53,7 @@ const findOneById = async (userId) => {
       const newSubscription = new UserSubscription({
         planId: data.planId,
         userId: data.userId,
+        razorpayOrderId:data.razorpayOrderId,
         startDate: data.startDate,
         endDate: data.endDate,
         status: data.status
@@ -101,6 +106,30 @@ const findOneById = async (userId) => {
     }
   };
 
+  const updateSubscriptionStatus = async (razorpay_order_id, updateData) => {
+    try {
+      // Find the user subscription by razorpayOrderId
+      const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
+      
+      if (!userSubscription) {
+        throw new Error("User Subscription plan not found");
+      }
+  
+      // Update the subscription plan status with the new data
+      const updatedUserSubscription = await UserSubscription.updateOne(
+        { razorpayOrderId: razorpay_order_id }, // Search by razorpayOrderId, not _id
+        { $set: updateData }, // Update the subscription with the new data
+        { new: true }
+      ).exec();
+  
+      return updatedUserSubscription; // Return the result of the update operation
+    } catch (error) {
+      console.error("Error updating UserSubscription:", error);
+      throw error; // Re-throw the error for higher-level handling
+    }
+  };
+  
+
   
 /**
  * Delete a UserSubscription plan by plan_id.
@@ -133,5 +162,6 @@ module.exports = {
     findOneById,
     createUserSubscription,
     updateUserSubscriptionById,
-    deleteUserSubscriptionById
+    deleteUserSubscriptionById,
+    updateSubscriptionStatus
 };

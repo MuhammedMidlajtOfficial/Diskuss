@@ -3,7 +3,17 @@ const app = express()
 const {v4 : uuidv4} = require('uuid');
 const session = require('express-session');
 const nocache = require('nocache');
+const cors = require('cors');
 const routes = require('./Routes/index.js')
+const http = require('http');
+const socketIo = require('socket.io');
+const server = http.createServer(app);
+const socketController = require('./Controller/Socketio/socketController.js');
+const messageController = require('./Controller/Message/messageController');
+const groupmessageController = require('./Controller/Message/groupmessageController.js');
+const enterpriseMessageController = require('./Controller/EnterpriseMessage/enterpriseMessageController.js');
+const socketControllers = require('./Controller/Socket.io/NotificationSocketIo.js');
+const notificationSocketController = require('./Controller/Socket.io/NotificationSocketIo');
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
 // const authEnterpriseRouter = require('./Routes/Enterprise/authEnterpriseRouter.js')
 // const profileRoutes = require('./Routes/Profile/profileRoutes.js')
@@ -17,14 +27,32 @@ app.use(session({
 }))
 app.use(nocache());
 app.use(express.json());
+app.use(cors());
 
-app.use(express.json({ limit: "10mb" }));
+const io = socketIo(server, {
+  transports: ['websocket'],
+  cors: {
+    origin: "*", 
+    methods: ["GET", "POST"],
+  },
+
+});
+
+
+
+notificationSocketController.setSocketIO(io);
+socketController.setSocketIO(io);
+messageController.setSocketIO(io);
+groupmessageController.setSocketIO(io);
+enterpriseMessageController.setSocketIO(io);
+// Initialize SocketController with Socket.io instance
+socketControllers.setSocketIO(io);
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use('/api/v1', routes);
 
-// app.use('/individual/',authIndividualRouter)
-// app.use('/enterprise/',authEnterpriseRouter)
-// app.use("/api/profile", profileRoutes);
 
 app.get('/api/v1',(req,res)=>{
   res.send({
@@ -32,11 +60,8 @@ app.get('/api/v1',(req,res)=>{
   })
 })
 
-const port = process.env.PORT | "3000"
-app.listen(port ,()=>{
-  console.log(`Server Connected port : http://localhost:${port}`);
-})
+const port = process.env.PORT || "3000"
 
-
-
-
+server.listen(port, () => {
+  console.log(`Server connected on http://localhost:${port}`);
+});
