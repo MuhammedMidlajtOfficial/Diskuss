@@ -15,9 +15,6 @@ const rewardSchema = new mongoose.Schema({
   totalCoins: { type: Number, default: 0 },
   milestonesAchieved: { type: Array, default: [] }
 });
-    referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
-    refereePhoneNo: { type: String, required: true },   // Reference to the referred user (user_id)
-}, { timestamps: true });
 
 // const ReferralSchema = new mongoose.Schema({
 //     referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
