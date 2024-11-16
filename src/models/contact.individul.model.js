@@ -13,7 +13,7 @@ const contactSchema = new mongoose.Schema({
     scheduled: { type: Boolean, default: false },
     scheduledTime: { type: Date },
     notes: { type: String},
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Reference to the user who created the contact
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null  }, // Reference to the user who created the contact
     image:{ type:String,  },
     isDiskussUser: { type:Boolean , default:false}
   } ]
