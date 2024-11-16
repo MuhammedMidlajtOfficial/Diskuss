@@ -60,14 +60,10 @@ const createContact = async (req, res) => {
         if ( !name || !phnNumber || !contactOwnerId) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        console.log('contactOwnerId-hereeeeeeee-',contactOwnerId);
+        console.log('contactOwnerId--',contactOwnerId);
 
 
         const existUser = await individualUserCollection.findOne({ phnNumber });
-        // const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
-        // const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
-
-        // existUser = IndividualUser || EnterpriseUser || EnterpriseEmpUser;
 
         let newContact;
         console.log('existUser--,',existUser);
@@ -84,11 +80,10 @@ const createContact = async (req, res) => {
                     scheduled,
                     scheduledTime,
                     notes,
-                    userId: existUser._id,
+                    userId: existUser ? existUser._id : null,
                     isDiskussUser: true
                 }]
             };
-        console.log('existUser',existUser);
             
             newContact = await Contact.create(contactDetails); // Create the document without nesting in another object
         
@@ -117,6 +112,7 @@ const createContact = async (req, res) => {
         }
         return res.status(201).json({ message: "Contact created successfully", contact: newContact });
     } catch (e) {
+        console.log(e);
         return res.status(500).json({ error: e.message });
     }
 };
