@@ -175,11 +175,11 @@ const deleteContact = async (req, res) => {
 const getContactsByOwnerUserId = async (req, res) => {
     try {
         const { user_id } = req.params;
-        const contacts = await ContactService.findContactsByOwnerUserId(user_id);
+        const contacts = await Contact.find({ contactOwnerId: user_id }).exec();
 
-        if (!contacts || contacts.length === 0) {
-            return res.status(404).json({ message: 'No Contacts found for this user' });
-        }
+        // if (!contacts || contacts.length === 0) {
+        //     return res.status(404).json({ message: 'No Contacts found for this user' });
+        // }
 
         return res.status(200).json(contacts);
     } catch (error) {
