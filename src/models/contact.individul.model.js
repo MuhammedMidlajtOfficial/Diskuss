@@ -7,7 +7,7 @@ const contactSchema = new mongoose.Schema({
     name: { type: String, required: true },
     designation: { type: String, required: false },
     phnNumber: { type: String, required: true },
-    email: { type: String, required: true, match: /.+\@.+\..+/ }, // Added regex for email validation
+    email: { type: String, match: /.+\@.+\..+/ }, // Added regex for email validation
     website: { type: String, required: false}, // Added regex for URL validation
     businessCategory: { type: String, required: false },
     scheduled: { type: Boolean, default: false },
