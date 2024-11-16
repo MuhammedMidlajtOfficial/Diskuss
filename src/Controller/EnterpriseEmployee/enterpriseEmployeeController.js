@@ -9,7 +9,21 @@ const Contact  = require('../../models/contact.individul.model');
 module.exports.getCardForUser = async (req, res) => {
     try {
         const { id: userId } = req.params;
-        const user = await enterpriseEmployeModel.findOne({ _id : userId });
+        const user = await enterpriseEmployeCardModel.findOne({ userId });
+        if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+        }
+        return res.status(200).json({ user })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Failed to get card", error });
+    }
+};
+
+module.exports.getProfile = async (req, res) => {
+    try {
+        const { id: userId } = req.params;
+        const user = await enterpriseEmployeModel.findOne({ _id: userId });
         if (!user) {
           return res.status(404).json({ message: 'User not found' });
         }
