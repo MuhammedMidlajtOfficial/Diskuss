@@ -124,6 +124,7 @@ module.exports.createCard = async (req, res) => {
         const newCard = new enterpriseEmployeCardModel({
             userId: newUser._id,
             businessName,
+            email,
             empName,
             designation,
             mobile,
