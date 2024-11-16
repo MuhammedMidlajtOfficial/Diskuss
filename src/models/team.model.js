@@ -13,15 +13,15 @@ const teamSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  teamMembersId: [
+  teamMembers: [
     {
-      type: String,
-      required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref:'EnterpriseEmployee',
     }
   ],
   teamLead: {
-    type: String,
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'EnterpriseEmployee',
   },
   TLPermissions:{
     type: String,

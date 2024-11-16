@@ -58,24 +58,27 @@ const createContact = async (req, res) => {
             contactOwnerId,
         } = req.body;
 
-        if (!email || !name || !phnNumber || !contactOwnerId) {
+        if ( !name || !phnNumber || !contactOwnerId) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        console.log('contactOwnerId', contactOwnerId);
+        console.log('contactOwnerId:', contactOwnerId);
 
         let existUser;
 
         const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+        console.log('EnterpriseUser:', EnterpriseUser);
         const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
+        console.log('EnterpriseEmpUser:', EnterpriseEmpUser);
 
         existUser = EnterpriseUser || EnterpriseEmpUser;
+        console.log('existUser:', existUser);
 
         let newContact;
 
         const contactDetails = {
             contactOwnerId,
-            contactOwnerType: EnterpriseUser ? 'EnterpriseUser' : 'EnterpriseEmployee',  // Set contactOwnerType based on user type
+            contactOwnerType: EnterpriseUser ? 'EnterpriseUser' : 'EnterpriseEmployee',
             contacts: [{
                 name,
                 designation,
@@ -90,31 +93,52 @@ const createContact = async (req, res) => {
             }]
         };
 
-        if (existUser) {
-            contactDetails.contacts[0].userId = existUser._id; // Assign userId only if existUser is found
+        console.log('existUser._id:', existUser ? existUser?._id : 'existUser is null');
+        console.log('contactDetails:', contactDetails);
+
+        if (existUser && existUser?._id) {
+            contactDetails.contacts[0].userId = existUser?._id;
         }
 
         newContact = await Contact.create(contactDetails);
+        console.log('newContact:', newContact);
 
-        if (existUser) {
-            // Update the correct enterpriseUser collection
+        console.log('existUser:', existUser);
+        if (existUser?.userType !== 'employee') {
             const updateUser = await enterpriseUser.findById(contactOwnerId);
+            console.log('updateUser:', updateUser);
             if (updateUser) {
                 await enterpriseUser.updateOne(
                     { _id: contactOwnerId },
-                    { $push: { contacts: newContact._id } }
+                    { $push: { contacts: newContact?._id } }
                 );
+                console.log('Updated contact owner with new contact ID:', newContact._id);
             } else {
+                console.log('Contact owner not found');
+                return res.status(404).json({ message: "Contact owner not found" });
+            }
+        }else{
+            const updateUser = await enterpriseEmployeModel.findById(contactOwnerId);
+            console.log('updateUser:', updateUser);
+            if (updateUser) {
+                await enterpriseEmployeModel.updateOne(
+                    { _id: contactOwnerId },
+                    { $push: { contacts: newContact?._id } }
+                );
+                console.log('Updated contact owner with new contact ID:', newContact._id);
+            } else {
+                console.log('Contact owner not found');
                 return res.status(404).json({ message: "Contact owner not found" });
             }
         }
 
         return res.status(201).json({ message: "Contact created successfully", contact: newContact });
     } catch (e) {
-        console.log(e);
+        console.log('Error:', e);
         return res.status(500).json({ error: e.message });
     }
 };
+
 
 /**
  * Update a Contact
@@ -175,10 +199,10 @@ const getContactsByOwnerUserId = async (req, res) => {
     try {
         const { user_id } = req.params;
         const contacts = await ContactService.findContactsByOwnerUserId(user_id);
-
-        if (!contacts || contacts.length === 0) {
-            return res.status(404).json({ message: 'No Contacts found for this user' });
-        }
+        console.log(contacts);
+        // if (!contacts || contacts.length === 0) {
+        //     return res.status(200).json({ message: 'No Contacts found for this user' });
+        // }
 
         return res.status(200).json(contacts);
     } catch (error) {

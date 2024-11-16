@@ -19,11 +19,14 @@ const findOneById = async (userId) => {
   try {
     console.log("user id :", userId);
 
-    const userSubscriptions =  await UserSubscription.find({userId}).exec();
+
+    const userSubscriptions =  await UserSubscription.find({userId})
+      .populate('userId')
+      .populate('planId')
+      .exec();
     console.log("user subscription : ", userSubscriptions);
 
     return userSubscriptions;
-    return
   } catch (error) {
     console.error("Error fetching User Subscriptions plan:", error);
     throw error; // Re-throw the error for higher-level handling if needed

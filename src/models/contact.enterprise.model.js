@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const contactSchema = new mongoose.Schema({
   contactOwnerId: { 
     type: mongoose.Schema.Types.ObjectId, 
+    ref: 'EnterpriseUser',
     required: true 
   },
   contactOwnerType: { 
@@ -16,7 +17,6 @@ const contactSchema = new mongoose.Schema({
     phnNumber: { type: String, required: true },
     email: { 
       type: String, 
-      required: true, 
       match: /.+\@.+\..+/ // Regex for email validation
     },
     website: { type: String,default:''},
@@ -26,7 +26,7 @@ const contactSchema = new mongoose.Schema({
     notes: { type: String },
     userId: { 
       type: mongoose.Schema.Types.ObjectId, 
-      refPath: 'contactOwnerType', // Dynamic reference to either 'EnterpriseUser' or 'EnterpriseEmployee'
+      ref: 'EnterpriseEmployee', // Dynamic reference to either 'EnterpriseUser' or 'EnterpriseEmployee'
       default: null 
     },
     isDiskussUser: { type: Boolean, default: false }
