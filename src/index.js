@@ -39,7 +39,9 @@ const io = socketIo(server, {
 
 
 
-notificationSocketController.setSocketIO(io);
+ const data = notificationSocketController.setSocketIO(io);
+ console.log(data);
+ 
 socketController.setSocketIO(io);
 messageController.setSocketIO(io);
 groupmessageController.setSocketIO(io);

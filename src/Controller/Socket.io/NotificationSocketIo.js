@@ -1,17 +1,43 @@
 let io;
+const userSockets = {}; // To map user IDs to their respective socket IDs
 
 const setSocketIO = (socketIoInstance) => {
   io = socketIoInstance;
+
+  io.on('connection', (socket) => {
+    const { userId } = socket.handshake.query; // Assuming userId is passed as a query param
+
+    if (userId) {
+      userSockets[userId] = socket.id; // Map userId to socket ID
+      console.log(`User ${userId} connected with socket ID ${socket.id}`);
+    } else {
+      console.warn(`A socket connected without userId. Socket ID: ${socket.id}`);
+    }
+
+    // Handle disconnection
+    socket.on('disconnect', () => {
+      if (userId && userSockets[userId]) {
+        console.log(`User ${userId} disconnected, removing from userSockets`);
+        delete userSockets[userId];
+      } else {
+        console.warn(`Disconnected socket ID ${socket.id} was not mapped to any user.`);
+      }
+    });
+  });
 };
 
-const emitNotification = async (userId, notification) => {
-  if (io) {
-    
-    
-   const ans = await io.to(userId).emit('notification', notification);
-   console.log(ans);
-   
-//    console.log(`${notification} is send user id${userId} `);
+const emitNotification = (userId, notification) => {
+  if (!io) {
+    console.error('Socket.IO instance is not initialized.');
+    return;
+  }
+
+  const socketId = userSockets[userId];
+  if (socketId) {
+    io.to(socketId).emit('notification', notification);
+    console.log(`Notification sent to user ${userId}:`, notification);
+  } else {
+    console.warn(`User ${userId} is not connected. Cannot send notification.`);
   }
 };
 
