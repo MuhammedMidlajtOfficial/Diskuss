@@ -1,4 +1,5 @@
 const Analytic = require("../models/analytics/analytic.model")
+
 const Profile = require("../models/profile")
 const enterprise = require("../models/enterpriseUser")
 const MeetingBase = require("../models/EnterpriseMeetingModel")
@@ -67,6 +68,7 @@ exports.getAnalytics = async (cardId, period) => {
         clickThroughRate: clickThroughRate.toFixed(2),
     };
 };
+
 
 // get meeting by ids  //
 exports.getMeetingsByIds = async (enterpriseId) => {
@@ -144,3 +146,4 @@ exports.getMeetingsByIds = async (enterpriseId) => {
     
     return { meetings: responseMeetings };
 }
+
