@@ -51,6 +51,16 @@ exports.getMeetings = async (req, res) => {
         res.status(500).json({ error: 'Error fetching analytics data' });
     }
 };
+exports.getCards = async (req, res) => {
+    const { enterpriseId } = req.params;
+    try {
+        console.log(enterpriseId)
+        const data = await analyticsService.getCardsByIds(enterpriseId );
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching analytics data' });
+    }
+};
 
 
 // const analyticService = require("../services/analytic.service")
