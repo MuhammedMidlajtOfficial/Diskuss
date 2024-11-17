@@ -12,12 +12,28 @@ mongoose.connect(process.env.MongoDBURL,{
   connectTimeoutMS: 200000, 
   socketTimeoutMS: 450000,
 })
+
   .then(() => {
     console.log('DB Connected');
   })
   .catch((err) => {
     console.error('DB Connection Failed:', err);
   });
+
+} else{
+  mongoose.connect( process.env.MongoDBURL,{
+    connectTimeoutMS: 20000, 
+    socketTimeoutMS: 45000,
+  })
+    .then(() => {
+      console.log('DB Connected');
+    })
+    .catch((err) => {
+      console.error('DB Connection Failed:', err);
+    });
+}
+
+
 
   const individualUserSchema = new mongoose.Schema({
     username: {

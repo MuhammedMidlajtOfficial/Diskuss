@@ -11,6 +11,7 @@ authEnterpriseRouter.post('/signup', authEnterpriseController.postEnterpriseSign
 authEnterpriseRouter.post('/forgotpassword',authEnterpriseController.postforgotPassword)
 authEnterpriseRouter.get('/getProfile/:id',authEnterpriseController.getProfile)
 authEnterpriseRouter.patch('/updateProfile',authEnterpriseController.updateProfile)
+authEnterpriseRouter.post('/resetpassword',authEnterpriseController.resetPassword)
 
 
 module.exports = authEnterpriseRouter
