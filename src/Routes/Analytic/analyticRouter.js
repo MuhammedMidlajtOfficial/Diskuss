@@ -12,3 +12,4 @@ router.post('/click', controller.logClick)
 router.get('/meeting/:enterpriseId', controller.getMeetings)
 
 module.exports = router;
+

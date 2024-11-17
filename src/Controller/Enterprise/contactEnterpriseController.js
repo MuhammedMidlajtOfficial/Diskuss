@@ -139,6 +139,7 @@ const createContact = async (req, res) => {
     }
 };
 
+
 /**
  * Update a Contact
  * @param {Request} req

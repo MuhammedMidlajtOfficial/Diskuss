@@ -1,4 +1,5 @@
 const Analytic = require("../models/analytics/analytic.model")
+
 const Profile = require("../models/profile")
 const enterprise = require("../models/enterpriseUser")
 const MeetingBase = require("../models/MeetingModel")
@@ -68,6 +69,7 @@ exports.getAnalytics = async (cardId, period) => {
     };
 };
 
+
 // get meeting by ids  //
 exports.getMeetingsByIds = async (enterpriseId) => {
     // Find the user's profile by userId and populate meetings if referenced in schema
@@ -131,3 +133,4 @@ exports.getMeetingsByIds = async (enterpriseId) => {
     console.log("Meetings :", responseMeetings)
     return  {meetings: responseMeetings };
 }
+

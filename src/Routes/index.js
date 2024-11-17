@@ -25,6 +25,7 @@ const Preferences = require('./Permission/PermissionModel.js')
 const analyticRouter = require("./Analytic/analyticRouter.js")
 // const contactRouter = require("./contactRouter.js")
 
+
 const router = express.Router();
 
 const defaultRoutes = [
@@ -112,7 +113,6 @@ const defaultRoutes = [
     path: '/count',
     route: count,
   },
-   
   {
     path: '/analytic',
     route: analyticRouter
@@ -121,10 +121,6 @@ const defaultRoutes = [
     path: '/Preferences',
     route: Preferences
   },
-  // {
-  //   path: '/contact',
-  //   route: contactRouter
-  // },
   {
     path: '/analytic',
     route: analyticRouter
