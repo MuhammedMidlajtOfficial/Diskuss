@@ -219,6 +219,7 @@ exports.getCardsByIds = async (enterpriseId) => {
     console.log("Cards:", responseCardss);
     
     return { meetings: responseCardss };
+
 }
 
 // get card by ids  //
