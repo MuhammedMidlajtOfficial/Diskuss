@@ -1,7 +1,7 @@
 const Analytic = require("../models/analytics/analytic.model")
 const Profile = require("../models/profile")
 const enterprise = require("../models/enterpriseUser")
-const MeetingBase = require("../models/MeetingModel")
+const MeetingBase = require("../models/EnterpriseMeetingModel")
 
 exports.logShare = async (cardId, userId) => {
     const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
@@ -75,8 +75,7 @@ exports.getMeetingsByIds = async (enterpriseId) => {
         path: 'meetings',
         strictPopulate: false,
     });
-    console.log("Userinfo")
-
+    
     // If not found in Profile collection, check in the enterprise collection
     if (!userInfo) {
         userInfo = await enterprise.findById(enterpriseId).populate({
@@ -84,7 +83,8 @@ exports.getMeetingsByIds = async (enterpriseId) => {
             strictPopulate: false,
         });
     }
-
+    
+    // console.log(userInfo)
     // If user profile not found, return an error
     if (!userInfo) {
         return res.status(404).json({ message: "User profile not found." });
