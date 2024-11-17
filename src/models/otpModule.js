@@ -1,21 +1,21 @@
-import mongoose from "mongoose";
-import mailSender from "../util/mailSender"
+const mongoose = require("mongoose")
+const mailSender = require("../util/mailSender")
 
-// const otpSchema = new mongoose.Schema({
-//   email: {
-//     type: String,
-//     required: true,
-//   },
-//   otp: {
-//     type: String,
-//     required: true,
-//   },
-//   createdAt: {
-//     type: Date,
-//     default: Date.now,
-//     expires: 60 * 5, 
-//   },
-// });
+const otpSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+  },
+  otp: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    expires: 60 * 5, 
+  },
+});
 
 
 async function sendVerificationEmail(email, otp) {
@@ -47,4 +47,4 @@ otpSchema.pre("save", async function (next) {
   next();
 });
 
-// module.exports.otpCollection = mongoose.model('otp', otpSchema);
+module.exports.otpCollection = mongoose.model('otp', otpSchema);

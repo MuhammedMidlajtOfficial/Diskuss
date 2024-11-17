@@ -8,14 +8,11 @@ if (!process.env.MongoDBURL) {
   process.exit(1);
 }
 
-const MongoLocalURI = "mongodb://localhost:27017/diskuss"
-let localDb = false 
 
-if (localDb){
-  mongoose.connect(MongoLocalURI,{
-    connectTimeoutMS: 20000, 
-    socketTimeoutMS: 45000,
-  })
+mongoose.connect( process.env.MongoDBURL,{
+  connectTimeoutMS: 20000, 
+  socketTimeoutMS: 45000,
+})
   .then(() => {
     console.log('DB Connected');
   })
@@ -23,18 +20,6 @@ if (localDb){
     console.error('DB Connection Failed:', err);
   });
 
-} else{
-  mongoose.connect( process.env.MongoDBURL,{
-    connectTimeoutMS: 20000, 
-    socketTimeoutMS: 45000,
-  })
-    .then(() => {
-      console.log('DB Connected');
-    })
-    .catch((err) => {
-      console.error('DB Connection Failed:', err);
-    });
-}
 
 
 
@@ -51,7 +36,67 @@ if (localDb){
       type: String,
       required: true,
     },
-  });
+    isSubscribed: {
+      type: Boolean,
+      default: false,
+    },
+    cardNo: {
+      type: Number,
+      required: true,
+      default : 0
+    },
+    image: {
+      type:String,
+      default : ''
+    },
+    role: {
+      type:String,
+      default : ''
+    },
+    name: {
+      type:String,
+      default : ''
+    },
+    website: {
+      type:String,
+      default : ''
+    },
+    phnNumber: {
+      type: String,
+      default: '',
+    },
+    address: {
+      type:String,
+      default : ''
+    },
+    contacts : {
+      type : Array,
+      default : []
+    },
+    meetings : [{
+      type: String,
+      ref: "Meeting", // Reference to Meeting model
+      required: false,
+    }],
+    socialMedia: {
+      whatsappNo: {
+        type:String,
+        default : ''
+      },
+      facebookLink: {
+        type:String,
+        default : ''
+      },
+      instagramLink: {
+        type:String,
+        default : ''
+      },
+      twitterLink: {
+        type:String,
+        default : ''
+      },
+    }
+  } ,{ timestamps: true });
 
   const otpSchema = new mongoose.Schema({
     email: {
