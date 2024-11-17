@@ -84,10 +84,9 @@ exports.getMeetingsByIds = async (enterpriseId) => {
         });
     }
     
-    // console.log(userInfo)
     // If user profile not found, return an error
     if (!userInfo) {
-        return res.status(404).json({ message: "User profile not found." });
+        return { status: 404, message: "User profile not found." };
     }
 
     // Extract meeting IDs from the user's profile
@@ -104,7 +103,7 @@ exports.getMeetingsByIds = async (enterpriseId) => {
     const startOfYear = new Date(today.getFullYear(), 0, 1);
     const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
 
-    // Find meetings in MeetingBase collection that match the extracted meeting IDs
+    // Count meetings based on different criteria
     const meetingsToday = await MeetingBase.countDocuments({
         _id: { $in: meetingIds },
         selectedDate: { $gte: today }
@@ -120,14 +119,28 @@ exports.getMeetingsByIds = async (enterpriseId) => {
         selectedDate: { $gte: startOfYear, $lte: endOfYear }
     });
 
-    // Combine all meetings into one response object
+    // Count upcoming and expired meetings
+    const upcomingMeetingsCount = await MeetingBase.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gt: today } // Meetings scheduled after today
+    });
+
+    const expiredMeetingsCount = await MeetingBase.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $lt: today } // Meetings scheduled before today
+    });
+
+    // Combine all counts into one response object
     const responseMeetings = {
         today: meetingsToday,
         thisMonth: meetingsThisMonth,
         thisYear: meetingsThisYear,
+        upcomingCount: upcomingMeetingsCount,
+        expiredCount: expiredMeetingsCount,
     };
 
     // Send back the enriched meetings as the response
-    console.log("Meetings :", responseMeetings)
-    return  {meetings: responseMeetings };
+    console.log("Meetings:", responseMeetings);
+    
+    return { meetings: responseMeetings };
 }
