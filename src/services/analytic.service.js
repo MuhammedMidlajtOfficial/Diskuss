@@ -5,6 +5,7 @@ const enterprise = require("../models/enterpriseUser")
 const MeetingBase = require("../models/EnterpriseMeetingModel")
 const Card = require('../models/card')
 
+
 exports.logShare = async (cardId, userId) => {
     const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
     await share.save();
@@ -78,7 +79,6 @@ exports.getMeetingsByIds = async (enterpriseId) => {
         path: 'meetings',
         strictPopulate: false,
     });
-    
     // If not found in Profile collection, check in the enterprise collection
     if (!userInfo) {
         userInfo = await enterprise.findById(enterpriseId).populate({
@@ -90,6 +90,7 @@ exports.getMeetingsByIds = async (enterpriseId) => {
     // If user profile not found, return an error
     if (!userInfo) {
         return { status: 404, message: "User profile not found." };
+
     }
 
     // Extract meeting IDs from the user's profile
@@ -107,6 +108,7 @@ exports.getMeetingsByIds = async (enterpriseId) => {
     const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
 
     // Count meetings based on different criteria
+    // Find meetings in MeetingBase collection that match the extracted meeting IDs
     const meetingsToday = await MeetingBase.countDocuments({
         _id: { $in: meetingIds },
         selectedDate: { $gte: today }
@@ -213,5 +215,6 @@ exports.getCardsByIds = async (enterpriseId) => {
     console.log("Cards:", responseMeetings);
     
     return { meetings: responseMeetings };
+
 }
 
