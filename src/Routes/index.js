@@ -20,8 +20,10 @@ const enterpriseMessage = require("./EnterpriseMessage/enterpriseMessageRoute.js
 const teamRouter = require('./Team/teamRouter.js');
 const notification = require('./Notification/NotificationRouter.js')
 const enterpriseMeeting = require('./EnterPriseMeeting/EnterPriseMeeting.js')
-
-
+const count = require('./Count/Count.js')
+const Preferences = require('./Permission/PermissionModel.js')
+const analyticRouter = require("./Analytic/analyticRouter.js")
+// const contactRouter = require("./contactRouter.js")
 
 
 const router = express.Router();
@@ -107,6 +109,23 @@ const defaultRoutes = [
     path: '/notification',
     route: notification,
   },
+  {
+    path: '/count',
+    route: count,
+  },
+  {
+    path: '/analytic',
+    route: analyticRouter
+  },
+  {
+    path: '/Preferences',
+    route: Preferences
+  },
+  {
+    path: '/analytic',
+    route: analyticRouter
+  }
+  
 ];
 
 defaultRoutes.forEach((route) => {

@@ -9,7 +9,10 @@ module.exports.getAllTeamById = async (req, res) => {
         }
 
         const team = await teamModel.find()
-
+            .populate('teamMembers')
+            .populate('teamLead')
+            .exec();
+            
         return res.status(200).json({ team });
     } catch (error) {
         console.error(error);
@@ -24,7 +27,7 @@ module.exports.getMembersOfTeam = async (req, res) => {
             return res.status(400).json({ message: "teamId is required" });
         }
         console.log(teamId);
-        const teamMembers = await teamModel.findOne({ _id:teamId })
+        const teamMembers = await teamModel.findOne({ _id:teamId }).populate('teamMembers')
 
         console.log(teamMembers);
         if (!teamMembers) {

@@ -4,7 +4,7 @@ const cron = require('node-cron');
 
 
 const meetingSchema = new mongoose.Schema({
-  meetingOwner: { type: mongoose.Schema.Types.ObjectId,ref:'user', required: true }, // Common for both types
+  meetingOwner: { type: mongoose.Schema.Types.ObjectId,ref:'EnterpriseEmployee', required: true }, // Common for both types
   meetingTitle: { type: String, required: true }, // Common for both types
 
   // Meeting Type: Online or Offline
@@ -31,7 +31,7 @@ const meetingSchema = new mongoose.Schema({
   // List of People Invited
   invitedPeople: [{
     type: String,
-    ref: 'User' // Assuming 'User' schema exists
+    ref: 'EnterpriseEmployee' // Assuming 'User' schema exists
   }],
 
   description: { type: String }, // Description for the meeting

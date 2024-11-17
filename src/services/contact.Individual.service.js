@@ -133,7 +133,7 @@ const deleteContact = async (contactOwnerId, contactId) => {
  */
 const findContactsByOwnerUserId = async (userId) => {
     try {
-        const contactOwner = await Contact.findOne({ contactOwnerId: userId }).exec();
+        const contactOwner = await Contact.find({ contactOwnerId: userId }).exec();
         if (!contactOwner) {
             throw new Error("Contact owner not found");
         }

@@ -49,7 +49,7 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     contacts: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Contact',
+        ref: 'ContactEnterprise',
         default: []
       }
     ],    
@@ -70,8 +70,16 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
         type:String,
         default : ''
       },
+     
       
-    }
+    },
+    meetings: [
+      {
+        type: String,
+        ref: "EnterpriseMeeting", // Reference to Meeting model
+        required: false,
+      }
+    ],
 } ,{ timestamps: true });
 
 module.exports = mongoose.model("EnterpriseEmployee",EnterpriseEmployeeSchema );
