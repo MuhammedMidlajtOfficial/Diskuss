@@ -3,6 +3,7 @@ const Analytic = require("../models/analytics/analytic.model")
 const Profile = require("../models/profile")
 const enterprise = require("../models/enterpriseUser")
 const MeetingBase = require("../models/EnterpriseMeetingModel")
+const Card = require('../models/card')
 
 exports.logShare = async (cardId, userId) => {
     const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
@@ -143,6 +144,73 @@ exports.getMeetingsByIds = async (enterpriseId) => {
 
     // Send back the enriched meetings as the response
     console.log("Meetings:", responseMeetings);
+    
+    return { meetings: responseMeetings };
+}
+// get card by ids  //
+exports.getCardsByIds = async (enterpriseId) => {
+    // Find the user's profile by userId and populate meetings if referenced in schema
+    let userInfo = await Profile.findById(enterpriseId);
+    
+    // If not found in Profile collection, check in the enterprise collection
+    if (!userInfo) {
+        userInfo = await enterprise.findById(enterpriseId);
+    }
+    
+    console.log(userInfo)
+
+    // If user profile not found, return an error
+    if (!userInfo) {
+        return { status: 404, message: "User profile not found." };
+    }
+
+    // Extract meeting IDs from the user's profile
+    // const cardIds = userInfo?.empCards?.map(card => card._id);
+    const cardIds = userInfo?.empCards;
+
+    console.log("card id: ", cardIds)
+
+    // Get current date for filtering
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Calculate start and end dates for this month and year
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
+
+    // Count meetings based on different criteria
+    const meetingsToday = await Card.countDocuments({
+        _id: { $in: cardIds },
+        createdAt: { $gte: today }
+    });
+
+    console.log("meering today : ", meetingsToday)
+    
+    const meetingsThisMonth = await Card.countDocuments({
+        _id: { $in: cardIds },
+        createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+    });
+    console.log("meeting month : ", meetingsThisMonth)
+    
+    const meetingsThisYear = await Card.countDocuments({
+        _id: { $in: cardIds },
+        createdAt: { $gte: startOfYear, $lte: endOfYear }
+    });
+    
+    console.log("meeting year : ", meetingsThisYear)
+
+    // Combine all counts into one response object
+    const responseMeetings = {
+        today: meetingsToday,
+        thisMonth: meetingsThisMonth,
+        thisYear: meetingsThisYear,
+    };
+
+    // Send back the enriched meetings as the response
+    console.log("Cards:", responseMeetings);
     
     return { meetings: responseMeetings };
 }

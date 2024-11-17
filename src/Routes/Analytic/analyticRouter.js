@@ -10,6 +10,7 @@ router.post('/view', controller.logView)
 router.post('/click', controller.logClick)
 
 router.get('/meeting/:enterpriseId', controller.getMeetings)
+router.get('/card/:enterpriseId', controller.getCards)
 
 module.exports = router;
 
