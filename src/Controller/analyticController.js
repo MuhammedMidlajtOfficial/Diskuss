@@ -74,6 +74,22 @@ exports.getEmployees = async (req, res) => {
     }
 };
 
+exports.getCounts = async (req, res) => {
+    const { period } = req.query;
+    const {enterpriseId} = req.params;
+
+    console.log("period :", period)
+    console.log("enterpriseId :", enterpriseId)
+  
+    try {
+        const data = await analyticsService.getCounts(enterpriseId, period);
+        res.status(200).json(data);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+  
+
 
 // const analyticService = require("../services/analytic.service")
 // const Analytic  = require('../models/analytics/analytic.model');

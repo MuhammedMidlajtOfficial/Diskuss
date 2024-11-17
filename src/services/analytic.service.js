@@ -5,6 +5,9 @@ const enterprise = require("../models/enterpriseUser")
 const MeetingBase = require("../models/EnterpriseMeetingModel")
 const Card = require('../models/card')
 const Employee = require("../models/enterpriseEmploye.model")
+const Team = require("../models/team.model")
+const Contact = require("../models/contact.enterprise.model")
+const filterByDate = require("../util/filterByDate")
 
 exports.logShare = async (cardId, userId) => {
     const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
@@ -286,3 +289,40 @@ exports.getEmployeesByIds = async (enterpriseId) => {
     return { employees: responseEmployees };
 }
 
+exports.getCounts = async (enterpriseId, period) => {
+    try {
+      const dateFilter = filterByDate(new Date(), period);
+
+  
+      // Count enterprise cards
+      const enterpriseCardsCount = await Card.countDocuments({
+        userId: enterpriseId,
+        createdAt: dateFilter,
+      });
+  
+      // Count teams
+      const teamsCount = await Team.countDocuments({
+        teamOwnerId: enterpriseId,
+        createdAt: dateFilter,
+      });
+  
+      // Count employee cards
+      const enterpriseUsers = await enterprise.findById(enterpriseId);
+      const empCardsCount = enterpriseUsers ? enterpriseUsers.empCards.length : 0;
+  
+      // Count contacts
+      const contactsCount = await Contact.countDocuments({
+        contactOwnerId: enterpriseId,
+        createdAt: dateFilter,
+      });
+  
+      return ({
+        enterpriseCardsCount,
+        teamsCount,
+        empCardsCount,
+        contactsCount,
+      });
+    } catch (err) {
+      return ({ error: err.message });
+    }
+  };
