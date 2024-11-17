@@ -22,7 +22,6 @@ const notification = require('./Notification/NotificationRouter.js')
 const enterpriseMeeting = require('./EnterPriseMeeting/EnterPriseMeeting.js')
 const Preferences = require('./Permission/PermissionModel.js')
 const analyticRouter = require("./Analytic/analyticRouter.js")
-const contactRouter = require("./contactRouter.js")
 
 const router = express.Router();
 
@@ -115,10 +114,6 @@ const defaultRoutes = [
   {
     path: '/Preferences',
     route: Preferences
-  },
-  {
-    path: '/contact',
-    route: contactRouter
   },
   {
     path: '/analytic',
