@@ -40,6 +40,17 @@ exports.getAnalytics = async (req, res) => {
     }
 };
 
+exports.getMeetings = async (req, res) => {
+    const { enterpriseId } = req.params;
+    const period = ""
+    try {
+        console.log(enterpriseId)
+        const data = await analyticsService.getMeetingsByIds(enterpriseId, period );
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching analytics data' });
+    }
+};
 
 // const analyticService = require("../services/analytic.service")
 // const Analytic  = require('../models/analytics/analytic.model');
