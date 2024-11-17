@@ -1,4 +1,8 @@
 const Analytic = require("../models/analytics/analytic.model")
+const Profile = require("../models/profile")
+const enterprise = require("../models/enterpriseUser")
+const MeetingBase = require("../models/MeetingModel")
+
 exports.logShare = async (cardId, userId) => {
     const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
     await share.save();
@@ -65,65 +69,65 @@ exports.getAnalytics = async (cardId, period) => {
 };
 
 // get meeting by ids  //
-exports.getMeetingsByIds = async (enterpriseId, period) => {
-        // Find the user's profile by userId and populate meetings if referenced in schema
-        let userInfo = await Profile.findById(enterpriseId).populate({
+exports.getMeetingsByIds = async (enterpriseId) => {
+    // Find the user's profile by userId and populate meetings if referenced in schema
+    let userInfo = await Profile.findById(enterpriseId).populate({
+        path: 'meetings',
+        strictPopulate: false,
+    });
+    console.log("Userinfo")
+
+    // If not found in Profile collection, check in the enterprise collection
+    if (!userInfo) {
+        userInfo = await enterprise.findById(enterpriseId).populate({
             path: 'meetings',
             strictPopulate: false,
         });
-        console.log("Userinfo")
+    }
 
-        // If not found in Profile collection, check in the enterprise collection
-        if (!userInfo) {
-            userInfo = await enterprise.findById(enterpriseId).populate({
-                path: 'meetings',
-                strictPopulate: false,
-            });
-        }
+    // If user profile not found, return an error
+    if (!userInfo) {
+        return res.status(404).json({ message: "User profile not found." });
+    }
 
-        // If user profile not found, return an error
-        if (!userInfo) {
-            return res.status(404).json({ message: "User profile not found." });
-        }
+    // Extract meeting IDs from the user's profile
+    const meetingIds = userInfo?.meetings?.map(meeting => meeting._id);
 
-        // Extract meeting IDs from the user's profile
-        const meetingIds = userInfo?.meetings?.map(meeting => meeting._id);
+    // Get current date for filtering
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        // Get current date for filtering
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+    // Calculate start and end dates for this month and year
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
 
-        // Calculate start and end dates for this month and year
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        
-        const startOfYear = new Date(today.getFullYear(), 0, 1);
-        const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
+    // Find meetings in MeetingBase collection that match the extracted meeting IDs
+    const meetingsToday = await MeetingBase.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gte: today }
+    });
 
-        // Find meetings in MeetingBase collection that match the extracted meeting IDs
-        const meetingsToday = await MeetingBase.countDocuments({
-            _id: { $in: meetingIds },
-            selectedDate: { $gte: today }
-        });
+    const meetingsThisMonth = await MeetingBase.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gte: startOfMonth, $lte: endOfMonth }
+    });
 
-        const meetingsThisMonth = await MeetingBase.countDocuments({
-            _id: { $in: meetingIds },
-            selectedDate: { $gte: startOfMonth, $lte: endOfMonth }
-        });
+    const meetingsThisYear = await MeetingBase.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gte: startOfYear, $lte: endOfYear }
+    });
 
-        const meetingsThisYear = await MeetingBase.countDocuments({
-            _id: { $in: meetingIds },
-            selectedDate: { $gte: startOfYear, $lte: endOfYear }
-        });
+    // Combine all meetings into one response object
+    const responseMeetings = {
+        today: meetingsToday,
+        thisMonth: meetingsThisMonth,
+        thisYear: meetingsThisYear,
+    };
 
-        // Combine all meetings into one response object
-        const responseMeetings = {
-            today: meetingsToday,
-            thisMonth: meetingsThisMonth,
-            thisYear: meetingsThisYear,
-        };
-
-        // Send back the enriched meetings as the response
-        console.log("Meetings :", responseMeetings)
-        return  {meetings: responseMeetings };
+    // Send back the enriched meetings as the response
+    console.log("Meetings :", responseMeetings)
+    return  {meetings: responseMeetings };
 }

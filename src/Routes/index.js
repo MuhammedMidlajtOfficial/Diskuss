@@ -23,7 +23,7 @@ const enterpriseMeeting = require('./EnterPriseMeeting/EnterPriseMeeting.js')
 const count = require('./Count/Count.js')
 const Preferences = require('./Permission/PermissionModel.js')
 const analyticRouter = require("./Analytic/analyticRouter.js")
-const contactRouter = require("./contactRouter.js")
+// const contactRouter = require("./contactRouter.js")
 
 const router = express.Router();
 
@@ -121,10 +121,10 @@ const defaultRoutes = [
     path: '/Preferences',
     route: Preferences
   },
-  {
-    path: '/contact',
-    route: contactRouter
-  },
+  // {
+  //   path: '/contact',
+  //   route: contactRouter
+  // },
   {
     path: '/analytic',
     route: analyticRouter
