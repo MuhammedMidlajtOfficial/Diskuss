@@ -2,22 +2,32 @@ const { individualUserCollection } = require("../../DBConfig");
 const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
 const enterpriseUser = require("../../models/enterpriseUser");
+const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
 
 module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id
     
-    // const isUserExist = individualUserCollection.findOne({ _id:userId })
-    // console.log('isUserExist-',isUserExist);
-    // if(!isUserExist){
-    //   return res.status(400).json({ message: 'Invalid user ID' });
-    // }
-
-    const card = await Card.find({ userId })
-    if (!card[0]) {
-      return res.status(404).json({ message: 'Card not found' });
+    const isIndividualUser = await individualUserCollection.findOne({ _id:userId })
+    console.log('isIndividualUser',isIndividualUser);
+    const isEnterpriseUser = enterpriseUser.findOne({ _id:userId })
+    let card ;
+    if(isIndividualUser){
+      card = await Card.find({ userId })
+      if (!card[0]) {
+        return res.status(404).json({ message: 'Card not found' });
+      }
+    }else if(isEnterpriseUser){
+      const enterpriseCard = await Card.find({ userId })
+      const empCard = await enterpriseEmployeCardModel.find({ enterpriseId : userId })
+      // if (!card[0]) {
+      //   return res.status(404).json({ message: 'Card not found' });
+      // }
+      // console.log('enterpriseCard-',enterpriseCard);
+      // console.log('empCard-',empCard);
+      card = [...enterpriseCard, ...empCard];
     }
-    console.log(card);
+
     return res.status(200).json(card);
   } catch (error) {
     console.log(error);
