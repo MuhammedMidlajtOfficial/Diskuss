@@ -118,8 +118,6 @@ exports.getMessages = async (req, res) => {
 
 
 
-
-
       return res.status(200).json({
         messages: messages.map((message) => ({
           ...message.toObject(),
@@ -128,8 +126,6 @@ exports.getMessages = async (req, res) => {
       });
     }else if (userId) {
       const lastMessages = await enterpriseMessage.aggregate([
-
-
 
         {
             $match: {
@@ -221,8 +217,6 @@ exports.getMessages = async (req, res) => {
     ]);
     
     return res.status(200).json(lastMessages);
-
-
 
   }
    else {
