@@ -17,7 +17,6 @@ const contactSchema = new mongoose.Schema({
     phnNumber: { type: String, required: true },
     email: { 
       type: String, 
-      required: true, 
       match: /.+\@.+\..+/ // Regex for email validation
     },
     website: { type: String,default:''},

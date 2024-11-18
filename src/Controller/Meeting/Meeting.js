@@ -5,6 +5,7 @@ const {individualUserCollection: Profile} = require('../../models/individualUser
 const mongoose = require("mongoose");
 const Contact = require('../../models/contact.individul.model')
 const Notification = require('../../models/NotificationModel')
+const { emitNotification } = require('../../Controller/Socket.io/NotificationSocketIo');
 
 
 // CreateMeeting controller 
@@ -110,7 +111,7 @@ const CreateMeeting = async (req, res) => {
                 });
                 await notification.save();
 
-                // emitNotification(userId, notification);
+                emitNotification(userId.toString(), notification); // Emit real-time notification
                     
                     if (!updatedProfile) {
                         console.log(`No profile found with ID: ${userId}`);
@@ -434,6 +435,7 @@ const UpdateMeeting = async (req, res) => {
                         status: 'unread'
                     });
                     await notification.save();
+                    emitNotification(userId.toString(), notification);
 
                     if (!updatedProfile) {
                         console.log(`No profile found with ID: ${userId}`);

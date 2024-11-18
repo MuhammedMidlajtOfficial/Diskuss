@@ -13,6 +13,10 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
       type:String,
       required : true
     },
+    email: {
+      type:String,
+      required : true
+    },
     empName:  {
       type:String,
       required : true
