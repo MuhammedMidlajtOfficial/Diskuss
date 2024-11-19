@@ -9,14 +9,11 @@ const messageSchema = new mongoose.Schema({
   isRead: { type: Boolean, default: false },
 });
 
-messageSchema.set("toJSON", {
+// Custom transformation
+messageSchema.set('toJSON', {
   transform: function (doc, ret) {
-    // Convert timestamp to local time string
-    const localDate = new Date(ret.timestamp).toLocaleString("en-US", {
-      timeZone: "Asia/Kolkata", // Replace with your timezone
-      hour12: false,
-    });
-    ret.timestamp = localDate; // Replace the original timestamp
+    // Convert the timestamp to a string
+    ret.timestamp = ret.timestamp.toISOString(); // ISO 8601 string format
     return ret;
   },
 });
