@@ -4,7 +4,10 @@ const Profile = require("../models/profile")
 const enterprise = require("../models/enterpriseUser")
 const MeetingBase = require("../models/EnterpriseMeetingModel")
 const Card = require('../models/card')
-
+const Employee = require("../models/enterpriseEmploye.model")
+const Team = require("../models/team.model")
+const Contact = require("../models/contact.enterprise.model")
+const filterByDate = require("../util/filterByDate")
 
 exports.logShare = async (cardId, userId) => {
     const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
@@ -149,6 +152,7 @@ exports.getMeetingsByIds = async (enterpriseId) => {
     
     return { meetings: responseMeetings };
 }
+
 // get card by ids  //
 exports.getCardsByIds = async (enterpriseId) => {
     // Find the user's profile by userId and populate meetings if referenced in schema
@@ -184,37 +188,142 @@ exports.getCardsByIds = async (enterpriseId) => {
     const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
 
     // Count meetings based on different criteria
-    const meetingsToday = await Card.countDocuments({
+    const cardsToday = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: today }
     });
 
-    console.log("meering today : ", meetingsToday)
+    console.log("Card today : ", cardsToday)
     
-    const meetingsThisMonth = await Card.countDocuments({
+    const cardsThisMonth = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: startOfMonth, $lte: endOfMonth }
     });
-    console.log("meeting month : ", meetingsThisMonth)
+    console.log("Card month : ", cardsThisMonth)
     
-    const meetingsThisYear = await Card.countDocuments({
+    const cardsThisYear = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: startOfYear, $lte: endOfYear }
     });
     
-    console.log("meeting year : ", meetingsThisYear)
+    console.log("Card year : ", cardsThisYear)
 
     // Combine all counts into one response object
-    const responseMeetings = {
-        today: meetingsToday,
-        thisMonth: meetingsThisMonth,
-        thisYear: meetingsThisYear,
+    const responseCardss = {
+        today: cardsToday,
+        thisMonth: cardsThisMonth,
+        thisYear: cardsThisYear,
     };
 
     // Send back the enriched meetings as the response
-    console.log("Cards:", responseMeetings);
+    console.log("Cards:", responseCardss);
     
-    return { meetings: responseMeetings };
+    return { meetings: responseCardss };
 
 }
 
+// get card by ids  //
+exports.getEmployeesByIds = async (enterpriseId) => {
+    // Find the user's profile by userId and populate meetings if referenced in schema
+    let userInfo = await Profile.findById(enterpriseId);
+    
+    // If not found in Profile collection, check in the enterprise collection
+    if (!userInfo) {
+        userInfo = await enterprise.findById(enterpriseId);
+    }
+    
+    console.log(userInfo)
+
+    // If user profile not found, return an error
+    if (!userInfo) {
+        return { status: 404, message: "User profile not found." };
+    }
+
+    // Extract meeting IDs from the user's profile
+    // const empIds = userInfo?.empCards?.map(card => card._id);
+    const empIds = userInfo?.empId;
+
+    console.log("card id: ", empIds)
+
+    // Get current date for filtering
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Calculate start and end dates for this month and year
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
+
+    // Count meetings based on different criteria
+    const employeesToday = await Employee.countDocuments({
+        _id: { $in: empIds },
+        createdAt: { $gte: today }
+    });
+
+    console.log("employees today : ", employeesToday)
+    
+    const employeesThisMonth = await Employee.countDocuments({
+        _id: { $in: empIds },
+        createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+    });
+    console.log("employees month : ", employeesThisMonth)
+    
+    const employeesThisYear = await Employee.countDocuments({
+        _id: { $in: empIds },
+        createdAt: { $gte: startOfYear, $lte: endOfYear }
+    });
+    
+    console.log("employees year : ", employeesThisYear)
+
+    // Combine all counts into one response object
+    const responseEmployees = {
+        today: employeesToday,
+        thisMonth: employeesThisMonth,
+        thisYear: employeesThisYear,
+    };
+
+    // Send back the enriched employees as the response
+    console.log("employees:", responseEmployees);
+    
+    return { employees: responseEmployees };
+}
+
+exports.getCounts = async (enterpriseId, period) => {
+    try {
+      const dateFilter = filterByDate(new Date(), period);
+
+  
+      // Count enterprise cards
+      const enterpriseCardsCount = await Card.countDocuments({
+        userId: enterpriseId,
+        createdAt: dateFilter,
+      });
+  
+      // Count teams
+      const teamsCount = await Team.countDocuments({
+        teamOwnerId: enterpriseId,
+        createdAt: dateFilter,
+      });
+  
+      // Count employee cards
+      const enterpriseUsers = await enterprise.findById(enterpriseId);
+      const empCardsCount = enterpriseUsers ? enterpriseUsers.empCards.length : 0;
+  
+      // Count contacts
+      const contactsCount = await Contact.countDocuments({
+        contactOwnerId: enterpriseId,
+        createdAt: dateFilter,
+      });
+  
+      return ({
+        enterpriseCardsCount,
+        teamsCount,
+        empCardsCount,
+        contactsCount,
+      });
+    } catch (err) {
+      return ({ error: err.message });
+    }
+  };

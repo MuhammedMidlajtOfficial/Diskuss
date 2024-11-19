@@ -1,21 +1,33 @@
 const { individualUserCollection } = require("../../DBConfig");
 const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
+const enterpriseUser = require("../../models/enterpriseUser");
+const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
 
 module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id
     
-    const isUserExist = individualUserCollection.findOne({ _id:userId })
-    if(!isUserExist){
-      return res.status(400).json({ message: 'Invalid user ID' });
+    const isIndividualUser = await individualUserCollection.findOne({ _id:userId })
+    console.log('isIndividualUser',isIndividualUser);
+    const isEnterpriseUser = enterpriseUser.findOne({ _id:userId })
+    let card ;
+    if(isIndividualUser){
+      card = await Card.find({ userId })
+      if (!card[0]) {
+        return res.status(404).json({ message: 'Card not found' });
+      }
+    }else if(isEnterpriseUser){
+      const enterpriseCard = await Card.find({ userId })
+      const empCard = await enterpriseEmployeCardModel.find({ enterpriseId : userId })
+      // if (!card[0]) {
+      //   return res.status(404).json({ message: 'Card not found' });
+      // }
+      // console.log('enterpriseCard-',enterpriseCard);
+      // console.log('empCard-',empCard);
+      card = [...enterpriseCard, ...empCard];
     }
 
-    const card = await Card.find({ userId })
-    if (!card[0]) {
-      return res.status(404).json({ message: 'Card not found' });
-    }
-    console.log(card);
     return res.status(200).json(card);
   } catch (error) {
     console.log(error);
@@ -111,10 +123,10 @@ module.exports.updateCard = async (req, res) => {
       website
     } = req.body;
 
-    const isUserExist = individualUserCollection.findOne({ _id:userId })
-    if(!isUserExist){
-      return res.status(400).json({ message: 'Invalid user ID' });
-    }
+    // const isUserExist = individualUserCollection.findOne({ _id:userId })
+    // if(!isUserExist){
+    //   return res.status(400).json({ message: 'Invalid user ID' });
+    // }
 
     // Find existing card to retrieve the current image URL if no new image is provided
     const existingCard = await Card.findById(cardId);
@@ -170,25 +182,44 @@ module.exports.updateCard = async (req, res) => {
 };
 
 module.exports.deleteCard = async (req, res) => {
-  const { userId, cardId } = req.body;
-
-  const isUserExist = individualUserCollection.findOne({ _id:userId })
-  if(!isUserExist){
-    return res.status(400).json({ message: 'Invalid user ID' });
-  }
-
   try {
-    const result = await Card.deleteOne({ userId, _id: cardId });
-    console.log(result);
-    if (result.deletedCount > 0) {
-      await individualUserCollection.updateOne(
-        { _id: userId },
-        { $inc: { cardNo: -1 } }
-      );
-      return res.status(200).json({ message: "Card deleted successfully" });
-    } else {
-      return res.status(404).json({ message: "Card not found" });
+    const { userId, cardId } = req.body;
+
+    // const isUserExist = individualUserCollection.findOne({ _id:userId })
+    // if(!isUserExist){
+    //   return res.status(400).json({ message: 'Invalid user ID' });
+    // }
+
+    const isEmailExist = await individualUserCollection.findOne({ _id:userId }).exec();
+    const isEmailExistInEnterpriseUser = await enterpriseUser.findOne({ _id:userId }).exec();
+
+    if(isEmailExist){
+      const result = await Card.deleteOne({ userId, _id: cardId });
+      console.log(result);
+      if (result.deletedCount > 0) {
+        await individualUserCollection.updateOne(
+          { _id: userId },
+          { $inc: { cardNo: -1 } }
+        );
+        return res.status(200).json({ message: "Individual User Card deleted successfully" });
+      } else {
+        return res.status(404).json({ message: "Card not found" });
+      }
+    }else if(isEmailExistInEnterpriseUser){
+      const result = await Card.deleteOne({ userId, _id: cardId });
+      console.log(result);
+      if (result.deletedCount > 0) {
+        await enterpriseUser.updateOne(
+          { _id: userId },
+          { $inc: { cardNo: -1 } }
+        );
+        return res.status(200).json({ message: "Enterprise User Card deleted successfully" });
+      } else {
+        return res.status(404).json({ message: "Card not found" });
+      }
     }
+
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to delete card", error });
