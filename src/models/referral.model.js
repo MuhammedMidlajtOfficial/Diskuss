@@ -15,16 +15,16 @@ const rewardSchema = new mongoose.Schema({
   totalCoins: { type: Number, default: 0 },
   milestonesAchieved: { type: Array, default: [] }
 });
-    referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
-    refereePhoneNo: { type: String, required: true },   // Reference to the referred user (user_id)
-}, { timestamps: true });
+//     referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
+//     refereePhoneNo: { type: String, required: true },   // Reference to the referred user (user_id)
+// }, { timestamps: true });
 
 
-const rewardSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  totalCoins: { type: Number, default: 0 },
-  milestonesAchieved: { type: Array, default: [] }
-});
+// const rewardSchema = new mongoose.Schema({
+//   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+//   totalCoins: { type: Number, default: 0 },
+//   milestonesAchieved: { type: Array, default: [] }
+// });
 
 // const ReferralSchema = new mongoose.Schema({
 //     referrerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
