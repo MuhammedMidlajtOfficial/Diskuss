@@ -9,7 +9,21 @@ const Contact  = require('../../models/contact.individul.model');
 module.exports.getCardForUser = async (req, res) => {
     try {
         const { id: userId } = req.params;
-        const user = await enterpriseEmployeModel.findOne({ _id : userId });
+        const user = await enterpriseEmployeCardModel.findOne({ userId });
+        if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+        }
+        return res.status(200).json({ user })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Failed to get card", error });
+    }
+};
+
+module.exports.getProfile = async (req, res) => {
+    try {
+        const { id: userId } = req.params;
+        const user = await enterpriseEmployeModel.findOne({ _id: userId });
         if (!user) {
           return res.status(404).json({ message: 'User not found' });
         }
@@ -24,7 +38,7 @@ module.exports.getContactOfEmployee = async (req, res) => {
     try {
         const { id: empId } = req.params;
         const user = await enterpriseEmployeModel.findOne({ _id : empId }).populate({
-            path: 'Contact',
+            path: 'contacts',
             strictPopulate: false, 
         } )
         if (!user) {
@@ -110,6 +124,7 @@ module.exports.createCard = async (req, res) => {
         const newCard = new enterpriseEmployeCardModel({
             userId: newUser._id,
             businessName,
+            email,
             empName,
             designation,
             mobile,
@@ -203,7 +218,7 @@ module.exports.updateProfile = async (req, res) => {
                     return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
                 } else {
                     console.log("Error: Contact update failed, Profile updated successfully");
-                    return res.status(400).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
+                    return res.status(200).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
                 }
             } else {
                 console.log("Error: Contact not found.");

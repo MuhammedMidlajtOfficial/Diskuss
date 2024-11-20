@@ -1,9 +1,9 @@
+
 const MeetingBase = require("../../models/EnterpriseMeetingModel")
 const moment = require('moment');
 const cron = require('node-cron');
 const Profile = require('../../models/enterpriseEmploye.model')
 const enterprise = require('../../models/enterpriseUser')
-
 const mongoose = require("mongoose");
 const Contact = require('../../models/contact.individul.model')
 const Notification = require('../../models/NotificationModel')
@@ -217,7 +217,11 @@ const getMeetingsByIds = async (req, res) => {
         
 
         // Fetch profiles of meeting owners and invited people based on their IDs
-        const ownerProfiles = await Profile.find({ _id: { $in: meetingOwnerIds } });
+        const ownerProfiles = await Profile.find({ _id: { $in: meetingOwnerIds } }); 
+
+        const ownerProfilesenterprise = await enterprise.find({ _id: { $in: meetingOwnerIds } }); 
+
+
         const invitedProfiles = await Profile.find({ _id: { $in: invitedPeopleIds } });
         // console.log(ownerProfiles);
         // console.log(invitedProfiles);
@@ -225,7 +229,7 @@ const getMeetingsByIds = async (req, res) => {
           const additionalInvitedProfiles = await enterprise.find({ _id: { $in: invitedPeopleIds } });
         
         // Create a map for easy lookup of profiles by userId
-        const profilesMap = [...ownerProfiles, ...invitedProfiles,...additionalInvitedProfiles].reduce((acc, profile) => {
+        const profilesMap = [...ownerProfiles,...ownerProfilesenterprise, ...invitedProfiles,...additionalInvitedProfiles].reduce((acc, profile) => {
             acc[profile._id] = {
   
                 username: profile.username || profile.companyName,
@@ -457,4 +461,3 @@ const UpdateMeeting = async (req, res) => {
 
 
 module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting};
-

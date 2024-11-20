@@ -58,7 +58,7 @@ const createContact = async (req, res) => {
             contactOwnerId,
         } = req.body;
 
-        if (!email || !name || !phnNumber || !contactOwnerId) {
+        if ( !name || !phnNumber || !contactOwnerId) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -199,7 +199,7 @@ const getContactsByOwnerUserId = async (req, res) => {
     try {
         const { user_id } = req.params;
         const contacts = await ContactService.findContactsByOwnerUserId(user_id);
-
+        console.log(contacts);
         // if (!contacts || contacts.length === 0) {
         //     return res.status(200).json({ message: 'No Contacts found for this user' });
         // }
