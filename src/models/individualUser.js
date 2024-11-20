@@ -72,17 +72,20 @@ const IndividualUserSchema = new mongoose.Schema({
       type:String,
       default : ''
     },
-   
+  },
     coins: { type: Number, default: 0 },
-    invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
-    },
+    invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    referralCode: String,  // Unique referral code
+    coins: { type: Number, default: 0 },
+    invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
+  
     meetings: [
-    {
-      type: String,
-      ref: "Meeting", // Reference to Meeting model
-      required: false,
-    },
-  ],
+      {
+        type: String,
+        ref: "Meeting", // Reference to Meeting model
+        required: false,
+      },
+    ],
 } ,{ timestamps: true });
 
 // Set referral code as unique
