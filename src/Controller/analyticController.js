@@ -40,6 +40,17 @@ exports.getAnalytics = async (req, res) => {
     }
 };
 
+exports.getAllAnalytics = async (req, res) => {
+    const { userId , period } = req.query;
+    // console.log("userId ", userId,"Period :", period)
+    try {
+        const data = await analyticsService.getAllAnalytics(userId, period);
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching all analytics data' });
+    }
+};
+
 
 exports.getEnterpriseMeetings = async (req, res) => {
     const { enterpriseId } = req.params;

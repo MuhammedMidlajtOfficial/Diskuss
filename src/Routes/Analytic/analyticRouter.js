@@ -5,6 +5,7 @@ const controller = require('../../Controller/analyticController')
 const router = Router();
 
 router.get('/', controller.getAnalytics)
+router.get('/all', controller.getAllAnalytics)
 router.post('/share', controller.logShare)
 router.post('/view', controller.logView)
 router.post('/click', controller.logClick)
