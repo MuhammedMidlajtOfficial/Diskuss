@@ -76,6 +76,84 @@ exports.getAnalytics = async (cardId, period) => {
     };
 };
 
+exports.getAllAnalytics = async (userId, period) => {
+    console.log("userId ", userId,"Period :", period)
+
+    const now = new Date();
+    let startDate;
+
+    switch (period) {
+        case 'today':
+            startDate = new Date(now.setHours(0, 0, 0, 0));
+            break;
+        case 'week':
+            startDate = new Date(now.setDate(now.getDate() - 7));
+            break;
+        case 'month':
+            startDate = new Date(now.setMonth(now.getMonth() - 1));
+            break;
+        default:
+            startDate = new Date(0);
+    }
+
+    // Initialize sums
+    let totalViews = 0;
+    let totalUniqueVisitors = 0;
+    let totalShares = 0;
+    let totalViewedShares = 0;
+    let totalClicks = 0;
+
+    const cardIds = await Card.find({userId : userId}).select("_id")
+
+    console.log("cardIds :", cardIds)
+    
+    for(const card of cardIds){
+        // console.log("Card : ", card)
+        // console.log("Cardid : ", card['_id'])
+        const cardId = card['_id']
+        const viewsCount = await Analytic.View.countDocuments({ cardId, viewedAt: { $gte: startDate } });
+        const uniqueVisitorsCount = await Analytic.Visitor.countDocuments({ cardId, firstVisit: { $gte: startDate } });
+        const sharesCount = await Analytic.Share.countDocuments({ cardId, sharedAt: { $gte: startDate } });
+        const viewedSharesCount = await Analytic.Share.countDocuments({ cardId, sharedAt: { $gte: startDate }, isViewed: true });
+        const clicksCount = await Analytic.Click.countDocuments({ cardId, clickedAt: { $gte: startDate } });
+        
+        // Accumulate the counts
+        totalViews += viewsCount;
+        totalUniqueVisitors += uniqueVisitorsCount;
+        totalShares += sharesCount;
+        totalViewedShares += viewedSharesCount;
+        totalClicks += clicksCount;
+
+        // console.log("viewsCount ", viewsCount)
+        // console.log("uniqueVisitorsCount ",  uniqueVisitorsCoun
+        
+    }
+ 
+
+     // Calculate unviewed shares
+     const totalUnviewedShares = totalShares - totalViewedShares;
+
+     // Calculate click-through rate
+     const clickThroughRate = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
+ 
+       // console.log({
+    //     views: totalViews,
+    //     uniqueVisitors: totalUniqueVisitors,
+    //     shares: { total: totalShares, viewed: totalViewedShares, unviewed: totalUnviewedShares },
+    //     clicks: totalClicks,
+    //     clickThroughRate: clickThroughRate.toFixed(2),
+    // })
+
+    return {
+        views: totalViews,
+        uniqueVisitors: totalUniqueVisitors,
+        shares: { total: totalShares, viewed: totalViewedShares, unviewed: totalUnviewedShares },
+        clicks: totalClicks,
+        clickThroughRate: clickThroughRate.toFixed(2),
+    };
+   
+};
+
 
 // get meeting by ids  //
 exports.getEnterpriseMeetings = async (enterpriseId) => {
@@ -169,8 +247,7 @@ exports.getIndividualMeetings = async (individualId) => {
 
     // Extract meeting IDs from the user's profile
     const meetingIds = userInfo?.meetings;
-    console.log("meetingIds :", meetingIds)
-
+    // console.log("meetingIds :", meetingIds)
 
     // Get current date for filtering
     const today = new Date();
@@ -220,9 +297,8 @@ exports.getIndividualMeetings = async (individualId) => {
         expiredCount: expiredMeetingsCount,
     };
 
-    // Send back the enriched meetings as the response
 
-    console.log("Meetings:", responseMeetings);
+    // console.log("Meetings:", responseMeetings);
 
     
     return { meetings: responseMeetings };
@@ -250,8 +326,7 @@ exports.getCardsByIds = async (enterpriseId) => {
     // const cardIds = userInfo?.empCards?.map(card => card._id);
     const cardIds = userInfo?.empCards;
 
-    console.log("card id: ", cardIds)
-
+    // console.log("card id: ", cardIds)
 
     // Get current date for filtering
     const today = new Date();
@@ -270,24 +345,20 @@ exports.getCardsByIds = async (enterpriseId) => {
         createdAt: { $gte: today }
     });
 
-    console.log("Card today : ", cardsToday)
-
+    // console.log("Card today : ", cardsToday)
     
     const cardsThisMonth = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: startOfMonth, $lte: endOfMonth }
     });
-
-    console.log("Card month : ", cardsThisMonth)
-
+    // console.log("Card month : ", cardsThisMonth)
     
     const cardsThisYear = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: startOfYear, $lte: endOfYear }
     });
     
-    console.log("Card year : ", cardsThisYear)
-
+    // console.log("Card year : ", cardsThisYear)
 
     // Combine all counts into one response object
     const responseCardss = {
@@ -297,9 +368,7 @@ exports.getCardsByIds = async (enterpriseId) => {
     };
 
     // Send back the enriched meetings as the response
-
-    console.log("Cards:", responseCardss);
-
+    // console.log("Cards:", responseCardss);
     
     return { meetings: responseCardss };
 
@@ -315,9 +384,7 @@ exports.getEmployeesByIds = async (enterpriseId) => {
         userInfo = await enterprise.findById(enterpriseId);
     }
     
-
-    console.log(userInfo)
-
+    // console.log(userInfo)
 
     // If user profile not found, return an error
     if (!userInfo) {
