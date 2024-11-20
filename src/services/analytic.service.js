@@ -1,8 +1,10 @@
 const Analytic = require("../models/analytics/analytic.model")
 
 const Profile = require("../models/profile")
+const individualUser = require("../models/individualUser")
 const enterprise = require("../models/enterpriseUser")
 const MeetingBase = require("../models/EnterpriseMeetingModel")
+const individualMeeting = require("../models/MeetingModel")
 const Card = require('../models/card')
 const Employee = require("../models/enterpriseEmploye.model")
 const Team = require("../models/team.model")
@@ -76,7 +78,7 @@ exports.getAnalytics = async (cardId, period) => {
 
 
 // get meeting by ids  //
-exports.getMeetingsByIds = async (enterpriseId) => {
+exports.getEnterpriseMeetings = async (enterpriseId) => {
     // Find the user's profile by userId and populate meetings if referenced in schema
     let userInfo = await Profile.findById(enterpriseId).populate({
         path: 'meetings',
@@ -157,6 +159,7 @@ exports.getMeetingsByIds = async (enterpriseId) => {
 exports.getIndividualMeetings = async (individualId) => {
 
     const userInfo = await individualUser.individualUserCollection.findById(individualId).exec()
+    console.log("userInfo : ", userInfo)
 
     // If user profile not found, return an error
     if (!userInfo) {
@@ -164,7 +167,8 @@ exports.getIndividualMeetings = async (individualId) => {
     }
 
     // Extract meeting IDs from the user's profile
-    const meetingIds = userInfo?.meetings?.map(meeting => meeting._id);
+    const meetingIds = userInfo?.meetings;
+    console.log("meetingIds :", meetingIds)
 
     // Get current date for filtering
     const today = new Date();
