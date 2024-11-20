@@ -153,6 +153,74 @@ exports.getMeetingsByIds = async (enterpriseId) => {
     return { meetings: responseMeetings };
 }
 
+//get individual Meetinbg By Id
+exports.getIndividualMeetings = async (individualId) => {
+
+    const userInfo = await individualUser.individualUserCollection.findById(individualId).exec()
+
+    // If user profile not found, return an error
+    if (!userInfo) {
+        return { status: 404, message: "User profile not found." };
+    }
+
+    // Extract meeting IDs from the user's profile
+    const meetingIds = userInfo?.meetings?.map(meeting => meeting._id);
+
+    // Get current date for filtering
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Calculate start and end dates for this month and year
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
+
+    // Count meetings based on different criteria
+    // Find meetings in MeetingBase collection that match the extracted meeting IDs
+    const meetingsToday = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gte: today }
+    });
+
+    const meetingsThisMonth = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gte: startOfMonth, $lte: endOfMonth }
+    });
+
+    const meetingsThisYear = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gte: startOfYear, $lte: endOfYear }
+    });
+
+    // Count upcoming and expired meetings
+    const upcomingMeetingsCount = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gt: today } // Meetings scheduled after today
+    });
+
+    const expiredMeetingsCount = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $lt: today } // Meetings scheduled before today
+    });
+
+    // Combine all counts into one response object
+    const responseMeetings = {
+        today: meetingsToday,
+        thisMonth: meetingsThisMonth,
+        thisYear: meetingsThisYear,
+        upcomingCount: upcomingMeetingsCount,
+        expiredCount: expiredMeetingsCount,
+    };
+
+    // Send back the enriched meetings as the response
+    console.log("Meetings:", responseMeetings);
+    
+    return { meetings: responseMeetings };
+
+}
+
 // get card by ids  //
 exports.getCardsByIds = async (enterpriseId) => {
     // Find the user's profile by userId and populate meetings if referenced in schema
