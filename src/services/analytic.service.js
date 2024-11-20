@@ -239,6 +239,7 @@ exports.getIndividualMeetings = async (individualId) => {
     const userInfo = await individualUser.individualUserCollection.findById(individualId).exec()
     console.log("userInfo : ", userInfo)
 
+
     // If user profile not found, return an error
     if (!userInfo) {
         return { status: 404, message: "User profile not found." };
@@ -246,7 +247,7 @@ exports.getIndividualMeetings = async (individualId) => {
 
     // Extract meeting IDs from the user's profile
     const meetingIds = userInfo?.meetings;
-    console.log("meetingIds :", meetingIds)
+    // console.log("meetingIds :", meetingIds)
 
     // Get current date for filtering
     const today = new Date();
@@ -296,8 +297,9 @@ exports.getIndividualMeetings = async (individualId) => {
         expiredCount: expiredMeetingsCount,
     };
 
-    // Send back the enriched meetings as the response
-    console.log("Meetings:", responseMeetings);
+
+    // console.log("Meetings:", responseMeetings);
+
     
     return { meetings: responseMeetings };
 
@@ -324,7 +326,7 @@ exports.getCardsByIds = async (enterpriseId) => {
     // const cardIds = userInfo?.empCards?.map(card => card._id);
     const cardIds = userInfo?.empCards;
 
-    console.log("card id: ", cardIds)
+    // console.log("card id: ", cardIds)
 
     // Get current date for filtering
     const today = new Date();
@@ -343,20 +345,20 @@ exports.getCardsByIds = async (enterpriseId) => {
         createdAt: { $gte: today }
     });
 
-    console.log("Card today : ", cardsToday)
+    // console.log("Card today : ", cardsToday)
     
     const cardsThisMonth = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: startOfMonth, $lte: endOfMonth }
     });
-    console.log("Card month : ", cardsThisMonth)
+    // console.log("Card month : ", cardsThisMonth)
     
     const cardsThisYear = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: startOfYear, $lte: endOfYear }
     });
     
-    console.log("Card year : ", cardsThisYear)
+    // console.log("Card year : ", cardsThisYear)
 
     // Combine all counts into one response object
     const responseCardss = {
@@ -366,7 +368,7 @@ exports.getCardsByIds = async (enterpriseId) => {
     };
 
     // Send back the enriched meetings as the response
-    console.log("Cards:", responseCardss);
+    // console.log("Cards:", responseCardss);
     
     return { meetings: responseCardss };
 
@@ -382,7 +384,7 @@ exports.getEmployeesByIds = async (enterpriseId) => {
         userInfo = await enterprise.findById(enterpriseId);
     }
     
-    console.log(userInfo)
+    // console.log(userInfo)
 
     // If user profile not found, return an error
     if (!userInfo) {

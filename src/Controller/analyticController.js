@@ -78,6 +78,7 @@ exports.getCards = async (req, res) => {
     const { enterpriseId } = req.params;
     try {
         console.log(enterpriseId)
+        console.log(enterpriseId)
         const data = await analyticsService.getCardsByIds(enterpriseId );
         res.status(200).json(data);
     } catch (error) {
@@ -89,6 +90,7 @@ exports.getCards = async (req, res) => {
     const { enterpriseId } = req.params;
     try {
         console.log(enterpriseId)
+        console.log(enterpriseId)
         const data = await analyticsService.getCardsByIds(enterpriseId );
         res.status(200).json(data);
     } catch (error) {
@@ -99,6 +101,7 @@ exports.getCards = async (req, res) => {
 exports.getEmployees = async (req, res) => {
     const { enterpriseId } = req.params;
     try {
+        console.log(enterpriseId)
         console.log(enterpriseId)
         const data = await analyticsService.getEmployeesByIds(enterpriseId );
         res.status(200).json(data);
@@ -113,6 +116,9 @@ exports.getCounts = async (req, res) => {
 
     console.log("period :", period)
     console.log("enterpriseId :", enterpriseId)
+    console.log("period :", period)
+    console.log("enterpriseId :", enterpriseId)
+
   
     try {
         const data = await analyticsService.getCounts(enterpriseId, period);
