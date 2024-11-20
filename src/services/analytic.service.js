@@ -161,6 +161,7 @@ exports.getIndividualMeetings = async (individualId) => {
     const userInfo = await individualUser.individualUserCollection.findById(individualId).exec()
     console.log("userInfo : ", userInfo)
 
+
     // If user profile not found, return an error
     if (!userInfo) {
         return { status: 404, message: "User profile not found." };
@@ -169,6 +170,7 @@ exports.getIndividualMeetings = async (individualId) => {
     // Extract meeting IDs from the user's profile
     const meetingIds = userInfo?.meetings;
     console.log("meetingIds :", meetingIds)
+
 
     // Get current date for filtering
     const today = new Date();
@@ -219,7 +221,9 @@ exports.getIndividualMeetings = async (individualId) => {
     };
 
     // Send back the enriched meetings as the response
+
     console.log("Meetings:", responseMeetings);
+
     
     return { meetings: responseMeetings };
 
@@ -248,6 +252,7 @@ exports.getCardsByIds = async (enterpriseId) => {
 
     console.log("card id: ", cardIds)
 
+
     // Get current date for filtering
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -266,12 +271,15 @@ exports.getCardsByIds = async (enterpriseId) => {
     });
 
     console.log("Card today : ", cardsToday)
+
     
     const cardsThisMonth = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: startOfMonth, $lte: endOfMonth }
     });
+
     console.log("Card month : ", cardsThisMonth)
+
     
     const cardsThisYear = await Card.countDocuments({
         _id: { $in: cardIds },
@@ -279,6 +287,7 @@ exports.getCardsByIds = async (enterpriseId) => {
     });
     
     console.log("Card year : ", cardsThisYear)
+
 
     // Combine all counts into one response object
     const responseCardss = {
@@ -288,7 +297,9 @@ exports.getCardsByIds = async (enterpriseId) => {
     };
 
     // Send back the enriched meetings as the response
+
     console.log("Cards:", responseCardss);
+
     
     return { meetings: responseCardss };
 
@@ -304,7 +315,9 @@ exports.getEmployeesByIds = async (enterpriseId) => {
         userInfo = await enterprise.findById(enterpriseId);
     }
     
+
     console.log(userInfo)
+
 
     // If user profile not found, return an error
     if (!userInfo) {

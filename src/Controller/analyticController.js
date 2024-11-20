@@ -102,6 +102,7 @@ exports.getCounts = async (req, res) => {
 
     console.log("period :", period)
     console.log("enterpriseId :", enterpriseId)
+
   
     try {
         const data = await analyticsService.getCounts(enterpriseId, period);
