@@ -9,13 +9,13 @@ const messageSchema = new mongoose.Schema({
   isRead: { type: Boolean, default: false },
 });
 
-// Custom transformation
-messageSchema.set('toJSON', {
-  transform: function (doc, ret) {
-    // Convert the timestamp to a string
-    ret.timestamp = ret.timestamp.toISOString(); // ISO 8601 string format
-    return ret;
-  },
-});
+// // Custom transformation
+// messageSchema.set('toJSON', {
+//   transform: function (doc, ret) {
+//     // Convert the timestamp to a string
+//     ret.timestamp = ret.timestamp.toISOString(); // ISO 8601 string format
+//     return ret;
+//   },
+// });
 
 module.exports = mongoose.model('Message', messageSchema);
