@@ -21,6 +21,7 @@ const teamRouter = require('./Team/teamRouter.js');
 const notification = require('./Notification/NotificationRouter.js')
 const enterpriseMeeting = require('./EnterPriseMeeting/EnterPriseMeeting.js')
 const count = require('./Count/Count.js')
+const individualcount = require('./Count/individualCount.js')
 const Preferences = require('./Permission/PermissionModel.js')
 const analyticRouter = require("./Analytic/analyticRouter.js")
 // const contactRouter = require("./contactRouter.js")
@@ -108,6 +109,10 @@ const defaultRoutes = [
   {
     path: '/notification',
     route: notification,
+  },
+  {
+    path: '/individualcount',
+    route: individualcount,
   },
   {
     path: '/count',
