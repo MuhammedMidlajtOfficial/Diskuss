@@ -1,8 +1,10 @@
 const Analytic = require("../models/analytics/analytic.model")
 
 const Profile = require("../models/profile")
+const individualUser = require("../models/individualUser")
 const enterprise = require("../models/enterpriseUser")
 const MeetingBase = require("../models/EnterpriseMeetingModel")
+const individualMeeting = require("../models/MeetingModel")
 const Card = require('../models/card')
 const Employee = require("../models/enterpriseEmploye.model")
 const Team = require("../models/team.model")
@@ -76,7 +78,7 @@ exports.getAnalytics = async (cardId, period) => {
 
 
 // get meeting by ids  //
-exports.getMeetingsByIds = async (enterpriseId) => {
+exports.getEnterpriseMeetings = async (enterpriseId) => {
     // Find the user's profile by userId and populate meetings if referenced in schema
     let userInfo = await Profile.findById(enterpriseId).populate({
         path: 'meetings',
@@ -148,9 +150,79 @@ exports.getMeetingsByIds = async (enterpriseId) => {
     };
 
     // Send back the enriched meetings as the response
-    console.log("Meetings:", responseMeetings);
+  // console.log("Meetings:", responseMeetings);
     
     return { meetings: responseMeetings };
+}
+
+//get individual Meetinbg By Id
+exports.getIndividualMeetings = async (individualId) => {
+
+    const userInfo = await individualUser.individualUserCollection.findById(individualId).exec()
+  // console.log("userInfo : ", userInfo)
+
+    // If user profile not found, return an error
+    if (!userInfo) {
+        return { status: 404, message: "User profile not found." };
+    }
+
+    // Extract meeting IDs from the user's profile
+    const meetingIds = userInfo?.meetings;
+  // console.log("meetingIds :", meetingIds)
+
+    // Get current date for filtering
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Calculate start and end dates for this month and year
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const endOfYear = new Date(today.getFullYear() + 1, 0, 0);
+
+    // Count meetings based on different criteria
+    // Find meetings in MeetingBase collection that match the extracted meeting IDs
+    const meetingsToday = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gte: today }
+    });
+
+    const meetingsThisMonth = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gte: startOfMonth, $lte: endOfMonth }
+    });
+
+    const meetingsThisYear = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gte: startOfYear, $lte: endOfYear }
+    });
+
+    // Count upcoming and expired meetings
+    const upcomingMeetingsCount = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $gt: today } // Meetings scheduled after today
+    });
+
+    const expiredMeetingsCount = await individualMeeting.countDocuments({
+        _id: { $in: meetingIds },
+        selectedDate: { $lt: today } // Meetings scheduled before today
+    });
+
+    // Combine all counts into one response object
+    const responseMeetings = {
+        today: meetingsToday,
+        thisMonth: meetingsThisMonth,
+        thisYear: meetingsThisYear,
+        upcomingCount: upcomingMeetingsCount,
+        expiredCount: expiredMeetingsCount,
+    };
+
+    // Send back the enriched meetings as the response
+  // console.log("Meetings:", responseMeetings);
+    
+    return { meetings: responseMeetings };
+
 }
 
 // get card by ids  //
@@ -163,7 +235,7 @@ exports.getCardsByIds = async (enterpriseId) => {
         userInfo = await enterprise.findById(enterpriseId);
     }
     
-    console.log(userInfo)
+  // console.log(userInfo)
 
     // If user profile not found, return an error
     if (!userInfo) {
@@ -174,7 +246,7 @@ exports.getCardsByIds = async (enterpriseId) => {
     // const cardIds = userInfo?.empCards?.map(card => card._id);
     const cardIds = userInfo?.empCards;
 
-    console.log("card id: ", cardIds)
+  // console.log("card id: ", cardIds)
 
     // Get current date for filtering
     const today = new Date();
@@ -193,20 +265,20 @@ exports.getCardsByIds = async (enterpriseId) => {
         createdAt: { $gte: today }
     });
 
-    console.log("Card today : ", cardsToday)
+  // console.log("Card today : ", cardsToday)
     
     const cardsThisMonth = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: startOfMonth, $lte: endOfMonth }
     });
-    console.log("Card month : ", cardsThisMonth)
+  // console.log("Card month : ", cardsThisMonth)
     
     const cardsThisYear = await Card.countDocuments({
         _id: { $in: cardIds },
         createdAt: { $gte: startOfYear, $lte: endOfYear }
     });
     
-    console.log("Card year : ", cardsThisYear)
+  // console.log("Card year : ", cardsThisYear)
 
     // Combine all counts into one response object
     const responseCardss = {
@@ -216,7 +288,7 @@ exports.getCardsByIds = async (enterpriseId) => {
     };
 
     // Send back the enriched meetings as the response
-    console.log("Cards:", responseCardss);
+  // console.log("Cards:", responseCardss);
     
     return { meetings: responseCardss };
 
@@ -232,7 +304,7 @@ exports.getEmployeesByIds = async (enterpriseId) => {
         userInfo = await enterprise.findById(enterpriseId);
     }
     
-    console.log(userInfo)
+  // console.log(userInfo)
 
     // If user profile not found, return an error
     if (!userInfo) {
@@ -243,7 +315,7 @@ exports.getEmployeesByIds = async (enterpriseId) => {
     // const empIds = userInfo?.empCards?.map(card => card._id);
     const empIds = userInfo?.empId;
 
-    console.log("card id: ", empIds)
+  // console.log("card id: ", empIds)
 
     // Get current date for filtering
     const today = new Date();
@@ -262,20 +334,20 @@ exports.getEmployeesByIds = async (enterpriseId) => {
         createdAt: { $gte: today }
     });
 
-    console.log("employees today : ", employeesToday)
+  // console.log("employees today : ", employeesToday)
     
     const employeesThisMonth = await Employee.countDocuments({
         _id: { $in: empIds },
         createdAt: { $gte: startOfMonth, $lte: endOfMonth }
     });
-    console.log("employees month : ", employeesThisMonth)
+  // console.log("employees month : ", employeesThisMonth)
     
     const employeesThisYear = await Employee.countDocuments({
         _id: { $in: empIds },
         createdAt: { $gte: startOfYear, $lte: endOfYear }
     });
     
-    console.log("employees year : ", employeesThisYear)
+  // console.log("employees year : ", employeesThisYear)
 
     // Combine all counts into one response object
     const responseEmployees = {
@@ -285,7 +357,7 @@ exports.getEmployeesByIds = async (enterpriseId) => {
     };
 
     // Send back the enriched employees as the response
-    console.log("employees:", responseEmployees);
+  // console.log("employees:", responseEmployees);
     
     return { employees: responseEmployees };
 }
