@@ -253,6 +253,7 @@ exports.getMessages = async (req, res) => {
         },
         
         {
+
           $project: {
             _id:0,
 
