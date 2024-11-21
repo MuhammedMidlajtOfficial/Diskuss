@@ -1,7 +1,7 @@
 let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
-const { individualUserCollection: User } = require("../../DBConfig");
+const { individualUserCollection: User } = require("../../DBConfig";
 // const Contact = require("../../models/contact.individul.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
@@ -77,9 +77,7 @@ exports.sendMessage = async (req, res) => {
     });
   } catch (error) {
     console.error("Error sending message:", error.message || error);
-    res
-      .status(500)
-      .json({ error: "Error sending message.", details: error.message });
+    res.status(500).json({ error: "Error sending message.", details: error.message });
   }
 };
 
@@ -144,6 +142,7 @@ exports.getMessages = async (req, res) => {
             localField: "lastMessage.senderId",
             foreignField: "_id",
             as: "senderUserInfo",
+
           },
         },
         {
@@ -160,12 +159,14 @@ exports.getMessages = async (req, res) => {
             localField: "lastMessage.senderId",
             foreignField: "_id",
             as: "senderEmployeeInfo",
+
           },
         },
         {
           $lookup: {
             from: "contact",
             let: { receiverId: "$lastMessage.receiverId" },
+
             pipeline: [
               { $unwind: "$contacts" },
               {
@@ -250,6 +251,7 @@ exports.getMessages = async (req, res) => {
         {
           $project: {
             _id:0,
+
             senderUserInfo: 0,
             senderEnterpriseInfo: 0,
             senderEmployeeInfo: 0,
@@ -257,7 +259,6 @@ exports.getMessages = async (req, res) => {
           },
         },
       ]);
-
       return res.status(200).json(lastMessages);
     } else {
       return res
