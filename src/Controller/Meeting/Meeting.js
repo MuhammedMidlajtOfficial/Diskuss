@@ -184,12 +184,12 @@ const getMeetingsByIds = async (req, res) => {
 const updateMeeting = async(req,res) => {
     const { meetingId } = req.params; // Get the meeting ID from the request parameters
     const data  = req.body
-    console.log("data :", data)
+    // console.log("data :", data)
     try{
         const updatedMeeting = await MeetingBase.findByIdAndUpdate(meetingId, data,
              { new: true, runValidators: true })
              
-             console.log("updatedMeeting :", updatedMeeting);
+            //  console.log("updatedMeeting :", updatedMeeting);
 
              if (!updatedMeeting) {
                 return res.status(404).json({ message: 'Meeting not found' });
