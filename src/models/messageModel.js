@@ -10,14 +10,14 @@ const messageSchema = new mongoose.Schema({
 });
 
 
-// Custom transformation
-messageSchema.set('toJSON', {
-  transform: function (doc, ret) {
-    // Convert the timestamp to a string
-    ret.timestamp = ret.timestamp.toISOString(); // ISO 8601 string format
-    return ret;
-  },
-});
+// // Custom transformation
+// messageSchema.set('toJSON', {
+//   transform: function (doc, ret) {
+//     // Convert the timestamp to a string
+//     ret.timestamp = ret.timestamp.toISOString(); // ISO 8601 string format
+//     return ret;
+//   },
+// });
 
 // // Custom transformation
 // messageSchema.set('toJSON', {
