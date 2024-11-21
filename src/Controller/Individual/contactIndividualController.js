@@ -1,5 +1,7 @@
 const { individualUserCollection } = require('../../DBConfig');
 const Contact = require('../../models/contact.individul.model');
+const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
+const enterpriseUser = require('../../models/enterpriseUser');
 const ContactService = require('../../services/contact.Individual.service');
 
 /**
@@ -60,56 +62,70 @@ const createContact = async (req, res) => {
         if ( !name || !phnNumber || !contactOwnerId) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        console.log('contactOwnerId--',contactOwnerId);
+        console.log('contactOwnerId--', contactOwnerId);
 
+        const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
+        const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+        const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
 
-        const existUser = await individualUserCollection.findOne({ phnNumber });
+        let userId = null;
+        let isDiskussUser = false;
+
+        // Determine the user ID based on the type of user
+        if (existIndividualUser) {
+            userId = existIndividualUser._id;
+            isDiskussUser = true;
+        } else if (existEnterpriseUser) {
+            userId = existEnterpriseUser._id;
+            isDiskussUser = true;
+        } else if (existEnterpriseEmploye) {
+            userId = existEnterpriseEmploye._id;
+            isDiskussUser = true;
+        }
 
         let newContact;
-        console.log('existUser--,',existUser);
-        if (existUser) {
-            const contactDetails = {
-                contactOwnerId,
-                contacts: [{
-                    name,
-                    designation,
-                    phnNumber,
-                    email,
-                    website,
-                    businessCategory,
-                    scheduled,
-                    scheduledTime,
-                    notes,
-                    userId: existUser ? existUser._id : null,
-                    isDiskussUser: true
-                }]
-            };
-            
-            newContact = await Contact.create(contactDetails); // Create the document without nesting in another object
-        
+
+        const contactDetails = {
+            contactOwnerId,
+            contacts: [{
+                name,
+                designation,
+                phnNumber,
+                email,
+                website,
+                businessCategory,
+                scheduled,
+                scheduledTime,
+                notes,
+                userId: userId,  // Set the userId based on the type of user
+                isDiskussUser: isDiskussUser
+            }]
+        };
+
+        // Create the new contact
+        newContact = await Contact.create(contactDetails);
+
+        // Depending on the user type, add the contact to the correct collection
+        if (existIndividualUser) {
+            // Add the contact to individualUserCollection
             await individualUserCollection.updateOne(
                 { _id: contactOwnerId },
                 { $push: { contacts: newContact._id } }
             );
-        } else {
-            const contactDetails = {
-                contactOwnerId,
-                contacts: [{
-                    name,
-                    designation,
-                    phnNumber,
-                    email,
-                    website,
-                    businessCategory,
-                    scheduled,
-                    scheduledTime,
-                    notes,
-                    isDiskussUser: false
-                }]
-            };
-        
-            newContact = await Contact.create(contactDetails); // Create without an extra nesting level
+        } else if (existEnterpriseUser) {
+            // Add the contact to enterpriseUserCollection
+            await enterpriseUser.updateOne(
+                { _id: contactOwnerId },
+                { $push: { contacts: newContact._id } }
+            );
+        } else if (existEnterpriseEmploye) {
+            // Add the contact to enterpriseEmployeeCollection
+            await enterpriseEmployeModel.updateOne(
+                { _id: contactOwnerId },
+                { $push: { contacts: newContact._id } }
+            );
         }
+
         return res.status(201).json({ message: "Contact created successfully", contact: newContact });
     } catch (e) {
         console.log(e);
@@ -126,13 +142,101 @@ const createContact = async (req, res) => {
 const updateContact = async (req, res) => {
     try {
         const { contact_id } = req.params;
-        const updateData = req.body;
+        const {
+            name,
+            designation,
+            phnNumber,
+            email,
+            website,
+            businessCategory,
+            scheduled,
+            scheduledTime,
+            notes,
+            contactOwnerId,
+        } = req.body;
 
-        const updatedContact = await ContactService.updateContact(contact_id, updateData);
+        // Validate required fields
+        if (!contactOwnerId || !name || !phnNumber) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
 
-        if (!updatedContact) return res.status(404).json({ message: 'Contact not found' });
+        // Find the contact by its ID
+        const contact = await Contact.findById(contact_id);
+        if (!contact) {
+            return res.status(404).json({ message: "Contact not found" });
+        }
 
-        res.status(200).json({
+        // Check if the phnNumber exists for any user in the relevant collections
+        const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
+        const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+        const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
+
+        let userId = null;
+        let isDiskussUser = false;
+
+        // Determine the user ID based on the type of user
+        if (existIndividualUser) {
+            userId = existIndividualUser._id;
+            isDiskussUser = true;
+        } else if (existEnterpriseUser) {
+            userId = existEnterpriseUser._id;
+            isDiskussUser = true;
+        } else if (existEnterpriseEmploye) {
+            userId = existEnterpriseEmploye._id;
+            isDiskussUser = true;
+        }
+
+        // Update the contact details with the new data
+        const updatedContact = await Contact.findByIdAndUpdate(
+            contact_id,
+            {
+                $set: {
+                    name,
+                    designation,
+                    phnNumber,
+                    email,
+                    website,
+                    businessCategory,
+                    scheduled,
+                    scheduledTime,
+                    notes,
+                    userId,  // Update the userId based on the type of user
+                    isDiskussUser,  // Update isDiskussUser based on user type
+                },
+            },
+            { new: true } // Return the updated document
+        );
+
+        // If no contact is found to update
+        if (!updatedContact) {
+            return res.status(404).json({ message: 'Contact not found' });
+        }
+
+        // Depending on the user type, update the contact in the correct collection
+        if (existIndividualUser) {
+            // Update the individualUserCollection
+            await individualUserCollection.updateOne(
+                { _id: contactOwnerId },
+                { $set: { "contacts.$[contact].phnNumber": phnNumber } },
+                { arrayFilters: [{ "contact._id": contact_id }] }
+            );
+        } else if (existEnterpriseUser) {
+            // Update the enterpriseUserCollection
+            await enterpriseUser.updateOne(
+                { _id: contactOwnerId },
+                { $set: { "contacts.$[contact].phnNumber": phnNumber } },
+                { arrayFilters: [{ "contact._id": contact_id }] }
+            );
+        } else if (existEnterpriseEmploye) {
+            // Update the enterpriseEmployeeCollection
+            await enterpriseEmployeModel.updateOne(
+                { _id: contactOwnerId },
+                { $set: { "contacts.$[contact].phnNumber": phnNumber } },
+                { arrayFilters: [{ "contact._id": contact_id }] }
+            );
+        }
+
+        return res.status(200).json({
             message: "Contact updated successfully",
             updatedContact,
         });
@@ -152,10 +256,47 @@ const deleteContact = async (req, res) => {
     try {
         const { contact_id } = req.params;
 
-        const deletedContact = await ContactService.deleteContact(contact_id);
+        // Find the contact by its ID
+        const contact = await Contact.findById(contact_id);
+        if (!contact) {
+            return res.status(404).json({ message: "Contact not found" });
+        }
 
-        if (!deletedContact) return res.status(404).json({ message: 'Contact not found' });
+        // Find the contactOwnerId
+        const { contactOwnerId } = contact;
 
+        // Find the associated user (individualUser, enterpriseUser, or enterpriseEmployee)
+        const existIndividualUser = await individualUserCollection.findOne({ _id: contactOwnerId });
+        const existEnterpriseUser = await enterpriseUser.findOne({ _id: contactOwnerId });
+        const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ _id: contactOwnerId });
+
+        // Remove the contact from the user's contacts array
+        if (existIndividualUser) {
+            await individualUserCollection.updateOne(
+                { _id: contactOwnerId },
+                { $pull: { contacts: contact_id } } // Remove the contact from the contacts array
+            );
+        } else if (existEnterpriseUser) {
+            await enterpriseUser.updateOne(
+                { _id: contactOwnerId },
+                { $pull: { contacts: contact_id } } // Remove the contact from the contacts array
+            );
+        } else if (existEnterpriseEmploye) {
+            await enterpriseEmployeModel.updateOne(
+                { _id: contactOwnerId },
+                { $pull: { contacts: contact_id } } // Remove the contact from the contacts array
+            );
+        }
+
+        // Delete the contact from the Contact collection
+        const deletedContact = await Contact.findByIdAndDelete(contact_id);
+
+        // If the contact deletion fails
+        if (!deletedContact) {
+            return res.status(404).json({ message: "Contact not found" });
+        }
+
+        // Return success response
         res.status(200).json({
             message: "Contact deleted successfully",
             deletedContact,

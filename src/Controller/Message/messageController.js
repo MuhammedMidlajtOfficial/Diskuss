@@ -36,8 +36,10 @@ exports.sendMessage = async (req, res) => {
       EnterpriseUser.findById(receiverId),
     ]);
 
+
     // Determine the receiver
     const receiver = receiverInUser || receiverInContact || receiverInEnterprise;
+
 
     if (!receiver) {
       return res.status(404).json({ error: "Receiver not found in any collection" });

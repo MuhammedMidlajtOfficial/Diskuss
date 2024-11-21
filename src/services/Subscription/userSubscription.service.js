@@ -1,4 +1,7 @@
+const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
+const enterpriseUser = require('../../models/enterpriseUser');
 const UserSubscription = require('../../models/userSubscription.model');
+const { individualUserCollection } = require("../../DBConfig");
 
 /**
  * Find all Subscsriptions
@@ -130,6 +133,47 @@ const findOneById = async (userId) => {
   };
   
 
+  const updateSubscriptionStatusInUsers = async (razorpay_order_id, updateData) => {
+    try {
+      // Find the user subscription by razorpayOrderId
+      const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
+      if (!userSubscription) {
+        throw new Error("User Subscription plan not found");
+      }
+      
+      // Update the subscription plan status with the new data
+      const updatedUserSubscription = await UserSubscription.updateOne(
+        { razorpayOrderId: razorpay_order_id }, // Search by razorpayOrderId, not _id
+        { $set: updateData }, // Update the subscription with the new data
+        { new: true }
+        ).exec();
+
+        const userId = userSubscription.userId;
+
+        const isIndividualUserExist = await individualUserCollection.findOne({ userId }).exec();
+        const isEnterpriseEmployeExist = await enterpriseEmployeModel.findOne({ userId }).exec();
+        const isEnterpriseUserExist = await enterpriseUser.findOne({ userId }).exec();
+        
+        if (isIndividualUserExist) {
+          // Update individual user collection
+          await individualUserCollection.updateOne({ _id: userId }, updateData);
+        } else if (isEnterpriseEmployeExist) {
+          // Update enterprise employee collection
+          await enterpriseEmployeModel.updateOne({ _id: userId }, updateData);
+        } else if (isEnterpriseUserExist) {
+          // Update enterprise user collection
+          await enterpriseUser.updateOne({ _id: userId }, updateData);
+        } else {
+          // Handle case when user doesn't exist in any collection
+          console.log("User not found in any collection");
+        }
+  
+      return updatedUserSubscription; // Return the result of the update operation
+    } catch (error) {
+      console.error("Error updating UserSubscription:", error);
+      throw error; // Re-throw the error for higher-level handling
+    }
+  };
   
 /**
  * Delete a UserSubscription plan by plan_id.
@@ -163,5 +207,6 @@ module.exports = {
     createUserSubscription,
     updateUserSubscriptionById,
     deleteUserSubscriptionById,
-    updateSubscriptionStatus
+    updateSubscriptionStatus,
+    updateSubscriptionStatusInUsers
 };
