@@ -249,6 +249,11 @@ exports.getMessages = async (req, res) => {
         },
 
         {
+          $replaceRoot: { newRoot: "$lastMessage" },
+        },
+        
+        {
+
           $project: {
             _id:0,
 
