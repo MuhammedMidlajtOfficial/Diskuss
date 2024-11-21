@@ -1,13 +1,15 @@
 const express = require('express')
 const authIndividualController = require('../../Controller/Individual/authIndividualController')
-const authMiddleware = require('../../middleware/authMiddleware')
 const authIndividualRouter = express.Router()
 
-authIndividualRouter.get('/login',authMiddleware.authenticateToken, authIndividualController.getIndividualLogin)
-
-authIndividualRouter.post('/sendotp',authIndividualController.sendOTP)
-authIndividualRouter.post('/forgotpassword',authIndividualController.postforgotPassword)
 authIndividualRouter.post('/login',authIndividualController.postIndividualLogin)
 authIndividualRouter.post('/signup',authIndividualController.postIndividualSignup)
+authIndividualRouter.post('/sendotp',authIndividualController.sendOTP)
+authIndividualRouter.post('/sendForgotPasswordOtp',authIndividualController.sendForgotPasswordOTP)
+authIndividualRouter.post('/validateotp',authIndividualController.OtpValidate)
+authIndividualRouter.post('/forgotpassword',authIndividualController.postforgotPassword)
+authIndividualRouter.post('/resetpassword',authIndividualController.resetPassword)
+authIndividualRouter.get('/getProfile/:id',authIndividualController.getProfile)
+authIndividualRouter.patch('/updateProfile',authIndividualController.updateProfile)
 
 module.exports = authIndividualRouter
