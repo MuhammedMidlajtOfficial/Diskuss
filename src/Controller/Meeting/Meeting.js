@@ -4,13 +4,6 @@ const cron = require('node-cron');
 const Profile = require('../../models/profile')
 const mongoose = require("mongoose");
 
-
-
-
-
-
-
-
 // CreateMeeting controller
 const CreateMeeting = async (req, res) => {
     try {
@@ -188,6 +181,29 @@ const getMeetingsByIds = async (req, res) => {
 };
 
 
+const updateMeeting = async(req,res) => {
+    const { meetingId } = req.params; // Get the meeting ID from the request parameters
+    const data  = req.body
+    console.log("data :", data)
+    try{
+        const updatedMeeting = await MeetingBase.findByIdAndUpdate(meetingId, data,
+             { new: true, runValidators: true })
+             
+             console.log("updatedMeeting :", updatedMeeting);
+
+             if (!updatedMeeting) {
+                return res.status(404).json({ message: 'Meeting not found' });
+              }
+
+              await updatedMeeting.save();
+
+        return res.status(200).json(updatedMeeting)
+    }catch(err){
+        console.error("Error Updating meeting:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+
+}
 
 
 const deleteMeeting = async (req, res) => {
@@ -209,6 +225,51 @@ const deleteMeeting = async (req, res) => {
     }
 };
 
+const updateInviteStatus =  async (req, res) => {
+    const { meetingId, userId } = req.params;
+  const { responseStatus, notes } = req.body;
+
+  try {
+    // // Find the meeting by ID
+    // const meeting = await MeetingBase.findById(meetingId);
+    // if (!meeting) {
+    //     return res.status(404).json({ message: 'Meeting not found' });
+    //   }
+    
+    // Validate new status
+    const validStatuses = ['accepted', 'rejected', 'pending'];
+    if (!validStatuses.includes(responseStatus)) {
+      return res.status(400).json({ error: 'Invalid status provided. Valid statuses are: accepted, rejected, pending.' });
+    }
+    
+   
+ // Find the meeting and update the user's response status
+ const updatedMeeting = await MeetingBase.findOneAndUpdate(
+    { _id: meetingId, 'invitedPeople.userId': userId },
+    { 
+      $set: { 
+        'invitedPeople.$.responseStatus': responseStatus,
+        'invitedPeople.$.notes': notes // Update notes if provided
+      } 
+    },
+    { new: true } // Return the updated document
+  );
+
+  if (!updatedMeeting) {
+    return res.status(404).json({ error: 'Meeting or invited user not found.' });
+  }
+
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'User status updated successfully.',
+    data: updatedMeeting
+  });  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+
+}   
 
 
 
@@ -251,6 +312,6 @@ cron.schedule('* * * * *', async () => {
 
 
 
-module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds};
+module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds , updateMeeting, updateInviteStatus};
 
 // 60f6c72f0c4f5b001f1aab07

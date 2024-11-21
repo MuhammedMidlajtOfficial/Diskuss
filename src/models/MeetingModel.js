@@ -45,6 +45,10 @@ const meetingSchema = new mongoose.Schema({
         type: String,
         enum: ['accepted', 'rejected', 'pending'],
         default: 'pending' // Default status is pending when invited
+      },
+      notes: {
+        type: String,
+        required : false
       }
     }],
 
@@ -55,3 +59,4 @@ const meetingSchema = new mongoose.Schema({
 
 // Export the model
 module.exports = mongoose.model('Meeting', meetingSchema);
+ 
