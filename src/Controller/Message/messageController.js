@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
 const ContactIndividual = require("../../models/contact.individul.model");
-const moment = require('moment-timezone');
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
@@ -59,20 +58,18 @@ exports.sendMessage = async (req, res) => {
       senderId,
       receiverId,
       content,
-      timestamp:  moment().tz("Asia/Kolkata").toDate(),
+      timestamp: Date.now(),
     });
-    
 
     // Emit the message to the respective chat room (chatId)
     io.to(chatId).emit("receiveMessage", {
       ...message.toObject(),
-      localTimestamp: moment(message.timestamp).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
       senderName: sender.username, // Assuming sender has a 'username' field
       receiverName: receiver.username, // Assuming receiver has a 'name' field
     });
+
     res.status(201).json({
       ...message.toObject(),
-      localTimestamp: moment(message.timestamp).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
       senderName: sender.username,
       receiverName: receiver.username,
     });
@@ -110,6 +107,7 @@ exports.getMessages = async (req, res) => {
     if (chatId) {
       const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
 
+
       // Get unread messages count for the current user in this chat
       const unreadCount = await Message.countDocuments({
         chatId,
@@ -117,13 +115,10 @@ exports.getMessages = async (req, res) => {
         isRead: false,
       });
 
+
       return res.status(200).json({
         messages: messages.map((message) => ({
           ...message.toObject(),
-          timestamp: new Date(message.timestamp).toLocaleString("en-US", {
-            timeZone: "Asia/Kolkata", // Replace with your timezone
-            hour12: false,
-          }),
         })),
         unreadCount,
       });
@@ -238,20 +233,11 @@ exports.getMessages = async (req, res) => {
         },
         { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
       ]);
-
-      const processedLastMessages = lastMessages.map((message) => ({
-        ...message,
-        timestamp: new Date(message.timestamp).toLocaleString("en-US", {
-          timeZone: "Asia/Kolkata", // Replace with your timezone
-          hour12: false,
-        }),
-      }));
-
-      console.log(
-        "Last Messages Result (Processed):",
-        JSON.stringify(processedLastMessages, null, 2)
-      );
-      return res.status(200).json(processedLastMessages);
+      
+      console.log("Last Messages Result (Processed):", JSON.stringify(lastMessages, null, 2));
+      return res.status(200).json(lastMessages);
+      
+      
     } else {
       return res
         .status(400)
@@ -262,5 +248,4 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ error: "Error retrieving messages." });
   }
 };
-
 

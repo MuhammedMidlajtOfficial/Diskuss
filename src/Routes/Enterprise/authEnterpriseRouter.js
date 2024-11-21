@@ -14,6 +14,4 @@ authEnterpriseRouter.patch('/updateProfile',authEnterpriseController.updateProfi
 authEnterpriseRouter.post('/resetpassword',authEnterpriseController.resetPassword)
 
 
-
-
 module.exports = authEnterpriseRouter
