@@ -48,7 +48,8 @@ const createCardByInvitee = async (referralId) => {
 
 // Get Referral Details
 const getReferralDetails = async (userId) => {
-    const referrals = await Referral.find({ referrer: userId }).select('inviteeEmail status rewardsEarned createdAt');
+    // const referrals = await Referral.find({ referrer: userId }).select('inviteeEmail status rewardsEarned createdAt');
+    const referrals = await Referral.find({ referrer: userId });
     const user = await User.findById(userId);
     const coins = user.coins;
     
