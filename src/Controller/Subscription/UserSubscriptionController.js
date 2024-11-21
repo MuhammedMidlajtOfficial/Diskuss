@@ -46,22 +46,21 @@ const createUserSubscription = async (req, res) => {
 
     // Retrieve subscription start and end dates
     const { startDate, endDate, newPlanId } = await getStartEndDate(planId);
-
-    const subscriptionPlan = await findOneByPlanId(planId);
-    console.log("subscriptionPlan----", subscriptionPlan);
-    const amount = parseFloat(subscriptionPlan.price.toString());
+   
+    const subscriptionPlan = await findOneByPlanId(planId)
+    console.log("subscriptionPlan----",subscriptionPlan);
+    const amount = parseFloat(subscriptionPlan.price.toString())
 
     // Shortened receipt ID to stay within 40 characters
     const receiptId = `recpt_${userId.toString().slice(-6)}_${newPlanId.toString().slice(-6)}`;
 
-    // Convert amount to paisa (integer)
-    const amountInPaisa = Math.round(amount * 100);
-    
+
+    const amountInPaisa = amount*100
     // Create a Razorpay order for the subscription amount
     const razorpayOrder = await razorpay.orders.create({
-      amount: amountInPaisa, // Use 'amount' instead of 'amountInPaisa'
+      amountInPaisa, // Amount in rupee
       currency: 'INR',
-      receipt: receiptId, // Updated receipt field
+      receipt: receiptId,  // Updated receipt field
       notes: { planId: newPlanId, userId }
     });
 
@@ -76,21 +75,21 @@ const createUserSubscription = async (req, res) => {
       planId: newPlanId,
       startDate,
       endDate,
-      razorpayOrderId: razorpayOrder.id, // Store the Razorpay order ID
-      status: 'pending' // Set as 'pending' until payment confirmation
+      razorpayOrderId: razorpayOrder.id,  // Store the Razorpay order ID
+      status: 'pending'  // Set as 'pending' until payment confirmation
     };
 
     // Save the user subscription data in the database
     const newUserSubscriptionData = await UserSubscriptionService.createUserSubscription(userSubscriptionData);
 
-    console.log("razorpayOrder--", razorpayOrder);
+    console.log("razorpayOrder--",razorpayOrder);
 
     // Respond with order details for frontend to process payment
     return res.status(201).json({
       message: "User subscription initiated, complete payment to activate.",
       orderId: razorpayOrder.id,
       amount,
-      Plan_name: subscriptionPlan.name,
+      Plan_name :subscriptionPlan.name,
       currency: 'INR'
     });
 
@@ -99,7 +98,6 @@ const createUserSubscription = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 
 const verifyPayment = async (req, res) => {
   try {

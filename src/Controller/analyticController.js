@@ -40,11 +40,22 @@ exports.getAnalytics = async (req, res) => {
     }
 };
 
+exports.getAllAnalytics = async (req, res) => {
+    const { userId , period } = req.query;
+    // console.log("userId ", userId,"Period :", period)
+    try {
+        const data = await analyticsService.getAllAnalytics(userId, period);
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching all analytics data' });
+    }
+};
+
 
 exports.getEnterpriseMeetings = async (req, res) => {
     const { enterpriseId } = req.params;
     try {
-      // console.log(enterpriseId)
+        console.log(enterpriseId)
         const data = await analyticsService.getEnterpriseMeetings(enterpriseId );
         res.status(200).json(data);
     } catch (error) {
@@ -55,7 +66,7 @@ exports.getEnterpriseMeetings = async (req, res) => {
 exports.getIndividualMeetings = async (req, res) => {
     const { individualId } = req.params;
     try {
-      // console.log(individualId)
+        console.log(individualId)
         const data = await analyticsService.getIndividualMeetings(individualId );
         res.status(200).json(data);
     } catch (error) {
@@ -66,7 +77,8 @@ exports.getIndividualMeetings = async (req, res) => {
 exports.getCards = async (req, res) => {
     const { enterpriseId } = req.params;
     try {
-      // console.log(enterpriseId)
+        console.log(enterpriseId)
+        console.log(enterpriseId)
         const data = await analyticsService.getCardsByIds(enterpriseId );
         res.status(200).json(data);
     } catch (error) {
@@ -77,7 +89,8 @@ exports.getCards = async (req, res) => {
 exports.getCards = async (req, res) => {
     const { enterpriseId } = req.params;
     try {
-      // console.log(enterpriseId)
+        console.log(enterpriseId)
+        console.log(enterpriseId)
         const data = await analyticsService.getCardsByIds(enterpriseId );
         res.status(200).json(data);
     } catch (error) {
@@ -88,7 +101,8 @@ exports.getCards = async (req, res) => {
 exports.getEmployees = async (req, res) => {
     const { enterpriseId } = req.params;
     try {
-      // console.log(enterpriseId)
+        console.log(enterpriseId)
+        console.log(enterpriseId)
         const data = await analyticsService.getEmployeesByIds(enterpriseId );
         res.status(200).json(data);
     } catch (error) {
@@ -100,8 +114,11 @@ exports.getCounts = async (req, res) => {
     const { period } = req.query;
     const {enterpriseId} = req.params;
 
-  // console.log("period :", period)
-  // console.log("enterpriseId :", enterpriseId)
+    console.log("period :", period)
+    console.log("enterpriseId :", enterpriseId)
+    console.log("period :", period)
+    console.log("enterpriseId :", enterpriseId)
+
   
     try {
         const data = await analyticsService.getCounts(enterpriseId, period);

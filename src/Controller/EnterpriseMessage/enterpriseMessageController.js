@@ -41,9 +41,9 @@ exports.sendMessage = async (req, res) => {
 
     console.log("Contact document:", contact);
 
-    // if (!contact) {
-    //   return res.status(404).json({ error: "Receiver not found in contact list" });
-    // }
+    if (!contact) {
+      return res.status(404).json({ error: "Receiver not found in contact list" });
+    }
 
     const receiver = await EnterpriseUser.findById(receiverId);
     if (!receiver) {
@@ -164,16 +164,9 @@ exports.getMessages = async (req, res) => {
             },
         },
         {
-          $project: {
-            lastMessage: 1, // Keep the last message field
-            unreadCount: 1, // Include the unread count
-          },
-        },
-        { $replaceRoot: { newRoot: { $mergeObjects: ["$lastMessage", { unreadCount: "$unreadCount" }] } } },
-        {
             $lookup: {
                 from: "enterpriseusers",
-                localField: "senderId",
+                localField: "lastMessage.senderId",
                 foreignField: "_id",
                 as: "senderInfo",
             },
