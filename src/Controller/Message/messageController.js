@@ -2,7 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-const Contact = require("../../models/contact.individul.model");
+// const Contact = require("../../models/contact.individul.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
 
@@ -16,33 +16,38 @@ exports.sendMessage = async (req, res) => {
 
   try {
     // Search for the sender in three different collections
-    const [senderInUser, senderInContact, senderInEnterprise] = await Promise.all([
-      User.findById(senderId),
-      EnterpriseEmployee.findById(senderId),
-      EnterpriseUser.findById(senderId),
-    ]);
+    const [senderInUser, senderInContact, senderInEnterprise] =
+      await Promise.all([
+        User.findById(senderId),
+        EnterpriseEmployee.findById(senderId),
+        EnterpriseUser.findById(senderId),
+      ]);
 
     // Determine the sender
     const sender = senderInUser || senderInContact || senderInEnterprise;
 
     if (!sender) {
-      return res.status(404).json({ error: "Sender not found in any collection" });
+      return res
+        .status(404)
+        .json({ error: "Sender not found in any collection" });
     }
 
     // Search for the receiver in three different collections
-    const [receiverInUser, receiverInContact, receiverInEnterprise] = await Promise.all([
-      User.findById(receiverId),
-      EnterpriseEmployee.findById(receiverId),
-      EnterpriseUser.findById(receiverId),
-    ]);
-
+    const [receiverInUser, receiverInContact, receiverInEnterprise] =
+      await Promise.all([
+        User.findById(receiverId),
+        EnterpriseEmployee.findById(receiverId),
+        EnterpriseUser.findById(receiverId),
+      ]);
 
     // Determine the receiver
-    const receiver = receiverInUser || receiverInContact || receiverInEnterprise;
-
+    const receiver =
+      receiverInUser || receiverInContact || receiverInEnterprise;
 
     if (!receiver) {
-      return res.status(404).json({ error: "Receiver not found in any collection" });
+      return res
+        .status(404)
+        .json({ error: "Receiver not found in any collection" });
     }
 
     // Generate chatId by sorting senderId and receiverId to ensure consistency
@@ -128,45 +133,22 @@ exports.getMessages = async (req, res) => {
         {
           $group: {
             _id: "$chatId",
-            lastMessage: { $first: "$$ROOT" },
-            messages: { $push: "$$ROOT" },
-          },
-        },
-        {
-          $addFields: {
-            unreadCount: {
-              $size: {
-                $filter: {
-                  input: "$messages",
-                  as: "message",
-                  cond: {
-                    $and: [
-                      { $eq: ["$$message.isRead", false] },
-                      {
-                        $eq: [
-                          "$$message.receiverId",
-                          new mongoose.Types.ObjectId(userId),
-                        ],
-                      },
-                    ],
-                  },
-                },
-              },
-            },
+            lastMessage: { $first: "$$ROOT" }, // Capture only the latest message
           },
         },
         {
           $lookup: {
             from: "users",
-            localField: "senderId",
+            localField: "lastMessage.senderId",
             foreignField: "_id",
             as: "senderUserInfo",
+
           },
         },
         {
           $lookup: {
             from: "enterpriseusers",
-            localField: "senderId",
+            localField: "lastMessage.senderId",
             foreignField: "_id",
             as: "senderEnterpriseInfo",
           },
@@ -174,15 +156,17 @@ exports.getMessages = async (req, res) => {
         {
           $lookup: {
             from: "enterpriseemployees",
-            localField: "senderId",
+            localField: "lastMessage.senderId",
             foreignField: "_id",
             as: "senderEmployeeInfo",
+
           },
         },
         {
           $lookup: {
             from: "contact",
-            let: { receiverId: "$receiverId" },
+            let: { receiverId: "$lastMessage.receiverId" },
+
             pipeline: [
               { $unwind: "$contacts" },
               {
@@ -194,6 +178,7 @@ exports.getMessages = async (req, res) => {
                 $addFields: {
                   name: "$contacts.name",
                   username: "$contacts.username",
+                  companyName: "$contacts.companyName",
                 },
               },
             ],
@@ -202,22 +187,23 @@ exports.getMessages = async (req, res) => {
         },
         {
           $addFields: {
-            senderName: {
+            "lastMessage.senderName": {
               $ifNull: [
                 { $arrayElemAt: ["$senderUserInfo.username", 0] },
-                { $arrayElemAt: ["$senderEnterpriseInfo.username", 0] },
+                { $arrayElemAt: ["$senderEnterpriseInfo.companyName", 0] },
                 { $arrayElemAt: ["$senderEmployeeInfo.username", 0] },
                 "Unknown Sender",
               ],
             },
-            receiverName: {
+            "lastMessage.receiverName": {
               $ifNull: [
                 { $arrayElemAt: ["$receiverContactInfo.name", 0] },
                 { $arrayElemAt: ["$receiverContactInfo.username", 0] },
+                { $arrayElemAt: ["$receiverContactInfo.companyName", 0] },
                 "Unknown Receiver",
               ],
             },
-            senderProfilePic: {
+            "lastMessage.senderProfilePic": {
               $ifNull: [
                 { $arrayElemAt: ["$senderUserInfo.image", 0] },
                 { $arrayElemAt: ["$senderEnterpriseInfo.image", 0] },
@@ -225,7 +211,7 @@ exports.getMessages = async (req, res) => {
                 "",
               ],
             },
-            receiverProfilePic: {
+            "lastMessage.receiverProfilePic": {
               $ifNull: [
                 { $arrayElemAt: ["$receiverContactInfo.image", 0] },
                 "",
@@ -234,7 +220,38 @@ exports.getMessages = async (req, res) => {
           },
         },
         {
+          $addFields: {
+            "lastMessage.unreadCount": {
+              $size: {
+                $ifNull: [
+                  {
+                    $filter: {
+                      input: "$messages",
+                      as: "message",
+                      cond: {
+                        $and: [
+                          { $eq: ["$$message.isRead", false] },
+                          {
+                            $eq: [
+                              "$$message.receiverId",
+                              new mongoose.Types.ObjectId(userId),
+                            ],
+                          },
+                        ],
+                      },
+                    },
+                  },
+                  [],
+                ],
+              },
+            },
+          },
+        },
+
+        {
           $project: {
+            _id:0,
+
             senderUserInfo: 0,
             senderEnterpriseInfo: 0,
             senderEmployeeInfo: 0,
@@ -242,11 +259,6 @@ exports.getMessages = async (req, res) => {
           },
         },
       ]);
-
-      console.log(
-        "Last Messages Result (Processed):",
-        JSON.stringify(lastMessages, null, 2)
-      );
       return res.status(200).json(lastMessages);
     } else {
       return res
