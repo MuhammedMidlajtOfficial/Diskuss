@@ -40,9 +40,9 @@ exports.sendMessage = async (req, res) => {
 
     console.log("Contact document:", contact);
 
-    if (!contact) {
-      return res.status(404).json({ error: "Receiver not found in contact list" });
-    }
+    // if (!contact) {
+    //   return res.status(404).json({ error: "Receiver not found in contact list" });
+    // }
 
     const receiver = await User.findById(receiverId);
     if (!receiver) {
