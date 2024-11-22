@@ -16,7 +16,7 @@ const MeetingRoute = require("./Meeting/MeetingRouter.js");
 const individualContactRouter = require("./Contact/contactIndividualRouter.js");
 const enterpriseContactRouter = require("./Contact/contactEnterpriseRouter.js");
 const enterpriseEmployee = require('./EnterpriseEmployee/enterpriseEmployeeRouter.js');
-const enterpriseMessage = require("./EnterpriseMessage/enterpriseMessageRoute.js");
+// const enterpriseMessage = require("./EnterpriseMessage/enterpriseMessageRoute.js");
 const teamRouter = require('./Team/teamRouter.js');
 const notification = require('./Notification/NotificationRouter.js')
 const enterpriseMeeting = require('./EnterPriseMeeting/EnterPriseMeeting.js')
@@ -94,10 +94,10 @@ const defaultRoutes = [
     path: '/enterpriseEmployee',
     route: enterpriseEmployee,
   },
-  {
-    path: '/enterpriseMessage',
-    route: enterpriseMessage,
-  },
+  // {
+  //   path: '/enterpriseMessage',
+  //   route: enterpriseMessage,
+  // },
   {
     path: '/team',
     route: teamRouter,
