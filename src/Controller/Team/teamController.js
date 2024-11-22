@@ -8,7 +8,7 @@ module.exports.getAllTeamById = async (req, res) => {
             return res.status(400).json({ message: "teamOwnerId is required" });
         }
 
-        const team = await teamModel.find()
+        const team = await teamModel.find({ _id:teamOwnerId })
             .populate('teamMembers')
             .populate('teamLead')
             .exec();
