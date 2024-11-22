@@ -58,7 +58,7 @@ const createUserSubscription = async (req, res) => {
     const amountInPaisa = amount*100
     // Create a Razorpay order for the subscription amount
     const razorpayOrder = await razorpay.orders.create({
-      amountInPaisa, // Amount in rupee
+      amount:amountInPaisa, // Amount in rupee
       currency: 'INR',
       receipt: receiptId,  // Updated receipt field
       notes: { planId: newPlanId, userId }
