@@ -206,7 +206,7 @@ const getMeetingsByIds = async (req, res) => {
 
         // If no meetings found, return an error message
         if (meetings.length === 0) {
-            return res.status(200).json({ message: [] });
+            return res.status(200).json({ meetings: [] });
         }
 
         // Extract meetingOwner IDs and invited people IDs from each meeting
