@@ -241,7 +241,7 @@ const getMeetingsByIds = async (req, res) => {
         }, {});
 
         // Enrich each meeting with the meeting owner's profile and invited people's profiles
-        const enrichedMeetings = meetings.map(meeting => {
+        const enrichedMeetings = meetings?.map(meeting => {
             const meetingOwnerInfo = profilesMap[meeting.meetingOwner] || null; // Find the meeting owner's profile
             const invitedInfo = meeting.invitedPeople.map(id => profilesMap[id] || null); // Map invited IDs to profiles or null if not found
             return {
