@@ -291,9 +291,6 @@ exports.getMessages = async (req, res) => {
         {
           $replaceRoot: { newRoot: "$lastMessage" },
         },
-        {
-          $replaceRoot: { newRoot: "$lastMessage" },
-        },
         
         {
 
