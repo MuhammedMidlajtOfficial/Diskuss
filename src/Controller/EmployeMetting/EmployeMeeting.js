@@ -243,7 +243,12 @@ const getMeetingsByIds = async (req, res) => {
         // Enrich each meeting with the meeting owner's profile and invited people's profiles
         const enrichedMeetings = meetings?.map(meeting => {
             const meetingOwnerInfo = profilesMap[meeting.meetingOwner] || null; // Find the meeting owner's profile
-            const invitedInfo = meeting.invitedPeople.map(id => profilesMap[id] || null); // Map invited IDs to profiles or null if not found
+        
+            // Ensure invitedPeople is an array before mapping
+            const invitedInfo = Array.isArray(meeting.invitedPeople)
+                ? meeting.invitedPeople.map(id => profilesMap[id] || null)
+                : [];
+        
             return {
                 ...meeting.toObject(), // Convert mongoose document to plain object
                 meetingOwnerInfo, // Add meeting owner's profile info
