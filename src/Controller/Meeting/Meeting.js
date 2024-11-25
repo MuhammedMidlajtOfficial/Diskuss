@@ -1,10 +1,14 @@
 const MeetingBase = require("../../models/MeetingModel")
 const moment = require('moment');
 const cron = require('node-cron');
-const Profile = require('../../models/profile')
+const {individualUserCollection: Profile} = require('../../models/individualUser')
 const mongoose = require("mongoose");
+const Contact = require('../../models/contact.individul.model')
+const Notification = require('../../models/NotificationModel')
+const { emitNotification } = require('../../Controller/Socket.io/NotificationSocketIo');
 
-// CreateMeeting controller
+
+// CreateMeeting controller 
 const CreateMeeting = async (req, res) => {
     try {
         const {
@@ -42,6 +46,8 @@ const CreateMeeting = async (req, res) => {
             isRemind
         };
 
+        // console.log(newMeetingData);
+        
         // Add online or offline-specific fields
         if (type === 'online') {
             if (!meetingPlatform || !meetingLink) {
@@ -63,6 +69,23 @@ const CreateMeeting = async (req, res) => {
         // Save the new meeting
         const newMeeting = new MeetingBase(newMeetingData);
         const savedMeeting = await newMeeting.save();
+        //  console.log(meetingOwner);
+         
+        try {
+            var ownerProfile = await Profile.findOneAndUpdate(
+                { _id: meetingOwner },
+                { $push: { meetings: savedMeeting._id } },
+                { new: true }
+            ).exec();
+            console.log("from line 77",ownerProfile);
+            
+
+            if (!ownerProfile) {
+                console.log(`No profile found for meeting owner ID: ${meetingOwner}`);
+            }
+        } catch (error) {
+            console.error(`Error updating profile for meeting owner ID: ${meetingOwner}`, error);
+        }
 
         // Update each invited user's profile to include the meeting ID
         await Promise.all(
@@ -71,12 +94,24 @@ const CreateMeeting = async (req, res) => {
                     
                     const userIdString = userId.toString(); // Convert to string
                     console.log(`Updating profile for user ID: ${userIdString}`);
-        
+                 
                     const updatedProfile = await Profile.findOneAndUpdate(
-                        { userId: userIdString },
+                        { _id: userIdString },
                         { $push: { meetings: savedMeeting._id } },
                         { new: true }
                     ).exec();
+
+                      // Create a notification for each invited person
+                   const notification = new Notification({
+                    sender: meetingOwner,
+                    receiver: userId,
+                    type: 'meeting',
+                    content: `You have been invited to a meeting titled "${meetingTitle}" on ${selectedDate} at ${startTime} created by ${ownerProfile.username}.`,
+                    status: 'unread'
+                });
+                await notification.save();
+
+                emitNotification(userId.toString(), notification); // Emit real-time notification
                     
                     if (!updatedProfile) {
                         console.log(`No profile found with ID: ${userId}`);
@@ -87,6 +122,7 @@ const CreateMeeting = async (req, res) => {
             })
         );
 
+        
        
 
         return res.status(201).json({ message: "Meeting created successfully.", meeting: savedMeeting });
@@ -98,14 +134,13 @@ const CreateMeeting = async (req, res) => {
 
 
 
+
+
+
+
+
         
-
-
-          
-
-    
-
-
+// getUpcoming controller and its take req.params //
 const getUpcomingMeetings = async (req, res) => {
     const { userId } = req.params; // Get the user ID from the request parameters
 
@@ -116,7 +151,7 @@ const getUpcomingMeetings = async (req, res) => {
         // Find all upcoming meetings organized by the user
         const upcomingMeetings = await MeetingBase.find({
             meetingOwner: userId, // Filter by user ID
-            // selectedDate: { $gte: currentDateTime.toDate() } // Filter for upcoming meetings for today
+            selectedDate: { $gte: currentDateTime.toDate() } // Filter for upcoming meetings for today
         }).exec();
 
         // Check if there are no upcoming meetings
@@ -132,51 +167,94 @@ const getUpcomingMeetings = async (req, res) => {
 }
 
 
-
-
-
+// get meeting by ids  //
 const getMeetingsByIds = async (req, res) => {
-    const { meetingIds } = req.body; // Assuming an array of meeting IDs is provided in the request body
-
     try {
-        // Filter out invalid ObjectIds from the provided meetingIds array
-        // const validMeetingIds = meetingIds.filter(id => mongoose.Types.ObjectId.isValid(id));
-
-        // Find meetings that match the valid IDs
-        const meetings = await MeetingBase.find({ _id: { $in: meetingIds } });
-
-        // Check if there are any found meetings
-        if (meetings.length === 0) {
-            return res.status(404).json({ message: "No meetings found for the provided IDs." });
+        const { userId } = req.params; // Extract userId from request parameters
+        //  console.log(userId);
+         
+        // Find the user's profile by userId and populate meetings if referenced in schema
+        // console.log(userId);
+        const userInfo = await Profile.findOne({ _id:userId }).populate({
+            path:'meetings',
+            strictPopulate: false, 
+        });
+     
+        //  console.log("user info from line no 167",userInfo);
+         console.log('userInfo',userInfo);
+        // If user profile not found, return an error
+        if (!userInfo) {
+            return res.status(404).json({ message: "User profile not found." });
         }
 
-// Extract invited people's IDs from the meetings
+        // Extract meeting IDs from the user's profile
+        const meetingIds = userInfo?.meetings?.map(meeting => meeting._id);
+        // console.log("meeting ids from line no 176",meetingIds);
+        
+          // Get the current date and set the time to 00:00:00 for accurate filtering
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+        // Find meetings in MeetingBase collection that match the extracted meeting IDs
+        // const meetings = await MeetingBase.find({ _id: { $in: meetingIds } });
+
+        const meetings = await MeetingBase.find({ 
+            _id: { $in: meetingIds },
+            selectedDate: { $gte: today } // Filter meetings where date is today or in the future
+        });
+
+        // console.log("meetings from  from line no 167",meetings);
+
+        // If no meetings found, return an error message
+        if (meetings.length === 0) {
+            return res.status(200).json({ message: [] });
+        }
+
+        // Extract meetingOwner IDs and invited people IDs from each meeting
+        const meetingOwnerIds = meetings.map(meeting => meeting.meetingOwner);
         const invitedPeopleIds = meetings.flatMap(meeting => meeting.invitedPeople);
+        // console.log("from line no 190",meetingOwnerIds);
+        // console.log("from line no 190",invitedPeopleIds);
+        
 
-        // Fetch user profiles based on invited people IDs
-        const invitedProfiles = await Profile.find({ userId: { $in: invitedPeopleIds } });
-
-        // Create a map for easy access to profiles by ID
-        const profilesMap = invitedProfiles.reduce((acc, profile) => {
-            acc[profile.userId] = profile; // Assuming profile has a unique _id
+        // Fetch profiles of meeting owners and invited people based on their IDs
+        const ownerProfiles = await Profile.find({ _id: { $in: meetingOwnerIds } });
+        const invitedProfiles = await Profile.find({ _id: { $in: invitedPeopleIds } });
+        // console.log(ownerProfiles);
+        // console.log(invitedProfiles);
+        
+        // Create a map for easy lookup of profiles by userId
+        const profilesMap = [...ownerProfiles, ...invitedProfiles].reduce((acc, profile) => {
+            acc[profile._id] = {
+  
+                username: profile.username,
+                email: profile.email,
+                image: profile.image,
+                userId:profile._id
+            };; // Store each profile by its userId
             return acc;
         }, {});
 
-        // Augment meetings with invited people's profiles
+        // Enrich each meeting with the meeting owner's profile and invited people's profiles
         const enrichedMeetings = meetings.map(meeting => {
-            const invitedInfo = meeting.invitedPeople.map(id => profilesMap[id] || null); // Map to user profiles or null if not found
+            const meetingOwnerInfo = profilesMap[meeting.meetingOwner] || null; // Find the meeting owner's profile
+            const invitedInfo = meeting.invitedPeople?.map(id => profilesMap[id] || null); // Map invited IDs to profiles or null if not found
             return {
                 ...meeting.toObject(), // Convert mongoose document to plain object
-                invitedInfo // Add invitedInfo array
+                meetingOwnerInfo, // Add meeting owner's profile info
+                invitedInfo // Add invited people's profile info
             };
         });
 
-        // Return the enriched meetings
-        return res.status(200).json({ meetings: enrichedMeetings });
+        // console.log(enrichedMeetings);
+        
+
+        // Send back the enriched meetings as the response
+        return res.status(200).json({ meetings: enrichedMeetings.reverse()  });
 
     } catch (error) {
-        console.error("Error fetching meetings by IDs:", error);
-        return res.status(500).json({ message: "Internal server error." });
+        console.error("Error fetching meetings by IDs:", error); // Log error details for debugging
+        return res.status(500).json({ message: "Internal server error." }); // Return error response for server errors
     }
 };
 
@@ -206,19 +284,89 @@ const updateMeeting = async(req,res) => {
 }
 
 
+
+// delete meeting ny meeting id
+// const deleteMeeting = async (req, res) => {
+//     const { meetingId } = req.params; // Get the meeting ID from the request parameters
+
+//     try {
+//         // Find and delete the meeting by ID
+//         const meetingToDelete = await MeetingBase.findById(meetingId);
+//         console.log(meetingToDelete);
+//         const { meetingOwner, invitedPeople } = meetingToDelete;
+//          console.log(meetingOwner,invitedPeople);
+         
+
+
+//         // Check if the meeting was found and deleted
+//         if (!meetingToDelete) {
+//             return res.status(404).json({ message: "Meeting not found." });
+//         }
+
+//           // Delete the meeting
+//           await MeetingBase.findByIdAndDelete(meetingId);
+
+//           // Remove the meeting ID from the meetingOwner's Profile document
+//           await Profile.updateOne(
+//               { userId: meetingOwner },
+//               { $pull: { meetings: meetingId } }
+//           );
+  
+//           // Remove the meeting ID from each invited user's Profile document
+//           await Profile.updateMany(
+//               { userId: { $in: invitedPeople } },
+//               { $pull: { meetings: meetingId } }
+//           );
+
+//         return res.status(200).json({ message: "Meeting deleted successfully.", meeting: meetingToDelete });
+//     } catch (error) {
+//         console.error("Error deleting meeting:", error);
+//         return res.status(500).json({ message: "Internal server error." });
+//     }
+// };
 const deleteMeeting = async (req, res) => {
     const { meetingId } = req.params; // Get the meeting ID from the request parameters
 
     try {
-        // Find and delete the meeting by ID
-        const deletedMeeting = await MeetingBase.findByIdAndDelete(meetingId);
-
-        // Check if the meeting was found and deleted
-        if (!deletedMeeting) {
+        // Find the meeting by ID
+        const meetingToDelete = await MeetingBase.findById(meetingId);
+        
+        // Check if the meeting exists
+        if (!meetingToDelete) {
             return res.status(404).json({ message: "Meeting not found." });
         }
 
-        return res.status(200).json({ message: "Meeting deleted successfully.", meeting: deletedMeeting });
+        const { meetingOwner, invitedPeople } = meetingToDelete;
+        
+        // Log the meeting details
+        // console.log("Meeting found:", meetingToDelete);
+        // console.log("Meeting Owner ID:", meetingOwner);
+        // console.log("Invited People IDs:", invitedPeople);
+
+        // Delete the meeting
+        await MeetingBase.findByIdAndDelete(meetingId);
+
+        // Remove the meeting ID from the meetingOwner's Profile document
+      const newData =  await Profile.updateOne(
+            { _id: meetingOwner },
+            { $pull: { meetings: meetingId } }
+        );
+
+        // console.log(newData);
+        
+
+        // Remove the meeting ID from each invited user's Profile document
+        const result = await Profile.updateMany(
+            { _id: { $in: invitedPeople } },
+            { $pull: { meetings: meetingId } }
+        );
+
+        // console.log(result);
+
+        // Log the update result for confirmation
+        console.log(`Removed meeting ID from ${result.nModified} invited users' meeting lists`);
+
+        return res.status(200).json({ message: "Meeting deleted successfully.", meeting: meetingToDelete });
     } catch (error) {
         console.error("Error deleting meeting:", error);
         return res.status(500).json({ message: "Internal server error." });
@@ -275,43 +423,120 @@ const updateInviteStatus =  async (req, res) => {
 
 
 
-// Schedule the cron job to run every minute
-cron.schedule('* * * * *', async () => {
+
+
+
+
+//update meeting by meeting id
+// const UpdateMeeting = async (req, res) => {
+//     try {
+//       const {meetingId} = req.params; // Get meeting ID from request parameters
+//       const updatedData = req.body; // Get updated meeting data from request body
+//         // console.log(updatedData);
+        
+//       // Find the meeting by ID and update it with the new data
+//       const updatedMeeting = await MeetingBase.findByIdAndUpdate(meetingId, updatedData, {
+//         new: true, // Return the updated document
+//         runValidators: true // Ensure the schema validation rules are respected
+//       });
+  
+//       // Check if the meeting was found and updated
+//       if (!updatedMeeting) {
+//         return res.status(404).json({ message: "Meeting not found" });
+//       }
+  
+//       // Return the updated meeting information
+//       res.status(200).json({data:updatedMeeting,sucess:true,message:"sucessfully updated"});
+//     } catch (error) {
+//       // Handle errors, such as database connection issues or validation errors
+//       console.error(error);
+//       res.status(500).json({ message: "Failed to update meeting", error: error.message });
+//     }
+//   };
+
+const UpdateMeeting = async (req, res) => {
     try {
-        const currentTime = new Date();
-        console.log("Current Time:", currentTime);
+        const { meetingId } = req.params; // Get meeting ID from request parameters
+        const updatedData = req.body; // Get updated meeting data from request body
 
-        // Fetch all meetings from the database
-        const meetings = await MeetingBase.find({});
+        // Find the meeting by ID and update it with the new data
+        const updatedMeeting = await MeetingBase.findByIdAndUpdate(meetingId, updatedData, {
+            new: true, // Return the updated document
+            runValidators: true // Ensure the schema validation rules are respected
+        });
 
-        for (const meeting of meetings) {
-            // Combine `selectedDate` and `endTime` to create a full `meetingEndDateTime`
-            const meetingEndDateTime = moment(
-                `${meeting.selectedDate.toISOString().split('T')[0]} ${meeting.endTime}`,
-                "YYYY-MM-DD hh:mm A"
-            ).toDate();
-
-            console.log("Meeting End DateTime:", meetingEndDateTime);
-
-            // Check if the `meetingEndDateTime` is before `currentTime`
-            if (meetingEndDateTime < currentTime) {
-                // Delete the expired meeting
-                await MeetingBase.deleteOne({ _id: meeting._id });
-                console.log(`Deleted expired meeting: ${meeting._id}`);
-            } else {
-                console.log(`Meeting ${meeting._id} is still ongoing.`);
-            }
+        // Check if the meeting was found and updated
+        if (!updatedMeeting) {
+            return res.status(404).json({ message: "Meeting not found" });
         }
+
+        // Update the meeting reference in the meeting owner's profile
+        try {
+            var ownerProfile = await Profile.findOneAndUpdate(
+                { _id: updatedMeeting.meetingOwner },
+                { $addToSet: { meetings: updatedMeeting._id } }, // Ensures no duplicate meeting IDs
+                { new: true }
+            ).exec();
+
+            if (!ownerProfile) {
+                console.log(`No profile found for meeting owner ID: ${updatedMeeting.meetingOwner}`);
+            }
+        } catch (error) {
+            console.error(`Error updating profile for meeting owner ID: ${updatedMeeting.meetingOwner}`, error);
+        }
+
+        // Update each invited user's profile to include the meeting ID
+        await Promise.all(
+            updatedMeeting.invitedPeople.map(async (userId) => {
+                try {
+                    const updatedProfile = await Profile.findOneAndUpdate(
+                        { _id: userId },
+                        { $addToSet: { meetings: updatedMeeting._id } }, // Ensures no duplicate meeting IDs
+                        { new: true }
+                    ).exec();
+
+                    const notification = new Notification({
+                        sender:updatedData.meetingOwner,
+                        receiver: userId,
+                        type: 'meeting',
+                        content: `You have been invited to a meeting titled "${updatedMeeting.meetingTitle}" on ${updatedMeeting.selectedDate} at ${updatedMeeting.startTime} created by ${ownerProfile.username}.`,
+                        status: 'unread'
+                    });
+                    await notification.save();
+                    emitNotification(userId.toString(), notification);
+
+                    if (!updatedProfile) {
+                        console.log(`No profile found with ID: ${userId}`);
+                    }
+                } catch (error) {
+                    console.error(`Error updating profile for user ID: ${userId}`, error);
+                }
+            })
+        );
+
+        // Return the updated meeting information
+        return res.status(200).json({ data: updatedMeeting, success: true, message: "Successfully updated" });
     } catch (error) {
-        console.error('Error deleting expired meetings:', error);
+        console.error(error);
+        return res.status(500).json({ message: "Failed to update meeting", error: error.message });
     }
-});
+  };
+
+
+
+    
+
+
+
+
+// Schedule the cron job to run every minute
 
 
 
 
 
 
-module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds , updateMeeting, updateInviteStatus};
 
-// 60f6c72f0c4f5b001f1aab07
+
+
+module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds , updateMeeting, updateInviteStatus, UpdateMeeting};

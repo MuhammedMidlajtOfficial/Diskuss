@@ -2,6 +2,7 @@ const { individualUserCollection } = require("../../DBConfig");
 const Profile = require("../../models/profile");
 const { ObjectId } = require('mongodb');
 
+
 const getProfiles = async (req, res) => {
   try {
     const userId = req.params.id
@@ -34,6 +35,8 @@ const createProfile = async (req, res) => {
     position,
     color,
   } = req.body;
+  console.log(createProfile);
+  
 
   if(!isValidUserId(userId)){
     return res.status(400).json({ message: 'Invalid user ID' });

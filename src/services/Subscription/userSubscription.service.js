@@ -1,4 +1,7 @@
+const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
+const enterpriseUser = require('../../models/enterpriseUser');
 const UserSubscription = require('../../models/userSubscription.model');
+const { individualUserCollection } = require("../../DBConfig");
 
 /**
  * Find all Subscsriptions
@@ -15,6 +18,26 @@ const findAll = async () => {
   }
   };  
 
+const findOneById = async (userId) => {
+  try {
+    console.log("user id :", userId);
+
+
+    const userSubscriptions =  await UserSubscription.find({userId})
+      .populate('userId')
+      .populate('planId')
+      .exec();
+    console.log("user subscription : ", userSubscriptions);
+
+    return userSubscriptions;
+  } catch (error) {
+    console.error("Error fetching User Subscriptions plan:", error);
+    throw error; // Re-throw the error for higher-level handling if needed
+  }
+  };  
+
+
+
   
 /**
  * Create al UserSubscription
@@ -29,10 +52,11 @@ const findAll = async () => {
     try {
       // Prepare the UserSubscription data with unique plan_id
 
-      console.log("data", data);
+      // console.log("data", data);
       const newSubscription = new UserSubscription({
         planId: data.planId,
         userId: data.userId,
+        razorpayOrderId:data.razorpayOrderId,
         startDate: data.startDate,
         endDate: data.endDate,
         status: data.status
@@ -58,19 +82,19 @@ const findAll = async () => {
  * @returns {Promise<Object>} - Returns the updated UserSubscription plan.
  * @throws {Error} - Throws an error if the UserSubscription plan is not found or if there's an issue with the update.
  */
-  const updateUserSubscriptionById = async (plan_id, updateData) => {
+  const updateUserSubscriptionById = async (id, updateData) => {
     try {
-      console.log(plan_id);
+      // console.log("id : ",id);
       
-      const userSubscription = await UserSubscription.findOne({plan_id:plan_id}).exec();
+      const userSubscription = await UserSubscription.findById({_id : id}).exec();
        
-      console.log(userSubscription);
+      // console.log(userSubscription);
       
       if (!userSubscription) {
         throw new Error("User Subscription plan not found");
       }
       const updatedUserSubscription = await UserSubscription.findOneAndUpdate(
-        { plan_id },
+        { _id: id },
         { $set: updateData },
         { new: true }
       ).exec(); // Find and update the UserSubscription plan
@@ -85,6 +109,71 @@ const findAll = async () => {
     }
   };
 
+  const updateSubscriptionStatus = async (razorpay_order_id, updateData) => {
+    try {
+      // Find the user subscription by razorpayOrderId
+      const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
+      
+      if (!userSubscription) {
+        throw new Error("User Subscription plan not found");
+      }
+  
+      // Update the subscription plan status with the new data
+      const updatedUserSubscription = await UserSubscription.updateOne(
+        { razorpayOrderId: razorpay_order_id }, // Search by razorpayOrderId, not _id
+        { $set: updateData }, // Update the subscription with the new data
+        { new: true }
+      ).exec();
+  
+      return updatedUserSubscription; // Return the result of the update operation
+    } catch (error) {
+      console.error("Error updating UserSubscription:", error);
+      throw error; // Re-throw the error for higher-level handling
+    }
+  };
+  
+
+  const updateSubscriptionStatusInUsers = async (razorpay_order_id, updateData) => {
+    try {
+      // Find the user subscription by razorpayOrderId
+      const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
+      if (!userSubscription) {
+        throw new Error("User Subscription plan not found");
+      }
+      
+      // Update the subscription plan status with the new data
+      const updatedUserSubscription = await UserSubscription.updateOne(
+        { razorpayOrderId: razorpay_order_id }, // Search by razorpayOrderId, not _id
+        { $set: updateData }, // Update the subscription with the new data
+        { new: true }
+        ).exec();
+
+        const userId = userSubscription.userId;
+
+        const isIndividualUserExist = await individualUserCollection.findOne({ userId }).exec();
+        const isEnterpriseEmployeExist = await enterpriseEmployeModel.findOne({ userId }).exec();
+        const isEnterpriseUserExist = await enterpriseUser.findOne({ userId }).exec();
+        
+        if (isIndividualUserExist) {
+          // Update individual user collection
+          await individualUserCollection.updateOne({ _id: userId }, updateData);
+        } else if (isEnterpriseEmployeExist) {
+          // Update enterprise employee collection
+          await enterpriseEmployeModel.updateOne({ _id: userId }, updateData);
+        } else if (isEnterpriseUserExist) {
+          // Update enterprise user collection
+          await enterpriseUser.updateOne({ _id: userId }, updateData);
+        } else {
+          // Handle case when user doesn't exist in any collection
+          console.log("User not found in any collection");
+        }
+  
+      return updatedUserSubscription; // Return the result of the update operation
+    } catch (error) {
+      console.error("Error updating UserSubscription:", error);
+      throw error; // Re-throw the error for higher-level handling
+    }
+  };
   
 /**
  * Delete a UserSubscription plan by plan_id.
@@ -114,7 +203,10 @@ const findAll = async () => {
 
 module.exports = {
     findAll,
+    findOneById,
     createUserSubscription,
     updateUserSubscriptionById,
-    deleteUserSubscriptionById
+    deleteUserSubscriptionById,
+    updateSubscriptionStatus,
+    updateSubscriptionStatusInUsers
 };
