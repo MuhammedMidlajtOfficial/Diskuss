@@ -391,21 +391,21 @@ const updateInviteStatus =  async (req, res) => {
     }
     
    
- // Find the meeting and update the user's response status
- const updatedMeeting = await MeetingBase.findOneAndUpdate(
-    { _id: meetingId, 'invitedPeople.userId': userId },
-    { 
-      $set: { 
-        'invitedPeople.$.responseStatus': responseStatus,
-        'invitedPeople.$.notes': notes // Update notes if provided
-      } 
-    },
-    { new: true } // Return the updated document
-  );
+    // Find the meeting and update the user's response status
+    const updatedMeeting = await MeetingBase.findOneAndUpdate(
+        { _id: meetingId, 'invitedPeople.userId': userId },
+        { 
+        $set: { 
+            'invitedPeople.$.responseStatus': responseStatus,
+            'invitedPeople.$.notes': notes // Update notes if provided
+        } 
+        },
+        { new: true } // Return the updated document
+    );
 
-  if (!updatedMeeting) {
-    return res.status(404).json({ error: 'Meeting or invited user not found.' });
-  }
+    if (!updatedMeeting) {
+        return res.status(404).json({ error: 'Meeting or invited user not found.' });
+    }
 
 
   return res.status(200).json({
