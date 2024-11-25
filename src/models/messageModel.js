@@ -6,6 +6,7 @@ const messageSchema = new mongoose.Schema({
   receiverId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   content: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
+  localTime: { type: String },
   isRead: { type: Boolean, default: false },
 });
 
