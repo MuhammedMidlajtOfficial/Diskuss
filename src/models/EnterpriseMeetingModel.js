@@ -29,10 +29,13 @@ const meetingSchema = new mongoose.Schema({
   endTime: { type: String, required: true }, // Meeting end time
 
   // List of People Invited
-  invitedPeople: [{
-    type: String,
-    ref: 'EnterpriseEmployee' // Assuming 'User' schema exists
-  }],
+  invitedPeople: [
+    {
+      user: { type: String , ref: 'EnterpriseEmployee', required: true },
+      status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+      reason: { type: String, required: function() { return this.status === 'rejected'; } }
+    }
+  ],
 
   description: { type: String }, // Description for the meeting
   isRemind: { type: Boolean, default: false }, // Reminder option
