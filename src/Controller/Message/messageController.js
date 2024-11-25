@@ -53,13 +53,22 @@ exports.sendMessage = async (req, res) => {
     // Generate chatId by sorting senderId and receiverId to ensure consistency
     const chatId = [senderId, receiverId].sort().join("-");
 
+    // Get the current timestamp and local time
+    const now = new Date();
+    const localTime = new Intl.DateTimeFormat("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "Asia/Kolkata", // Replace with your desired timezone
+    }).format(now);
+
     // Create the message
     const message = await Message.create({
       chatId,
       senderId,
       receiverId,
       content,
-      timestamp: Date.now(),
+      timestamp: now,
+      localTime, // Add the formatted local time
     });
 
     // Emit the message to the respective chat room (chatId)
