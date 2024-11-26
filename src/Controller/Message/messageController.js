@@ -151,7 +151,6 @@ exports.getMessages = async (req, res) => {
             localField: "lastMessage.senderId",
             foreignField: "_id",
             as: "senderUserInfo",
-
           },
         },
         {
@@ -168,14 +167,12 @@ exports.getMessages = async (req, res) => {
             localField: "lastMessage.senderId",
             foreignField: "_id",
             as: "senderEmployeeInfo",
-
           },
         },
         {
           $lookup: {
             from: "contact",
             let: { receiverId: "$lastMessage.receiverId" },
-
             pipeline: [
               { $unwind: "$contacts" },
               {
@@ -195,6 +192,30 @@ exports.getMessages = async (req, res) => {
           },
         },
         {
+          $lookup: {
+            from: "users",
+            localField: "lastMessage.receiverId",
+            foreignField: "_id",
+            as: "receiverUserInfo",
+          },
+        },
+        {
+          $lookup: {
+            from: "enterpriseusers",
+            localField: "lastMessage.receiverId",
+            foreignField: "_id",
+            as: "receiverEnterpriseInfo",
+          },
+        },
+        {
+          $lookup: {
+            from: "enterpriseemployees",
+            localField: "lastMessage.receiverId",
+            foreignField: "_id",
+            as: "receiverEmployeeInfo",
+          },
+        },
+        {
           $addFields: {
             "lastMessage.senderName": {
               $ifNull: [
@@ -209,7 +230,18 @@ exports.getMessages = async (req, res) => {
                 { $arrayElemAt: ["$receiverContactInfo.name", 0] },
                 { $arrayElemAt: ["$receiverContactInfo.username", 0] },
                 { $arrayElemAt: ["$receiverContactInfo.companyName", 0] },
+                // { $arrayElemAt: ["$receiverUserInfo.username", 0] },
+                // { $arrayElemAt: ["$receiverEnterpriseInfo.companyName", 0] },
+                // { $arrayElemAt: ["$receiverEmployeeInfo.username", 0] },
                 "Unknown Receiver",
+              ],
+            },
+            "lastMessage.receiverNumber": {
+              $ifNull: [
+                { $arrayElemAt: ["$receiverUserInfo.phnNumber", 0] },
+                { $arrayElemAt: ["$receiverEnterpriseInfo.phnNumber", 0] },
+                { $arrayElemAt: ["$receiverEmployeeInfo.phnNumber", 0] },
+                "Receiver is not a diskuss user",
               ],
             },
             "lastMessage.senderProfilePic": {
@@ -256,7 +288,6 @@ exports.getMessages = async (req, res) => {
             },
           },
         },
-
         {
           $replaceRoot: { newRoot: "$lastMessage" },
         },
@@ -264,8 +295,7 @@ exports.getMessages = async (req, res) => {
         {
 
           $project: {
-            _id:0,
-
+            _id: 0,
             senderUserInfo: 0,
             senderEnterpriseInfo: 0,
             senderEmployeeInfo: 0,
@@ -273,7 +303,9 @@ exports.getMessages = async (req, res) => {
           },
         },
       ]);
+      
       return res.status(200).json(lastMessages);
+
     } else {
       return res
         .status(400)

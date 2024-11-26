@@ -10,15 +10,16 @@ module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id
     
-    const isUserExist = enterpriseUser.findOne({ _id:userId })
+    const isUserExist = enterpriseUser.find({ _id:userId })
     if(!isUserExist){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
     const card = await Card.find({ userId })
-    if (!card[0]) {
-      return res.status(404).json({ message: 'Card not found' });
-    }
+    // if (!card[0]) {
+    //   console.log(Error('Error:Card not found'));
+    //   return res.status(404).json({ message: 'Card not found' });
+    // }
     console.log(card);
     return res.status(200).json(card);
   } catch (error) {
