@@ -380,7 +380,7 @@ const updateInviteStatus =  async (req, res) => {
         } 
         },
         { new: true } // Return the updated document
-    );
+    ).populate('invitedPeople.userId', 'username email image');
 
     if (!updatedMeeting) {
         return res.status(404).json({ error: 'Meeting or invited user not found.' });

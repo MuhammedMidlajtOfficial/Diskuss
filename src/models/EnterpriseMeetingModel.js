@@ -32,7 +32,7 @@ const meetingSchema = new mongoose.Schema({
   invitedPeople:  [{
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Assuming 'User' schema exists
+      ref: 'EnterpriseUser', // Assuming 'User' schema exists
       required: true
     },
     responseStatus: {
