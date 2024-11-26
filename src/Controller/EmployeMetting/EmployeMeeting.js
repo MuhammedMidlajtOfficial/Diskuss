@@ -80,11 +80,11 @@ const CreateMeeting = async (req, res) => {
 
         // Update each invited user's profile
         await Promise.all(
-            invitedPeople.map(async (userId) => {
+            invitedPeople.map(async (user) => {
                 
 
            
-                let invitedUserProfile = await Profile.findById(userId) || enterprise.findById(userId);
+                let invitedUserProfile = await Profile.findById(user.userId) || enterprise.findById(user.userId);
                 
 
                 if (invitedUserProfile) {
@@ -99,7 +99,7 @@ const CreateMeeting = async (req, res) => {
                   // Create a notification for the invited user
                    const notification = new Notification({
                       sender: meetingOwner,
-                      receiver: userId,
+                      receiver: user.userId,
                         type: 'meeting',
                        content: notificationContent,
                       status: 'unread'
@@ -110,7 +110,7 @@ const CreateMeeting = async (req, res) => {
                     
 
                     // Emit notification
-                    emitNotification(userId, notification);
+                    emitNotification(user.userId, notification);
                 }
             })
         );
@@ -180,7 +180,7 @@ const getMeetingsByIds = async (req, res) => {
         }
      
         //  console.log("user info from line no 167",userInfo);
-         console.log('userInfo',userInfo);
+        //  console.log('userInfo',userInfo);
         // If user profile not found, return an error
         if (!userInfo) {
             return res.status(404).json({ message: "User profile not found." });
@@ -357,6 +357,53 @@ const deleteMeeting = async (req, res) => {
 };
 
 
+const updateInviteStatus =  async (req, res) => {
+    const { meetingId, userId } = req.params;
+  const { responseStatus, notes } = req.body;
+
+  try {
+    // // Find the meeting by ID
+    // const meeting = await MeetingBase.findById(meetingId);
+    // if (!meeting) {
+    //     return res.status(404).json({ message: 'Meeting not found' });
+    //   }
+    
+    // Validate new status
+    const validStatuses = ['accepted', 'rejected', 'pending'];
+    if (!validStatuses.includes(responseStatus)) {
+      return res.status(400).json({ error: 'Invalid status provided. Valid statuses are: accepted, rejected, pending.' });
+    }
+    
+   
+    // Find the meeting and update the user's response status
+    const updatedMeeting = await MeetingBase.findOneAndUpdate(
+        { _id: meetingId, 'invitedPeople.userId': userId },
+        { 
+        $set: { 
+            'invitedPeople.$.responseStatus': responseStatus,
+            'invitedPeople.$.notes': notes // Update notes if provided
+        } 
+        },
+        { new: true } // Return the updated document
+    ).populate('invitedPeople.userId', 'username email image');
+
+
+    if (!updatedMeeting) {
+        return res.status(404).json({ error: 'Meeting or invited user not found.' });
+    }
+
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'User status updated successfully.',
+    data: updatedMeeting
+  });  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+
+} 
+
 
 
 
@@ -465,4 +512,4 @@ const UpdateMeeting = async (req, res) => {
 
 
 
-module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting};
+module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting, updateInviteStatus};

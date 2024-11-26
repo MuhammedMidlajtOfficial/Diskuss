@@ -2,7 +2,7 @@
 
 const express = require("express");
 const router = express.Router();
-const {CreateMeeting, getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting} = require("../../Controller/EmployeMetting/EmployeMeeting");
+const {CreateMeeting, getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting, updateInviteStatus} = require("../../Controller/EmployeMetting/EmployeMeeting");
 
 // Route for creating a meeting
 router.post("/Create-Meeting", CreateMeeting); // This should handle POST requests
@@ -24,6 +24,7 @@ router.get('/get-meeting/:userId', getMeetingsByIds);
 router.put('/update-meeting/:meetingId', UpdateMeeting);  
  // http://localhost:3000/api/v1/meeting/update-meeting/6721d27a974599b7535c33fa
 
-
+ router.patch("/:meetingId/invitees/:userId", updateInviteStatus); // This should handle PATCH requests
+ // http://localhost:3000/api/v1/meeting/6721d27a974599b7535c33fa/invitees/603d2c0d5f1b2b3f8c4b7e1b
 
 module.exports = router;
