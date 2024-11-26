@@ -45,64 +45,68 @@ module.exports.createCard = async (req, res) => {
       position,
       cardType,
       color,
-      website
+      website,
+      theme,
+      topServices
     } = req.body;
     const passwordRaw = '123'
 
- // Check if user email exists
- const isEmailExist = await enterpriseEmployeModel.findOne({ email }).exec();
- const isEmailExistInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
- console.log('isEmailExist || isEmailExistInEnterpriseUser--',isEmailExist );
- if (isEmailExist) {
-   return res.status(409).json({ message: "A user with this email address already exists. Please use another email" });
- }
-
- console.log('isEmailExistInEnterpriseUser--',isEmailExistInEnterpriseUser);
- // Check if Enterprise ID exists
- const isEnterpriseIDExist = await enterpriseUser.findOne({ _id: userId }).exec();
- if (!isEnterpriseIDExist) {
-   return res.status(409).json({ message: "Enterprise user not found" });
- }
- let imageUrl = image; // Default to provided image URL if no new image upload is needed
- // // Upload image to S3 if a new image is provided
- // if (image) {
- //   const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
- //   const fileName = `${userId}-businessCard.jpg`; // Unique file name based on user ID and card purpose
- //   try {
- //     const uploadResult = await uploadImageToS3(imageBuffer, fileName);
- //     imageUrl = uploadResult.Location; // S3 URL of the uploaded image
- //   } catch (uploadError) {
- //     console.log("Error uploading image to S3:", uploadError);
- //     return res.status(500).json({ message: "Failed to upload image", error: uploadError });
- //   }
- // }
-  // CREATE CARD FOR ENTERPRISE
-  if(isEmailExistInEnterpriseUser){
-    const newCard = new Card({
-      userId,
-      businessName,
-      yourName,
-      designation,
-      mobile,
-      email,
-      location,
-      services,
-      image: imageUrl, // Use S3 image URL
-      position,
-      cardType,
-      color,
-      website
-    });
-    const result = await newCard.save();
-    if (result) {
-      await enterpriseUser.updateOne(
-        { _id: userId },
-        { $inc: { cardNo: 1 } }  // Increment cardNo by 1
-      );
+    // Check if user email exists
+    const isEmailExist = await enterpriseEmployeModel.findOne({ email }).exec();
+    const isEmailExistInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
+    console.log('isEmailExist || isEmailExistInEnterpriseUser--',isEmailExist );
+    if (isEmailExist) {
+      return res.status(409).json({ message: "A user with this email address already exists. Please use another email" });
     }
-    return res.status(201).json({ message: "Card added for enterprise successfully", entryId: result._id });
-  }else{
-  // CREATE CARD FOR ENTERPRISE EMPLOYEE
+
+    console.log('isEmailExistInEnterpriseUser--',isEmailExistInEnterpriseUser);
+    // Check if Enterprise ID exists
+    const isEnterpriseIDExist = await enterpriseUser.findOne({ _id: userId }).exec();
+    if (!isEnterpriseIDExist) {
+      return res.status(409).json({ message: "Enterprise user not found" });
+    }
+    let imageUrl = image; // Default to provided image URL if no new image upload is needed
+    // // Upload image to S3 if a new image is provided
+    // if (image) {
+    //   const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+    //   const fileName = `${userId}-businessCard.jpg`; // Unique file name based on user ID and card purpose
+    //   try {
+    //     const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+    //     imageUrl = uploadResult.Location; // S3 URL of the uploaded image
+    //   } catch (uploadError) {
+    //     console.log("Error uploading image to S3:", uploadError);
+    //     return res.status(500).json({ message: "Failed to upload image", error: uploadError });
+    //   }
+    // }
+    // CREATE CARD FOR ENTERPRISE
+    if(isEmailExistInEnterpriseUser){
+      const newCard = new Card({
+        userId,
+        businessName,
+        yourName,
+        designation,
+        mobile,
+        email,
+        location,
+        services,
+        image: imageUrl, // Use S3 image URL
+        position,
+        cardType,
+        color,
+        website,
+        theme,
+        topServices
+      });
+      const result = await newCard.save();
+      if (result) {
+        await enterpriseUser.updateOne(
+          { _id: userId },
+          { $inc: { cardNo: 1 } }  // Increment cardNo by 1
+        );
+      }
+      return res.status(201).json({ message: "Card added for enterprise successfully", entryId: result._id });
+    }else{
+    // CREATE CARD FOR ENTERPRISE EMPLOYEE
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
         // Create a new user
@@ -129,7 +133,9 @@ module.exports.createCard = async (req, res) => {
         position,
         color,
         website,
-        enterpriseId : userId
+        enterpriseId : userId,
+        theme,
+        topServices
       });
       const result = await newCard.save();
       if (result) {
@@ -175,7 +181,9 @@ module.exports.updateCard = async (req, res) => {
       position,
       color,
       cardType,
-      website
+      website,
+      theme,
+      topServices
     } = req.body;
 
     const isUserExist = enterpriseUser.findOne({ _id:userId })
@@ -220,7 +228,9 @@ module.exports.updateCard = async (req, res) => {
           position, 
           color, 
           cardType,
-          website 
+          website,
+          theme,
+          topServices
         } 
       }
     );

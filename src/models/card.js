@@ -58,8 +58,12 @@ const cardSchema = new mongoose.Schema({
     type:String,
     default:'01',
     required:true
-  }
-  
+  },
+  topServices: [ {
+    type:String,
+    max:5,
+    required:true
+  } ]
 },{ timestamps:true });
 
 module.exports = mongoose.model("Card", cardSchema);
