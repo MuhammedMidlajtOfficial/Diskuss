@@ -54,6 +54,11 @@ const cardSchema = new mongoose.Schema({
     type:String,
     required : true
   },
+  theme:{
+    type:String,
+    default:'01',
+    required:true
+  }
   
 },{ timestamps:true });
 
