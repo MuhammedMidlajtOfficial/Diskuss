@@ -8,11 +8,11 @@ module.exports.getAllTeamById = async (req, res) => {
             return res.status(400).json({ message: "teamOwnerId is required" });
         }
 
-        const team = await teamModel.find()
+        const team = await teamModel.find({ teamOwnerId })
             .populate('teamMembers')
             .populate('teamLead')
             .exec();
-            
+            console.log('team',team);
         return res.status(200).json({ team });
     } catch (error) {
         console.error(error);

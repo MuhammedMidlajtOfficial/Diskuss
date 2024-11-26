@@ -110,7 +110,7 @@ mongoose.connect( process.env.MongoDBURL,{
         type:String,
         default : ''
       },
-    }
+    },
   } ,{ timestamps: true });
 
   const otpSchema = new mongoose.Schema({

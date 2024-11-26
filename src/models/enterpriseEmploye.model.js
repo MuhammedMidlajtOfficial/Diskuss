@@ -70,8 +70,6 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
         type:String,
         default : ''
       },
-     
-      
     },
     meetings: [
       {

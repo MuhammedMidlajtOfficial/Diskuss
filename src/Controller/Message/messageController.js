@@ -2,7 +2,9 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-const ContactIndividual = require("../../models/contact.individul.model");
+// const Contact = require("../../models/contact.individul.model");
+const EnterpriseUser = require("../../models/enterpriseUser");
+const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
@@ -11,46 +13,53 @@ exports.setSocketIO = (socketIO) => {
 // Send message
 exports.sendMessage = async (req, res) => {
   const { senderId, receiverId, content } = req.body;
+
   try {
-    // Ensure senderId is from the User collection
-    const sender = await User.findById(senderId);
+    // Search for the sender in three different collections
+    const [senderInUser, senderInContact, senderInEnterprise] =
+      await Promise.all([
+        User.findById(senderId),
+        EnterpriseEmployee.findById(senderId),
+        EnterpriseUser.findById(senderId),
+      ]);
+
+    // Determine the sender
+    const sender = senderInUser || senderInContact || senderInEnterprise;
+
     if (!sender) {
-      return res.status(404).json({ error: "Sender not found" });
+      return res
+        .status(404)
+        .json({ error: "Sender not found in any collection" });
     }
 
-    // Convert senderId and receiverId to ObjectId
-    const senderObjectId = new mongoose.Types.ObjectId(senderId);
-    const receiverObjectId = new mongoose.Types.ObjectId(receiverId);
+    // Search for the receiver in three different collections
+    const [receiverInUser, receiverInContact, receiverInEnterprise] =
+      await Promise.all([
+        User.findById(receiverId),
+        EnterpriseEmployee.findById(receiverId),
+        EnterpriseUser.findById(receiverId),
+      ]);
 
-    // Log the ObjectId conversion
-    console.log("senderObjectId:", senderObjectId);
-    console.log("receiverObjectId:", receiverObjectId);
+    // Determine the receiver
+    const receiver =
+      receiverInUser || receiverInContact || receiverInEnterprise;
 
-    // Build the query
-    const query = {
-      contactOwnerId: senderObjectId,
-      "contacts.userId": receiverObjectId, 
-    };
-
-    // Log the query structure
-    console.log("Running query:", JSON.stringify(query, null, 2));
-
-    // Find the receiver in ContactIndividual by contactOwnerId and contacts.userId
-    const contact = await ContactIndividual.findOne(query);
-
-    console.log("Contact document:", contact);
-
-    if (!contact) {
-      return res.status(404).json({ error: "Receiver not found in contact list" });
-    }
-
-    const receiver = await User.findById(receiverId);
     if (!receiver) {
-      return res.status(404).json({ error: "Receiver user not found" });
+      return res
+        .status(404)
+        .json({ error: "Receiver not found in any collection" });
     }
 
     // Generate chatId by sorting senderId and receiverId to ensure consistency
     const chatId = [senderId, receiverId].sort().join("-");
+
+    // Get the current timestamp and local time
+    const now = new Date();
+    const localTime = new Intl.DateTimeFormat("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "Asia/Kolkata", // Replace with your desired timezone
+    }).format(now);
 
     // Create the message
     const message = await Message.create({
@@ -58,26 +67,26 @@ exports.sendMessage = async (req, res) => {
       senderId,
       receiverId,
       content,
-      timestamp: Date.now(),
+      timestamp: now,
+      localTime, // Add the formatted local time
     });
 
     // Emit the message to the respective chat room (chatId)
     io.to(chatId).emit("receiveMessage", {
       ...message.toObject(),
-      senderName: sender.username, // Assuming sender has a 'username' field
-      receiverName: receiver.username, // Assuming receiver has a 'name' field
+      senderName: sender.username || sender.name || "Unknown Sender", // Use appropriate field for sender name
+      receiverName: receiver.username || receiver.name || "Unknown Receiver", // Use appropriate field for receiver name
     });
 
+    // Respond with the message
     res.status(201).json({
       ...message.toObject(),
-      senderName: sender.username,
-      receiverName: receiver.username,
+      senderName: sender.username || sender.name || "Unknown Sender",
+      receiverName: receiver.username || receiver.name || "Unknown Receiver",
     });
   } catch (error) {
     console.error("Error sending message:", error.message || error);
-    res
-      .status(500)
-      .json({ error: "Error sending message.", details: error.message });
+    res.status(500).json({ error: "Error sending message.", details: error.message });
   }
 };
 
@@ -98,7 +107,6 @@ exports.markMessagesAsRead = async (req, res) => {
   }
 };
 
-
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
   const { chatId, userId } = req.query;
@@ -107,14 +115,12 @@ exports.getMessages = async (req, res) => {
     if (chatId) {
       const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
 
-
       // Get unread messages count for the current user in this chat
       const unreadCount = await Message.countDocuments({
         chatId,
         receiverId: userId,
         isRead: false,
       });
-
 
       return res.status(200).json({
         messages: messages.map((message) => ({
@@ -136,47 +142,37 @@ exports.getMessages = async (req, res) => {
         {
           $group: {
             _id: "$chatId",
-            lastMessage: { $first: "$$ROOT" },
-            messages: { $push: "$$ROOT" }, // Collect all messages in the chat
+            lastMessage: { $first: "$$ROOT" }, // Capture only the latest message
           },
         },
-        {
-          $addFields: {
-            unreadCount: {
-              $size: {
-                $filter: {
-                  input: "$messages",
-                  as: "message",
-                  cond: {
-                    $and: [
-                      { $eq: ["$$message.isRead", false] },
-                      { $eq: ["$$message.receiverId", new mongoose.Types.ObjectId(userId)] },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        },
-        {
-          $project: {
-            lastMessage: 1, // Keep the last message field
-            unreadCount: 1, // Include the unread count
-          },
-        },
-        { $replaceRoot: { newRoot: { $mergeObjects: ["$lastMessage", { unreadCount: "$unreadCount" }] } } },
         {
           $lookup: {
             from: "users",
-            localField: "senderId",
+            localField: "lastMessage.senderId",
             foreignField: "_id",
-            as: "senderInfo",
+            as: "senderUserInfo",
           },
         },
         {
           $lookup: {
-            from: "contactindividuals",
-            let: { receiverId: "$receiverId" },
+            from: "enterpriseusers",
+            localField: "lastMessage.senderId",
+            foreignField: "_id",
+            as: "senderEnterpriseInfo",
+          },
+        },
+        {
+          $lookup: {
+            from: "enterpriseemployees",
+            localField: "lastMessage.senderId",
+            foreignField: "_id",
+            as: "senderEmployeeInfo",
+          },
+        },
+        {
+          $lookup: {
+            from: "contact",
+            let: { receiverId: "$lastMessage.receiverId" },
             pipeline: [
               { $unwind: "$contacts" },
               {
@@ -188,56 +184,128 @@ exports.getMessages = async (req, res) => {
                 $addFields: {
                   name: "$contacts.name",
                   username: "$contacts.username",
+                  companyName: "$contacts.companyName",
                 },
               },
             ],
-            as: "receiverInfo",
+            as: "receiverContactInfo",
           },
         },
         {
           $lookup: {
             from: "users",
-            localField: "receiverId",
+            localField: "lastMessage.receiverId",
             foreignField: "_id",
             as: "receiverUserInfo",
           },
         },
         {
+          $lookup: {
+            from: "enterpriseusers",
+            localField: "lastMessage.receiverId",
+            foreignField: "_id",
+            as: "receiverEnterpriseInfo",
+          },
+        },
+        {
+          $lookup: {
+            from: "enterpriseemployees",
+            localField: "lastMessage.receiverId",
+            foreignField: "_id",
+            as: "receiverEmployeeInfo",
+          },
+        },
+        {
           $addFields: {
-            senderName: {
+            "lastMessage.senderName": {
               $ifNull: [
-                { $arrayElemAt: ["$senderInfo.username", 0] },
+                { $arrayElemAt: ["$senderUserInfo.username", 0] },
+                { $arrayElemAt: ["$senderEnterpriseInfo.companyName", 0] },
+                { $arrayElemAt: ["$senderEmployeeInfo.username", 0] },
                 "Unknown Sender",
               ],
             },
-            receiverName: {
+            "lastMessage.receiverName": {
               $ifNull: [
-                { $arrayElemAt: ["$receiverInfo.name", 0] },
-                { $arrayElemAt: ["$receiverInfo.username", 0] },
+                { $arrayElemAt: ["$receiverContactInfo.name", 0] },
+                { $arrayElemAt: ["$receiverContactInfo.username", 0] },
+                { $arrayElemAt: ["$receiverContactInfo.companyName", 0] },
+                // { $arrayElemAt: ["$receiverUserInfo.username", 0] },
+                // { $arrayElemAt: ["$receiverEnterpriseInfo.companyName", 0] },
+                // { $arrayElemAt: ["$receiverEmployeeInfo.username", 0] },
                 "Unknown Receiver",
               ],
             },
-            senderProfilePic: {
+            "lastMessage.receiverNumber": {
               $ifNull: [
-                { $arrayElemAt: ["$senderInfo.image", 0] },
+                { $arrayElemAt: ["$receiverUserInfo.phnNumber", 0] },
+                { $arrayElemAt: ["$receiverEnterpriseInfo.phnNumber", 0] },
+                { $arrayElemAt: ["$receiverEmployeeInfo.phnNumber", 0] },
+                "Receiver is not a diskuss user",
+              ],
+            },
+            "lastMessage.senderProfilePic": {
+              $ifNull: [
+                { $arrayElemAt: ["$senderUserInfo.image", 0] },
+                { $arrayElemAt: ["$senderEnterpriseInfo.image", 0] },
+                { $arrayElemAt: ["$senderEmployeeInfo.image", 0] },
                 "",
               ],
             },
-            receiverProfilePic: {
+            "lastMessage.receiverProfilePic": {
               $ifNull: [
-                { $arrayElemAt: ["$receiverUserInfo.image", 0] },
+                { $arrayElemAt: ["$receiverContactInfo.image", 0] },
                 "",
               ],
             },
           },
         },
-        { $project: { senderInfo: 0, receiverInfo: 0, receiverUserInfo: 0 } },
+        {
+          $addFields: {
+            "lastMessage.unreadCount": {
+              $size: {
+                $ifNull: [
+                  {
+                    $filter: {
+                      input: "$messages",
+                      as: "message",
+                      cond: {
+                        $and: [
+                          { $eq: ["$$message.isRead", false] },
+                          {
+                            $eq: [
+                              "$$message.receiverId",
+                              new mongoose.Types.ObjectId(userId),
+                            ],
+                          },
+                        ],
+                      },
+                    },
+                  },
+                  [],
+                ],
+              },
+            },
+          },
+        },
+        {
+          $replaceRoot: { newRoot: "$lastMessage" },
+        },
+        
+        {
+
+          $project: {
+            _id: 0,
+            senderUserInfo: 0,
+            senderEnterpriseInfo: 0,
+            senderEmployeeInfo: 0,
+            receiverContactInfo: 0,
+          },
+        },
       ]);
       
-      console.log("Last Messages Result (Processed):", JSON.stringify(lastMessages, null, 2));
       return res.status(200).json(lastMessages);
-      
-      
+
     } else {
       return res
         .status(400)
@@ -248,4 +316,3 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ error: "Error retrieving messages." });
   }
 };
-
