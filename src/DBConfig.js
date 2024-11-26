@@ -110,6 +110,11 @@ mongoose.connect( process.env.MongoDBURL,{
         type:String,
         default : ''
       },
+    },
+    theme:{
+      type:String,
+      default:'01',
+      required:true
     }
   } ,{ timestamps: true });
 
