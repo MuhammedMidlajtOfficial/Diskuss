@@ -151,6 +151,7 @@ const CreateMeeting = async (req, res) => {
       isRemind,
     };
 
+
     // Validate and add online/offline-specific fields
     if (type === "online") {
       if (!meetingPlatform || !meetingLink) {
@@ -183,6 +184,7 @@ const CreateMeeting = async (req, res) => {
       return res.status(400).json({ message: `No user found with ID: ${meetingOwner}` });
     }
 
+
     await ownerProfile.updateOne({ $push: { meetings: savedMeeting._id } });
 
     // Notify invited users and update their profiles
@@ -192,6 +194,7 @@ const CreateMeeting = async (req, res) => {
           await Profile.findById(userId) ||
           await enterprise.findById(userId) ||
           await individualUserCollection.findById(userId);
+
 
         if (invitedUserProfile) {
           await invitedUserProfile.updateOne({ $push: { meetings: savedMeeting._id } });
@@ -278,6 +281,7 @@ const updateMeetingStatus = async (req, res) => {
         res.status(500).json({ message: "Internal server error." });
     }
 };
+
 
 
 
@@ -493,6 +497,12 @@ const getUpcomingMeetings = async (req, res) => {
 //         const ownerProfilesenterprise = await enterprise.find({ _id: { $in: meetingOwnerIds } }); 
 
 
+//     } catch (error) {
+//         console.error("Error fetching meetings by IDs:", error); // Log error details for debugging
+//         return res.status(500).json({ message: "Internal server error." }); // Return error response for server errors
+//     }
+// };
+
 //         const invitedProfiles = await Profile.find({ _id: { $in: invitedPeopleIds } });
 //         // console.log(ownerProfiles);
 //         // console.log(invitedProfiles);
@@ -527,6 +537,7 @@ const getUpcomingMeetings = async (req, res) => {
 
 //         // Send back the enriched meetings as the response
 //         return res.status(200).json({ meetings: enrichedMeetings.reverse()  });
+
 
 //     } catch (error) {
 //         console.error("Error fetching meetings by IDs:", error); // Log error details for debugging
@@ -644,6 +655,7 @@ const getUpcomingMeetings = async (req, res) => {
 //   };
 
 
+
 const getMeetingsByIds = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -671,6 +683,7 @@ const getMeetingsByIds = async (req, res) => {
     if (!userInfo) {
       return res.status(404).json({ message: "User profile not found." });
     }
+
 
     const meetingIds = userInfo.meetings?.map((meeting) => meeting._id);
     console.log(meetingIds);
@@ -796,6 +809,7 @@ const getMeetingsByIds = async (req, res) => {
 //         if (!ownerUpdated) {
 //             console.log(`No profile or enterprise found for meeting owner ID: ${meetingOwner}`);
 //         }
+
 
 //         // Remove the meeting ID from each invited user's Profile or Enterprise documents
 //         await Promise.all(

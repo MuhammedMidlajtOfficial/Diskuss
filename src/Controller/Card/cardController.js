@@ -1,21 +1,29 @@
 const { individualUserCollection } = require("../../DBConfig");
 const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
+const enterpriseUser = require("../../models/enterpriseUser");
 
 module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id
     
-    const isUserExist = individualUserCollection.findOne({ _id:userId })
-    if(!isUserExist){
+    const isIndividualUserExist = await individualUserCollection.findOne({ _id:userId }).lean()
+    const isEnterpriseUserExist = await enterpriseUser.findOne({ _id:userId }).populate('empCards').lean()
+    if(!isIndividualUserExist && ! isEnterpriseUserExist){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
-    const card = await Card.find({ userId })
-    if (!card[0]) {
-      return res.status(404).json({ message: 'Card not found' });
+    let card = []
+    if(isEnterpriseUserExist){
+      const cardOfEnterprise = await Card.find({ userId })
+      card = [ ...cardOfEnterprise, ...isEnterpriseUserExist.empCards ]
+    }else{
+      card = await Card.find({ userId })
     }
-    console.log(card);
+    // if (!card[0]) {
+    //   return res.status(200).json({ message: 'Card not found' });
+    // }
+    // console.log(card);
     return res.status(200).json(card);
   } catch (error) {
     console.log(error);
@@ -38,7 +46,9 @@ module.exports.createCard = async (req, res) => {
     position,
     cardType,
     color,
-    website
+    website,
+    theme,
+    topServices
   } = req.body;
 
   const isUserExist = individualUserCollection.findOne({ _id:userId })
@@ -46,20 +56,20 @@ module.exports.createCard = async (req, res) => {
     return res.status(400).json({ message: 'Invalid user ID' });
   }
 
-  // let imageUrl = image; // Default to provided image URL if no new image upload is needed
+  let imageUrl = image; // Default to provided image URL if no new image upload is needed
 
-  // // Upload image to S3 if a new image is provided
-  // if (image) {
-  //   const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-  //   const fileName = `${userId}-businessCard.jpg`; // Unique file name based on user ID and card purpose
-  //   try {
-  //     const uploadResult = await uploadImageToS3(imageBuffer, fileName);
-  //     imageUrl = uploadResult.Location; // S3 URL of the uploaded image
-  //   } catch (uploadError) {
-  //     console.log("Error uploading image to S3:", uploadError);
-  //     return res.status(500).json({ message: "Failed to upload image", error: uploadError });
-  //   }
-  // }
+  // Upload image to S3 if a new image is provided
+  if (image) {
+    const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+    const fileName = `${userId}-businessCard.jpg`; // Unique file name based on user ID and card purpose
+    try {
+      const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+      imageUrl = uploadResult.Location; // S3 URL of the uploaded image
+    } catch (uploadError) {
+      console.log("Error uploading image to S3:", uploadError);
+      return res.status(500).json({ message: "Failed to upload image", error: uploadError });
+    }
+  }
 
   const newCard = new Card({
     userId,
@@ -74,7 +84,9 @@ module.exports.createCard = async (req, res) => {
     position,
     cardType,
     color,
-    website
+    website,
+    theme,
+    topServices
   });
 
   try {
@@ -108,7 +120,9 @@ module.exports.updateCard = async (req, res) => {
       position,
       color,
       cardType,
-      website
+      website,
+      theme,
+      topServices
     } = req.body;
 
     const isUserExist = individualUserCollection.findOne({ _id:userId })
@@ -122,20 +136,20 @@ module.exports.updateCard = async (req, res) => {
       return res.status(404).json({ message: 'Card not found' });
     }
 
-    // let imageUrl = existingCard.image; // Default to existing image if no new image is provided
+    let imageUrl = existingCard.image; // Default to existing image if no new image is provided
 
-    // // Upload image to S3 if a new image is provided
-    // if (image) {
-    //   const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-    //   const fileName = `${userId}-businessCard-${cardId}.jpg`; // Unique file name based on user ID and card ID
-    //   try {
-    //     const uploadResult = await uploadImageToS3(imageBuffer, fileName);
-    //     imageUrl = uploadResult.Location; // URL of the uploaded image
-    //   } catch (uploadError) {
-    //     console.log("Error uploading image to S3:", uploadError);
-    //     return res.status(500).json({ message: "Failed to upload image", error: uploadError });
-    //   }
-    // }
+    // Upload image to S3 if a new image is provided
+    if (image) {
+      const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+      const fileName = `${userId}-businessCard-${cardId}.jpg`; // Unique file name based on user ID and card ID
+      try {
+        const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+        imageUrl = uploadResult.Location; // URL of the uploaded image
+      } catch (uploadError) {
+        console.log("Error uploading image to S3:", uploadError);
+        return res.status(500).json({ message: "Failed to upload image", error: uploadError });
+      }
+    }
 
     // Update card with new data, including the S3 image URL if it was updated
     const result = await Card.updateOne(
@@ -153,7 +167,9 @@ module.exports.updateCard = async (req, res) => {
           position, 
           color, 
           cardType,
-          website 
+          website,
+          theme,
+          topServices
         } 
       }
     );

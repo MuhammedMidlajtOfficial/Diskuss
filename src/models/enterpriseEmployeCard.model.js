@@ -61,7 +61,16 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
       required : true,
       default:''
     },
-    
+    theme:{
+      type:String,
+      default:'01',
+      required:true
+    },
+    topServices: [ {
+      type:String,
+      max:5,
+      required:true
+    } ]
 });
 
 module.exports = mongoose.model("EnterpriseEmployeeCard",EnterpriseEmployeeCardSchema );

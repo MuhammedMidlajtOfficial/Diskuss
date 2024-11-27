@@ -11,6 +11,8 @@ const Notification = require('../../models/NotificationModel')
 const { emitNotification } = require('../../Controller/Socket.io/NotificationSocketIo');
 const { required } = require("joi");
 
+
+
 // CreateMeeting controller 
 
 // const CreateMeeting = async (req, res) => {
@@ -239,6 +241,7 @@ const updateMeetingStatus = async (req, res) => {
 
         if (status === 'rejected' && !reason) {
             return res.status(400).json({ message: "Reason is required for rejection." });
+
         }
 
         // Update the meeting status for the user
@@ -278,6 +281,59 @@ const updateMeetingStatus = async (req, res) => {
         res.status(500).json({ message: "Internal server error." });
     }
 };
+
+
+const updateMeetingStatus = async (req, res) => {
+    const { meetingId, userId, status, reason } = req.body;
+
+    try {
+        // Validate input
+        if (!meetingId || !userId || !status) {
+            return res.status(400).json({ message: "Meeting ID, User ID, and status are required." });
+        }
+
+        if (!['pending', 'accepted', 'rejected'].includes(status)) {
+            return res.status(400).json({ message: "Invalid status. Valid options are 'pending', 'accepted', or 'rejected'." });
+        }
+
+        if (status === 'rejected' && !reason) {
+            return res.status(400).json({ message: "Reason is required for rejection." });
+        }
+
+        // Update the meeting status for the user
+        const updatedMeeting = await MeetingBase.findOneAndUpdate(
+            { _id: meetingId, "invitedPeople.user": userId },
+            {
+                $set: {
+                    "invitedPeople.$.status": status,
+                    ...(status === 'rejected' || (status === 'accepted' && reason) 
+                        ? { "invitedPeople.$.reason": reason } 
+                        : {})
+                }
+            },
+            { new: true }
+        );
+
+        if (!updatedMeeting) {
+            return res.status(404).json({ message: "Meeting or user not found." });
+        }
+
+        // Notify the meeting owner about the user's decision
+        const meetingOwner = updatedMeeting.meetingOwner;
+        const meetingTitle = updatedMeeting.meetingTitle;
+        const decision = status === 'accepted' ? "accepted" : "rejected";
+        const notificationContent = `User ${userId} has ${decision} your meeting titled "${meetingTitle}".`;
+
+        res.status(200).json({
+            message: `Meeting status updated to '${status}' successfully.`,
+            meeting: updatedMeeting
+        });
+    } catch (error) {
+        console.error("Error updating meeting status:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
+
 
 
 
@@ -449,7 +505,7 @@ const getUpcomingMeetings = async (req, res) => {
 //                 strictPopulate: false, 
 //             });
 //         }
-     
+
 //         //  console.log("user info from line no 167",userInfo);
 //          console.log('userInfo',userInfo);
 //         // If user profile not found, return an error
@@ -524,6 +580,7 @@ const getUpcomingMeetings = async (req, res) => {
 
 //         // console.log(enrichedMeetings);
         
+
 
 //         // Send back the enriched meetings as the response
 //         return res.status(200).json({ meetings: enrichedMeetings.reverse()  });
@@ -661,6 +718,7 @@ const getMeetingsByIds = async (req, res) => {
       });
     }
 
+
     if (!userInfo) {
       userInfo = await individualUserCollection.findById(userId).populate({
         path: "meetings",
@@ -671,6 +729,7 @@ const getMeetingsByIds = async (req, res) => {
     if (!userInfo) {
       return res.status(404).json({ message: "User profile not found." });
     }
+
 
     const meetingIds = userInfo.meetings?.map((meeting) => meeting._id);
     console.log(meetingIds);
@@ -940,14 +999,6 @@ const deleteMeeting = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-
 // const UpdateMeeting = async (req, res) => {
 //     try {
 //         const { meetingId } = req.params; // Get meeting ID from request parameters
@@ -1124,8 +1175,6 @@ const UpdateMeeting = async (req, res) => {
       return res.status(500).json({ message: "Failed to update meeting", error: error.message });
   }
 };
-
-
 
 
 
