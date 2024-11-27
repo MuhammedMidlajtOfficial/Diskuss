@@ -137,7 +137,9 @@ const CreateMeeting = async (req, res) => {
     if (!meetingOwner || !meetingTitle || !type || !selectedDate || !startTime || !endTime || !invitedPeople) {
       return res.status(400).json({ message: "Missing required fields." });
     }
-
+    console.log('-----------------------------------------');
+    console.log('invitedPeople-----',invitedPeople);
+    console.log('-----------------------------------------');
     // Initialize meeting data
     const newMeetingData = {
       meetingOwner,
