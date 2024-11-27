@@ -2,6 +2,7 @@ const { individualUserCollection } = require("../../DBConfig");
 const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
 const enterpriseUser = require("../../models/enterpriseUser");
+const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
 const { uploadImageToS3 } = require("../../services/AWS/s3Bucket");
 
 module.exports.getCards = async (req, res) => {
@@ -126,13 +127,21 @@ module.exports.updateCard = async (req, res) => {
       theme,
     } = req.body;
 
-    const isUserExist = individualUserCollection.findOne({ _id:userId })
-    if(!isUserExist){
-      return res.status(400).json({ message: 'Invalid user ID' });
+    // // Check if the user exists
+    // const isUserExist = await individualUserCollection.findOne({ _id: userId });
+    // if (!isUserExist) {
+    //   return res.status(400).json({ message: 'Invalid user ID' });
+    // }
+
+    // Check if the card exists in Card collection
+    let existingCard = await Card.findOne({ _id: cardId });
+    let cardCollection = Card;
+
+    // If card is not found in Card collection, check EnterpriseEmployeeCard collection
+    if (!existingCard) {
+      existingCard = await EnterpriseEmployeeCard.findOne({ _id: cardId });
+      cardCollection = EnterpriseEmployeeCard; // Change the collection to EnterpriseEmployeeCard
     }
-    // Find existing card to retrieve the current image URL if no new image is provided
-    console.log('updateCard _ cardId--',cardId);
-    const existingCard = await Card.findOne({ _id:cardId });
 
     if (!existingCard) {
       return res.status(404).json({ message: 'Card not found' });
@@ -153,8 +162,8 @@ module.exports.updateCard = async (req, res) => {
       }
     }
 
-    // Update card with new data, including the S3 image URL if it was updated
-    const result = await Card.updateOne(
+    // Update the card in the respective collection
+    const result = await cardCollection.updateOne(
       { _id: cardId },
       { 
         $set: { 
@@ -166,7 +175,7 @@ module.exports.updateCard = async (req, res) => {
           email, 
           location, 
           services, 
-          image, // Use the S3 URL for the image
+          image: imageUrl, // Use the S3 URL for the image
           position, 
           color, 
           cardType,
