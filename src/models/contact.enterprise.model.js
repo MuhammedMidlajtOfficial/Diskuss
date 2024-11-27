@@ -13,6 +13,7 @@ const contactSchema = new mongoose.Schema({
   }, // Specifies the model type dynamically
   contacts: [{
     name: { type: String, required: true },
+    companyName: { type: String, required: true },
     designation: { type: String },
     phnNumber: { type: String, required: true },
     email: { 

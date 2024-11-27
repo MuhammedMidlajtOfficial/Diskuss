@@ -47,6 +47,7 @@ const createContact = async (req, res) => {
     try {
         const {
             name,
+            companyName,
             designation,
             phnNumber,
             email,
@@ -81,6 +82,7 @@ const createContact = async (req, res) => {
             contactOwnerType: EnterpriseUser ? 'EnterpriseUser' : 'EnterpriseEmployee',
             contacts: [{
                 name,
+                companyName,
                 designation,
                 phnNumber,
                 email,

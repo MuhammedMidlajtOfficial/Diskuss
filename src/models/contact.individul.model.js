@@ -5,6 +5,7 @@ const contactSchema = new mongoose.Schema({
   contactOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the owner of the contact
   contacts: [ {
     name: { type: String, required: true },
+    companyName: { type: String, required: true },
     designation: { type: String, required: false },
     phnNumber: { type: String, required: true },
     email: { type: String,  match: /.+\@.+\..+/ }, // Added regex for email validation

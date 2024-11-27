@@ -35,6 +35,7 @@ module.exports.createCard = async (req, res) => {
     const {
       userId,
       businessName,
+      businessType,
       yourName,
       designation,
       mobile,
@@ -83,6 +84,7 @@ module.exports.createCard = async (req, res) => {
       const newCard = new Card({
         userId,
         businessName,
+        businessType,
         yourName,
         designation,
         mobile,
@@ -123,6 +125,7 @@ module.exports.createCard = async (req, res) => {
       const newCard = new enterpriseEmployeCardModel({
         userId : newUser._id,
         businessName,
+        businessType,
         email,
         empName : yourName,
         designation,
@@ -171,6 +174,7 @@ module.exports.updateCard = async (req, res) => {
       userId,
       cardId,
       businessName,
+      businessType,
       yourName,
       designation,
       mobile,
@@ -218,6 +222,7 @@ module.exports.updateCard = async (req, res) => {
       { 
         $set: { 
           businessName, 
+          businessType,
           yourName, 
           designation, 
           mobile, 
