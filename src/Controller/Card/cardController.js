@@ -50,7 +50,6 @@ module.exports.createCard = async (req, res) => {
     color,
     website,
     theme,
-    topServices
   } = req.body;
 
   const isUserExist = individualUserCollection.findOne({ _id:userId })
@@ -89,7 +88,6 @@ module.exports.createCard = async (req, res) => {
     color,
     website,
     theme,
-    topServices
   });
 
   try {
@@ -126,7 +124,6 @@ module.exports.updateCard = async (req, res) => {
       cardType,
       website,
       theme,
-      topServices
     } = req.body;
 
     const isUserExist = individualUserCollection.findOne({ _id:userId })
@@ -174,7 +171,6 @@ module.exports.updateCard = async (req, res) => {
           cardType,
           website,
           theme,
-          topServices
         } 
       }
     );

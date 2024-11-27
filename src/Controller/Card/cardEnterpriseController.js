@@ -48,7 +48,6 @@ module.exports.createCard = async (req, res) => {
       color,
       website,
       theme,
-      topServices
     } = req.body;
     const passwordRaw = '123'
 
@@ -97,7 +96,6 @@ module.exports.createCard = async (req, res) => {
         color,
         website,
         theme,
-        topServices
       });
       const result = await newCard.save();
       if (result) {
@@ -138,7 +136,6 @@ module.exports.createCard = async (req, res) => {
         website,
         enterpriseId : userId,
         theme,
-        topServices
       });
       const result = await newCard.save();
       if (result) {
@@ -187,7 +184,6 @@ module.exports.updateCard = async (req, res) => {
       cardType,
       website,
       theme,
-      topServices
     } = req.body;
 
     const isUserExist = enterpriseUser.findOne({ _id:userId })
@@ -235,7 +231,6 @@ module.exports.updateCard = async (req, res) => {
           cardType,
           website,
           theme,
-          topServices
         } 
       }
     );

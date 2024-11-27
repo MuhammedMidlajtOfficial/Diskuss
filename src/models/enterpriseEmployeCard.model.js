@@ -40,8 +40,9 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
     },
     services: [ {
       type:String,
+      max:5,
       required : true
-    } ], 
+    } ],  
     image:  {
       type:String,
       required : true,
@@ -70,11 +71,6 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
       default:'01',
       required:true
     },
-    topServices: [ {
-      type:String,
-      max:5,
-      required:true
-    } ]
 });
 
 module.exports = mongoose.model("EnterpriseEmployeeCard",EnterpriseEmployeeCardSchema );
