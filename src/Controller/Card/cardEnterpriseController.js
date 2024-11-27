@@ -190,7 +190,7 @@ module.exports.updateCard = async (req, res) => {
     if(!isUserExist){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
-
+    console.log('updateCard _ cardId--',cardId);
     // Find existing card to retrieve the current image URL if no new image is provided
     const existingCard = await Card.findById(cardId);
     if (!existingCard) {
