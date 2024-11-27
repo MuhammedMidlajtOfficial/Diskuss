@@ -5,7 +5,7 @@ const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
 const mailSender = require("../../util/mailSender");
 const bcrypt = require('bcrypt');
-
+const { uploadImageToS3 } = require("../../services/AWS/s3Bucket");
 module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id

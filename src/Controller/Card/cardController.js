@@ -2,6 +2,7 @@ const { individualUserCollection } = require("../../DBConfig");
 const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
 const enterpriseUser = require("../../models/enterpriseUser");
+const { uploadImageToS3 } = require("../../services/AWS/s3Bucket");
 
 module.exports.getCards = async (req, res) => {
   try {
