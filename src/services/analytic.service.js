@@ -23,14 +23,18 @@ exports.logView = async (cardId, visitorId) => {
     const existingVisitor = await Analytic.Visitor.findOne({ cardId, visitorId });
     if (!existingVisitor) {
         isUnique = true;
+        const newView = new Analytic.View({ cardId, userId, viewedAt: now, isUnique });
+        await newView.save();
         const newVisitor = new Analytic.Visitor({ cardId, visitorId, firstVisit: now, lastVisit: now });
         await newVisitor.save();
     } else {
+        const newView = new Analytic.View({ cardId, visitorId, viewedAt: now });
+        await newView.save();
         existingVisitor.lastVisit = now;
         await existingVisitor.save();
     }
 
-    const view = new Analytic.View({ cardId, viewedAt: now, isUnique });
+    const view = new Analytic.View({ cardId, visitorId, viewedAt: now, isUnique });
     await view.save();
 
     await Analytic.Share.updateOne({ cardId, isViewed: false }, { isViewed: true });
