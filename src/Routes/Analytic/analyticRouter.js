@@ -9,6 +9,7 @@ router.get('/all', controller.getAllAnalytics)
 router.post('/share', controller.logShare)
 router.post('/view', controller.logView)
 router.post('/click', controller.logClick)
+router.get('/monthly-analytics', controller.getMonthlyAnalytics)
 
 router.get('/meeting/enterprise/:enterpriseId', controller.getEnterpriseMeetings)
 router.get('/meeting/individual/:individualId', controller.getIndividualMeetings)

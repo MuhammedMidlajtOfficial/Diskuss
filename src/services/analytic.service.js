@@ -159,6 +159,57 @@ exports.getAllAnalytics = async (userId, period) => {
 };
 
 
+exports.getMonthlyAnalytics = async (cardId) => {
+    const now = new Date();
+    const startDate = new Date(now.setFullYear(now.getFullYear() - 1)); // Get data for the last year
+
+    const pipeline = [
+        {
+            $match: {
+                cardId,
+                sharedAt: { $gte: startDate },
+            },
+        },
+        {
+            $group: {
+                _id: {
+                    year: { $year: "$sharedAt" },
+                    month: { $month: "$sharedAt" },
+                },
+                viewsCount: { $sum: { $cond: [{ $eq: ["$isViewed", true] }, 1, 0] } },
+                uniqueVisitorsCount: { $addToSet: "$userId" }, // Assuming userId represents unique visitors
+                totalShares: { $sum: 1 },
+                clicksCount: { $sum: { $cond: [{ $ne: ["$link", null] }, 1, 0] } }, // Assuming link indicates a click
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                year: "$_id.year",
+                month: "$_id.month",
+                viewsCount: "$viewsCount",
+                uniqueVisitorsCount: { $size: "$uniqueVisitorsCount" }, // Count unique visitors
+                totalShares: "$totalShares",
+                clicksCount: "$clicksCount",
+            },
+        },
+        {
+            $sort: { year: 1, month: 1 }, // Sort by year and month
+        },
+    ];
+
+    const results = await Analytic.Share.aggregate(pipeline);
+
+    return results.map(item => ({
+        year: item.year,
+        month: item.month,
+        viewsCount: item.viewsCount,
+        uniqueVisitorsCount: item.uniqueVisitorsCount,
+        totalShares: item.totalShares,
+        clicksCount: item.clicksCount,
+    }));
+};
+
 // get meeting by ids  //
 exports.getEnterpriseMeetings = async (enterpriseId) => {
     // Find the user's profile by userId and populate meetings if referenced in schema

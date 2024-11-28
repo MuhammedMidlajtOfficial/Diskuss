@@ -51,6 +51,15 @@ exports.getAllAnalytics = async (req, res) => {
     }
 };
 
+exports.getMonthlyAnalytics = async (req, res) => {
+    const { cardId } = req.query;
+    try {
+        const data = await analyticsService.getMonthlyAnalytics(cardId);
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching monthly analytics data' });
+    }
+};
 
 exports.getEnterpriseMeetings = async (req, res) => {
     const { enterpriseId } = req.params;
