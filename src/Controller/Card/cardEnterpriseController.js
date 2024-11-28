@@ -51,7 +51,7 @@ module.exports.createCard = async (req, res) => {
       topServices
     } = req.body;
     const passwordRaw = '123'
-
+    console.log('create enterprise card- image',image);
     // Check if user email exists
     const isEmailExist = await enterpriseEmployeModel.findOne({ email }).exec();
     const isEmailExistInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
@@ -195,6 +195,7 @@ module.exports.updateCard = async (req, res) => {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
     console.log('updateCard _ cardId--',cardId);
+    console.log('Update enterprise card- image',image);
     // Find existing card to retrieve the current image URL if no new image is provided
     const existingCard = await Card.findById(cardId);
     if (!existingCard) {

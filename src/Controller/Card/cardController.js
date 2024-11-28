@@ -145,7 +145,7 @@ module.exports.updateCard = async (req, res) => {
       existingCard = await EnterpriseEmployeeCard.findOne({ _id: cardId });
       cardCollection = EnterpriseEmployeeCard; // Change the collection to EnterpriseEmployeeCard
     }
-
+    console.log('Update individual card- image',image);
     if (!existingCard) {
       return res.status(404).json({ message: 'Card not found' });
     }
