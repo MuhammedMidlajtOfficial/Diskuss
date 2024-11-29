@@ -27,7 +27,9 @@ module.exports.getAllTeamByTeamLead = async (req, res) => {
             return res.status(400).json({ message: "teamLeadId is required" });
         }
 
-        const team = await teamModel.find({ teamLead:teamLeadId })
+        const team = await teamModel.find({ 
+            $or: [{ teamLead: teamLeadId }, { teamMembers: teamLeadId }]
+         })
             .populate('teamMembers')
             .populate('teamLead')
             .exec();
