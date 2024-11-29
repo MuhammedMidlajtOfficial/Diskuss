@@ -28,7 +28,6 @@ module.exports.getAllTeamByTeamLead = async (req, res) => {
         }
 
         const team = await teamModel.find({ teamLead:teamLeadId })
-            .populate('teamOwnerId')
             .populate('teamMembers')
             .populate('teamLead')
             .exec();
