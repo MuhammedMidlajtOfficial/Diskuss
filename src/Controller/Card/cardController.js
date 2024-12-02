@@ -74,6 +74,8 @@ module.exports.createCard = async (req, res) => {
     }
   }
 
+  console.log("imageUrl of new card logo - ",imageUrl);
+
   const newCard = new Card({
     userId,
     businessName,
