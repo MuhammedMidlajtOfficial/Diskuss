@@ -340,7 +340,6 @@ module.exports.updateProfile = async (req, res) => {
   }
 };
 
-
 module.exports.getProfile = async (req, res) => {
   try {
     const { id: userId } = req.params;
