@@ -84,7 +84,7 @@ module.exports.createCard = async (req, res) => {
     email,
     location,
     services,
-    image, // Use S3 image URL
+    image:imageUrl, // Use S3 image URL
     position,
     cardType,
     color,
