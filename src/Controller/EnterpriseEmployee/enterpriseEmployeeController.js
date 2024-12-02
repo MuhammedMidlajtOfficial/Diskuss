@@ -4,6 +4,7 @@ const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployeCardModel = require('../../models/enterpriseEmployeCard.model');
 const mailSender = require('../../util/mailSender');
 const Contact  = require('../../models/contact.individul.model');
+const { deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 
 
 module.exports.getCardForUser = async (req, res) => {

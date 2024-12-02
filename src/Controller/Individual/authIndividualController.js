@@ -5,7 +5,7 @@ const { otpCollection } = require('../../DBConfig');
 const { individualUserCollection } = require('../../DBConfig');
 
 const otpGenerator = require("otp-generator");
-const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
+const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const { createProfile } = require('../Profile/profileController');
 const Contact  = require('../../models/contact.individul.model');
 
@@ -299,7 +299,6 @@ module.exports.updateProfile = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 module.exports.getProfile = async (req, res ) => {
   try {

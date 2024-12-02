@@ -4,7 +4,7 @@ const otpGenerator = require("otp-generator")
 const mongoose = require('mongoose');
 
 const { otpCollection } = require('../../DBConfig');
-const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
+const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const Contact  = require('../../models/contact.individul.model');
 const enterpriseUser = require('../../models/enterpriseUser');
@@ -61,7 +61,6 @@ module.exports.postEnterpriseLogin = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {

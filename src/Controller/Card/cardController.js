@@ -3,7 +3,7 @@ const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
 const enterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
-const { uploadImageToS3 } = require("../../services/AWS/s3Bucket");
+const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
 
 module.exports.getCards = async (req, res) => {
   try {
