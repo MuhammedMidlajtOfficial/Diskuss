@@ -231,6 +231,47 @@ module.exports.updateProfile = async (req, res) => {
     }
 };
 
+module.exports.resetPassword = async (req, res ) => {
+    try {
+      console.log(req.body);
+      const { email, oldPassword } = req.body
+      const passwordRaw = req.body.password
+       
+      if (!email || !passwordRaw || !oldPassword ) {
+        return res.status(400).json({ message: "All fields are Required"})
+      }
+  
+      const isEmailExist = await enterpriseEmployeModel.findOne({ email: email }).exec();
+      console.log("isEmailExist-",isEmailExist);
+      if(!isEmailExist){
+        return res.status(401).json({ message : "email not found"})
+      }
+      // Check password match
+      const passwordMatch = await bcrypt.compare(oldPassword, isEmailExist.password);
+      if(!passwordMatch){
+        return res.status(401).json({ message : "Password not matching"})
+      }
+      // hash password
+      const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+      // Update password
+      const user = await enterpriseEmployeModel.updateOne(
+        { email: email },
+        { $set: { password: hashedPassword } }
+      );
+      console.log('user',user);
+  
+      if (user.modifiedCount > 0) {
+        return res.status(200).json({ message: "Password changed successfully." });
+      } else {
+        return res.status(400).json({ message: "Error: Password update failed." });
+      }
+        
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  }
+
 async function sendVerificationEmail(email,newEmail,newPassword) {
     try {
       const mailResponse = await mailSender(
