@@ -149,19 +149,22 @@ const findOneById = async (userId) => {
         const isEnterpriseUserExist = await enterpriseUser.findOne({ userId }).exec();
         
         if (isIndividualUserExist) {
+          console.log("IndividualUser isSubscribed:true ---- ", isIndividualUserExist);
           // Update individual user collection
-          await individualUserCollection.updateOne({ _id: userId }, updateData);
+          await individualUserCollection.updateOne({ _id: userId }, {isSubscribed:true});
         } else if (isEnterpriseEmployeExist) {
+          console.log("isEnterpriseEmployeExist isSubscribed:true ---- ", isEnterpriseEmployeExist);
           // Update enterprise employee collection
-          await enterpriseEmployeModel.updateOne({ _id: userId }, updateData);
+          await enterpriseEmployeModel.updateOne({ _id: userId }, {isSubscribed:true});
         } else if (isEnterpriseUserExist) {
+          console.log("isEnterpriseUserExist isSubscribed:true ---- ", isEnterpriseUserExist);
           // Update enterprise user collection
-          await enterpriseUser.updateOne({ _id: userId }, updateData);
+          await enterpriseUser.updateOne({ _id: userId }, {isSubscribed:true});
         } else {
           // Handle case when user doesn't exist in any collection
           console.log("User not found in any collection");
         }
-  
+        console.log();
       return;
     } catch (error) {
       console.error("Error updating UserSubscription:", error);
