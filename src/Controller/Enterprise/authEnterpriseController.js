@@ -282,6 +282,10 @@ module.exports.updateProfile = async (req, res) => {
 
     // Upload image to S3 if a new image is provided
     if (image) {
+      // Delete the old image from S3 (if exists)
+      if (isUserExist?.image) {
+        await deleteImageFromS3(isUserExist.image); // Delete the old image from S3
+      }
       const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
       const fileName = `${userId}-company-profile.jpg`; // Unique file name based on user ID
       const uploadResult = await uploadImageToS3(imageBuffer, fileName);

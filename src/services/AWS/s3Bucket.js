@@ -1,4 +1,4 @@
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 require('dotenv').config();
 
 // Configure S3 client
@@ -11,7 +11,7 @@ const s3Client = new S3Client({
 });
 
 // Upload function for S3
-async function uploadImageToS3(imageBuffer, fileName) {
+module.exports.uploadImageToS3 = async (imageBuffer, fileName) => {
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: `profile-images/${fileName}`, // Store in a "profile-images" folder
@@ -31,6 +31,22 @@ async function uploadImageToS3(imageBuffer, fileName) {
     console.error("Error uploading image:", error);
     throw error;
   }
-}
+};
 
-module.exports.uploadImageToS3 = uploadImageToS3;
+// Delete function for S3
+module.exports.deleteImageFromS3 = async (imageUrl) => {
+  const fileName = imageUrl.split('/').pop(); // Extract file name from URL
+  const params = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: `profile-images/${fileName}`, // Assuming images are stored in "profile-images" folder
+  };
+
+  try {
+    const command = new DeleteObjectCommand(params);
+    await s3Client.send(command);
+    console.log(`Old image deleted successfully: ${fileName}`);
+  } catch (error) {
+    console.error(`Error deleting image from S3: ${error}`);
+    throw error;
+  }
+};

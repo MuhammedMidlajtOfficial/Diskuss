@@ -243,8 +243,14 @@ module.exports.updateProfile = async (req, res) => {
 
     let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
 
-    // Upload image to S3 if a new image is provided
+    // If a new image is provided, delete the old one from S3 and upload the new image
     if (image) {
+      // Delete the old image from S3 (if exists)
+      if (isUserExist.image) {
+        await deleteImageFromS3(isUserExist.image); // Delete the old image from S3
+      }
+
+      // Upload new image to S3
       const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
       const fileName = `${userId}-profile.jpg`; // Create a unique file name based on user ID
       const uploadResult = await uploadImageToS3(imageBuffer, fileName);
@@ -269,7 +275,7 @@ module.exports.updateProfile = async (req, res) => {
         },
       }
     );
-    
+
     const forNumber = await individualUserCollection.findOne({ _id: userId }).select('phnNumber').exec();
     const existingContact = await Contact.find({ phnNumber: forNumber.phnNumber });
     if (existingContact) {
@@ -293,6 +299,7 @@ module.exports.updateProfile = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 module.exports.getProfile = async (req, res ) => {
   try {

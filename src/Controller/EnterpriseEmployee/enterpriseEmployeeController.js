@@ -177,10 +177,14 @@ module.exports.updateProfile = async (req, res) => {
         return res.status(401).json({ message: "User not found" });
       }
   
-      let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
+      let imageUrl = isUserExist?.image; // Default to existing image if no new image is provided
   
       // Upload image to S3 if a new image is provided
       if (image) {
+        // Delete the old image from S3 (if exists)
+        if (isUserExist?.image) {
+          await deleteImageFromS3(isUserExist.image); // Delete the old image from S3
+        }
         const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
         const fileName = `${userId}-profile.jpg`; // Create a unique file name based on user ID
         const uploadResult = await uploadImageToS3(imageBuffer, fileName);
