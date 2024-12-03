@@ -1,7 +1,7 @@
 const cron = require('node-cron');
 const axios = require('axios');
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 0 * * *', async () => {
   console.log("Cron job triggered at:", new Date().toLocaleString());
   try {
     console.log("Triggering expired subscriptions deactivation...");
