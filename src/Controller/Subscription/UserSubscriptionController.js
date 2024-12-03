@@ -20,14 +20,28 @@ const getUserSubscriptions = async (req, res) => {
 };
 
 const getUserSubscriptionByUserId = async (req, res) => {
-    try {
-        const { user_id } = req.params;
-        const userSubscriptions = await UserSubscriptionService.findOneById(user_id);
-        return res.status(200).json({ userSubscriptions });
-    } catch (e) {
-        return res.status(500).json({ error: e.message });
-    }
-}
+  try {
+      const { user_id } = req.params;
+
+      // Find the user's latest active subscription
+      const userSubscription = await UserSubscriptionService.findOne({
+          userId: user_id,
+          status: 'active', // Assuming 'active' is the status field for active subscriptions
+      })
+      .sort({ endDate: -1 }) // Sort by the latest end date (descending)
+      .limit(1); // Get only the most recent subscription
+
+      // Check if no subscription is found
+      if (!userSubscription) {
+          return res.status(404).json({ message: 'No active subscription found.' });
+      }
+
+      return res.status(200).json({ userSubscription });
+  } catch (e) {
+      return res.status(500).json({ error: e.message });
+  }
+};
+
 
 /**
  * Create a new UserSubscription
