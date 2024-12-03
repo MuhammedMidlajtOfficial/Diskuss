@@ -18,23 +18,26 @@ const findAll = async () => {
   }
   };  
 
-const findOneById = async (userId) => {
-  try {
-    console.log("user id :", userId);
-
-
-    const userSubscriptions =  await UserSubscription.find({userId})
-      .populate('userId')
-      .populate('planId')
-      .exec();
-    console.log("user subscription : ", userSubscriptions);
-
-    return userSubscriptions;
-  } catch (error) {
-    console.error("Error fetching User Subscriptions plan:", error);
-    throw error; // Re-throw the error for higher-level handling if needed
-  }
-  };  
+  const findOneById = async (userId) => {
+    try {
+      console.log("user id :", userId);
+  
+      const userSubscriptions = await UserSubscription.find({ userId, status: 'active' }) // Assuming `status` is a field indicating activity
+        .sort({ startDate: -1 }) // Sort by `startDate` in descending order (latest first)
+        .populate('userId')
+        .populate('planId')
+        .limit(1) // Fetch only the latest subscription
+        .exec();
+  
+      console.log("Latest active user subscription:", userSubscriptions);
+  
+      return userSubscriptions.length > 0 ? userSubscriptions[0] : null; // Return the single subscription or null if none found
+    } catch (error) {
+      console.error("Error fetching User Subscriptions plan:", error);
+      throw error; // Re-throw the error for higher-level handling if needed
+    }
+  };
+   
 
 
 
