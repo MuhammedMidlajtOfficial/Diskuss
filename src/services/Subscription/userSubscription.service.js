@@ -31,7 +31,7 @@ const findAll = async () => {
   
       console.log("Latest active user subscription:", userSubscriptions);
   
-      return userSubscriptions.length > 0 ? userSubscriptions[0] : null; // Return the single subscription or null if none found
+      return userSubscriptions.length > 0 ? userSubscriptions : null; // Return the single subscription or null if none found
     } catch (error) {
       console.error("Error fetching User Subscriptions plan:", error);
       throw error; // Re-throw the error for higher-level handling if needed
