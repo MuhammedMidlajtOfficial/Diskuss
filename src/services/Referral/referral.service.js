@@ -49,11 +49,13 @@ const createCardByInvitee = async (referralId) => {
 
 // Get Referral Details
 const getReferralDetails = async (userId) => {
-    const referrals = await Referral.find({ referrer: userId }).select('inviteeEmail status rewardsEarned createdAt');
-    const user = await User.findById(userId);
-    const coins = user.coins;
-    
-    return { coins, invitedUsers: referrals };
+    const referrals = await Referral.find({ referrer: userId }).populate('referrer', 'username image').exec();
+    const userCoins = await User.findById(userId).select('coins').lean().exec();
+
+    const coins = userCoins ? userCoins.coins : 0; // Default to 0 if no user found
+    console.log("coins : ", userCoins.coins);
+
+    return { coins  , invitedUsers: referrals };
 };
 
 module.exports = {
