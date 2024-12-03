@@ -256,8 +256,8 @@ const deactivateExpiredSubscriptions = async () => {
       { $set: { status: 'inactive' } }
     );
 
-    console.log(`${updateResult.nModified} subscriptions deactivated successfully.`);
-    return { message: `${updateResult.nModified} subscriptions deactivated successfully.` };
+    console.log(`${updateResult.modifiedCount} subscriptions deactivated successfully.`);
+    return { message: `${updateResult.modifiedCount} subscriptions deactivated successfully.` };
   } catch (error) {
     console.error("Error deactivating expired subscriptions:", error);
     throw error;
