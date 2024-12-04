@@ -46,6 +46,10 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
       type:String,
       default : ''
     },
+    status:{
+      type:String,
+      default : 'active'
+    },
     contacts: [
       {
         type: mongoose.Schema.Types.ObjectId,

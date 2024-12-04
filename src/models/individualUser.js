@@ -51,6 +51,10 @@ const IndividualUserSchema = new mongoose.Schema({
     type : Array,
     default : []
   },
+  status:{
+    type:String,
+    default : 'active'
+  },
   socialMedia: {
     whatsappNo: {
       type:String,

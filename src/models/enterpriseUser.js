@@ -45,7 +45,11 @@ const enterpriseUserSchema = new mongoose.Schema({
     address: {
         type:String,
         default : ''
-      },
+    },
+    status:{
+      type:String,
+      default : 'active'
+    },
     socialMedia: {
       whatsappNo: {
         type:String,
