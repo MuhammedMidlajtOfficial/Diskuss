@@ -36,12 +36,12 @@ module.exports.postIndividualLogin = async (req, res) => {
 };
 
 module.exports.postIndividualSignup = async (req, res) => {
-  const { username, email, otp } = req.body;
+  const { username, email, phnNumber, otp } = req.body;
   const passwordRaw = req.body.password;
 
   try {
     // Check for missing fields
-    if (!username || !email || !passwordRaw || !otp) {
+    if (!username || !email || !passwordRaw || !otp || !phnNumber) {
       return res.status(400).json({ message :"All fields are required"}); // Correct response handling
     }
     // Check if email exists
@@ -61,6 +61,7 @@ module.exports.postIndividualSignup = async (req, res) => {
     const newUser = await individualUserCollection.create({
       username,
       email,
+      phnNumber,
       password: hashedPassword,
       // cardNo: 0,
     });
@@ -218,7 +219,6 @@ module.exports.sendOTP = async (req, res) => {
   }
 };
 
-
 module.exports.resetPassword = async (req, res ) => {
   try {
     const { email, oldPassword } = req.body
@@ -266,6 +266,23 @@ module.exports.updateProfile = async (req, res) => {
     const isUserExist = await individualUserCollection.findOne({ _id: userId }).exec();
     if (!isUserExist) {
       return res.status(401).json({ message: "User not found" });
+    }
+
+    // Check if phone number exists in any of the collections
+    const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+    const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+    const isEnterpriseEmployeeExist = await EnterpriseEmployee.findOne({ phnNumber }).exec();
+
+    if (isIndividualExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+    }
+
+    if (isEnterpriseExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+    }
+
+    if (isEnterpriseEmployeeExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
     }
 
     let imageUrl = isUserExist.image; // Default to existing image if no new image is provided

@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const otpGenerator = require("otp-generator")
 const mongoose = require('mongoose');
 
-const { otpCollection } = require('../../DBConfig');
+const { otpCollection, individualUserCollection } = require('../../DBConfig');
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const Contact  = require('../../models/contact.individul.model');
@@ -64,10 +64,10 @@ module.exports.postEnterpriseLogin = async (req, res) => {
 
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
-    const { companyName, industryType, email, otp } = req.body
+    const { companyName, industryType, phnNumber, email, otp } = req.body
     const passwordRaw = req.body.password
 
-    if (!companyName || !email || !industryType || !passwordRaw || !otp) {
+    if (!companyName || !email || !industryType || !passwordRaw || !otp || !phnNumber) {
       return res.status(400).json({message:"All fields are required"}); // Correct response handling
     }
     // Check if email exists
@@ -87,6 +87,7 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
       companyName,
       industryType,
       email,
+      phnNumber,
       password: hashedPassword,
     });
     console.log(newUser);
@@ -187,7 +188,32 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
 
 module.exports.sendOTP = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, phnNumber } = req.body;
+
+    // Check if email exists in enterpriseUser or enterpriseEmployee
+    const isEmailInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
+    const isEmailInEnterpriseEmployee = await enterpriseEmployeModel.findOne({ email }).exec();
+
+    if (isEmailInEnterpriseUser || isEmailInEnterpriseEmployee) {
+      return res.status(409).json({ message: "A user with this email address already exists. Please login instead" });
+    }
+
+    // Check if phone number exists in any of the collections
+    const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+    const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+    const isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+
+    if (isIndividualExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+    }
+
+    if (isEnterpriseExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+    }
+
+    if (isEnterpriseEmployeeExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+    }
 
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
@@ -275,6 +301,23 @@ module.exports.updateProfile = async (req, res) => {
     const isUserExist = await enterpriseUser.findOne({ _id: userId }).exec();
     if (!isUserExist) {
       return res.status(401).json({ message: "User not found" });
+    }
+
+    // Check if phone number exists in any of the collections
+    const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+    const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+    const isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+
+    if (isIndividualExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+    }
+
+    if (isEnterpriseExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+    }
+
+    if (isEnterpriseEmployeeExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
     }
 
     let imageUrl = isUserExist.image; // Default to existing image if no new image is provided

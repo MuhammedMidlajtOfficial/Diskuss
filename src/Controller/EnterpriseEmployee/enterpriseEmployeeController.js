@@ -5,6 +5,7 @@ const enterpriseEmployeCardModel = require('../../models/enterpriseEmployeCard.m
 const mailSender = require('../../util/mailSender');
 const Contact  = require('../../models/contact.individul.model');
 const { deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
+const { individualUserCollection } = require('../../DBConfig');
 
 
 module.exports.getCardForUser = async (req, res) => {
@@ -90,6 +91,23 @@ module.exports.createCard = async (req, res) => {
             return res.status(409).json({ message: "Enterprise user not found" });
         }
 
+        // Check if phone number exists in any of the collections
+        const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+        const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+        const isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+
+        if (isIndividualExist) {
+          return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+        }
+
+        if (isEnterpriseExist) {
+          return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+        }
+
+        if (isEnterpriseEmployeeExist) {
+          return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+        }
+
         // Hash password
         const hashedPassword = await bcrypt.hash(passwordRaw, 10);
 
@@ -97,6 +115,7 @@ module.exports.createCard = async (req, res) => {
         const newUser = await enterpriseEmployeModel.create({
             username,
             email,
+            phnNumber,
             password: hashedPassword,
             cardNo: 0,
         });
@@ -176,6 +195,23 @@ module.exports.updateProfile = async (req, res) => {
       const isUserExist = await enterpriseEmployeModel.findOne({ _id: userId }).exec();
       if (!isUserExist) {
         return res.status(401).json({ message: "User not found" });
+      }
+
+      // Check if phone number exists in any of the collections
+      const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+      const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+      const isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+
+      if (isIndividualExist) {
+        return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+      }
+
+      if (isEnterpriseExist) {
+        return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+      }
+
+      if (isEnterpriseEmployeeExist) {
+        return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
       }
   
       let imageUrl = isUserExist?.image; // Default to existing image if no new image is provided
