@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { otpCollection } = require('../../DBConfig');
-
+const enterpriseUser = require('../../models/enterpriseUser');
 const { individualUserCollection } = require('../../DBConfig');
-
+const EnterpriseEmployee = require('../../models/enterpriseEmploye.model');
 const otpGenerator = require("otp-generator");
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const { createProfile } = require('../Profile/profileController');
@@ -162,8 +162,32 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
 
 module.exports.sendOTP = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, phnNumber } = req.body;
 
+    // Check if email exists
+    const isEmailExist = await individualUserCollection.findOne({ email }).exec();
+    if (isEmailExist) {
+      return res.status(409).json({ message: "A user with this email address already exists. Please login instead" });
+    }
+
+    // Check if phone number exists in any of the collections
+    const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+    const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+    const isEnterpriseEmployeeExist = await EnterpriseEmployee.findOne({ phnNumber }).exec();
+
+    if (isIndividualExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+    }
+
+    if (isEnterpriseExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+    }
+
+    if (isEnterpriseEmployeeExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+    }
+
+    // Generate OTP
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
@@ -171,7 +195,8 @@ module.exports.sendOTP = async (req, res) => {
     });
 
     console.log(otp);
-    
+
+    // Ensure OTP is unique
     let result = await otpCollection.findOne({ otp: otp });
     while (result) {
       otp = otpGenerator.generate(6, {
@@ -179,6 +204,7 @@ module.exports.sendOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
+
     const otpPayload = { email, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
@@ -187,10 +213,11 @@ module.exports.sendOTP = async (req, res) => {
       otp,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 module.exports.resetPassword = async (req, res ) => {
   try {
