@@ -227,7 +227,7 @@ module.exports.updateProfile = async (req, res) => {
         }
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: 'Server error' });
+      return res.status(500).json({ Contact_message: 'An unexpected error occurred. Please try again later.' });
     }
 };
 

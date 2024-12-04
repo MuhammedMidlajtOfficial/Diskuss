@@ -196,7 +196,7 @@ module.exports.updateCard = async (req, res) => {
     res.status(200).json({ message: 'Card updated successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to update card', error });
+    res.status(500).json({ message: 'Failed to update card . Please try again later.', error });
   }
 };
 

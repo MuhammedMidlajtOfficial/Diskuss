@@ -131,7 +131,7 @@ const createContact = async (req, res) => {
         return res.status(201).json({ message: "Contact created successfully", contact: newContact });
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e.message });
+        return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
     }
 };
 
