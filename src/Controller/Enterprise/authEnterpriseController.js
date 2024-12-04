@@ -211,6 +211,11 @@ module.exports.sendOTP = async (req, res) => {
   try {
     const { email, phnNumber } = req.body;
 
+    // Check for missing fields
+    if ( !email || !phnNumber) {
+      return res.status(400).json({ message :"email & phnNumber are required"}); // Correct response handling
+    }
+    
     // Check if email exists in enterpriseUser or enterpriseEmployee
     const isEmailInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
     const isEmailInEnterpriseEmployee = await enterpriseEmployeModel.findOne({ email }).exec();
