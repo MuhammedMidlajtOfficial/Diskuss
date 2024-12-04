@@ -66,7 +66,7 @@ module.exports.postIndividualSignup = async (req, res) => {
       // cardNo: 0,
     });
     console.log(newUser);
-    
+
     if (newUser) {
       const existingContact = await Contact.find({ phnNumber: newUser.phnNumber });
       if (existingContact) {
@@ -291,10 +291,16 @@ module.exports.updateProfile = async (req, res) => {
       return res.status(401).json({ message: "User not found" });
     }
 
-    // Check if phone number exists in any of the collections
-    const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
-    const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
-    const isEnterpriseEmployeeExist = await EnterpriseEmployee.findOne({ phnNumber }).exec();
+    let isIndividualExist;
+    let isEnterpriseExist;
+    let isEnterpriseEmployeeExist;
+
+    if(phnNumber){
+      // Check if phone number exists in any of the collections
+      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+    }
 
     if (isIndividualExist) {
       return res.status(409).json({ message: "This phone number is already associated with an individual user" });
