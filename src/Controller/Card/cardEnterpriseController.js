@@ -127,7 +127,7 @@ module.exports.createCard = async (req, res) => {
         businessName,
         businessType,
         email,
-        empName : yourName,
+        yourName : yourName,
         designation,
         mobile,
         location,

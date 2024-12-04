@@ -59,7 +59,7 @@ module.exports.createCard = async (req, res) => {
         enterpriseId,
         email,
         businessName,
-        empName,
+        yourName,
         designation,
         mobile,
         location,
@@ -74,7 +74,7 @@ module.exports.createCard = async (req, res) => {
 
     try {
         // Check for missing fields
-        if (!email || !passwordRaw || !enterpriseId || !businessName || !empName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
+        if (!email || !passwordRaw || !enterpriseId || !businessName || !yourName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -145,7 +145,7 @@ module.exports.createCard = async (req, res) => {
             userId: newUser._id,
             businessName,
             email,
-            empName,
+            yourName,
             designation,
             mobile,
             location,
