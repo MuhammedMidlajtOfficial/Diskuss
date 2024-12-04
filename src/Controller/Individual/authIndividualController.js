@@ -185,7 +185,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
 module.exports.sendOTP = async (req, res) => {
   try {
     const { email, phnNumber } = req.body;
-
+    console.log("email form individual sendOTP --",email);
     // Check if email exists
     const isEmailExist = await individualUserCollection.findOne({ email }).exec();
     if (isEmailExist) {
