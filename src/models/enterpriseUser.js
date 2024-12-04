@@ -32,7 +32,7 @@ const enterpriseUserSchema = new mongoose.Schema({
     },
     phnNumber: {
       type:String,
-      default : ''
+      required:true,
     },
     aboutUs: {
         type:String,

@@ -40,7 +40,7 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     },
     phnNumber: {
       type:String,
-      default : ''
+      required:true,
     },
     address: {
       type:String,

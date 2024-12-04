@@ -66,7 +66,28 @@ module.exports.postIndividualSignup = async (req, res) => {
       // cardNo: 0,
     });
     console.log(newUser);
-    return res.status(201).json({ message: "User created", user: newUser });
+    
+    if (newUser) {
+      const existingContact = await Contact.find({ phnNumber: newUser.phnNumber });
+      if (existingContact) {
+        const contact = await Contact.updateOne(
+          { phnNumber: newUser.phnNumber },
+          { $set: { isDiskussUser: true, userId: newUser._id } }
+        );
+        if (contact.modifiedCount > 0) {
+          console.log("Contact updated successfully, User created successfully");
+          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created successfully.", user: newUser });
+        } else {
+          console.log("Contact not updated , User created successfully");
+          return res.status(201).json({ Contact_message: "Contact update failed.", message: "User created successfully.", user: newUser});
+        }
+      } else {
+        console.log("Error: Contact not found.");
+        return res.status(404).json({ Contact_message: "Error: Contact not found." });
+      }
+    } else {
+      return res.status(400).json({ message: "Error: User creation failed." });
+    }
   } catch (error) {
     console.error("Error in postIndividualSignup:", error); // Detailed error logging
     return res.status(500).json({ message: 'Server error' });
@@ -213,6 +234,8 @@ module.exports.sendOTP = async (req, res) => {
       message: 'OTP sent successfully',
       otp,
     });
+
+
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });
@@ -331,7 +354,7 @@ module.exports.updateProfile = async (req, res) => {
         console.log("Contact updated successfully, Profile updated successfully");
         return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
       } else {
-        console.log("Error: Contact update failed, Profile updated successfully");
+        console.log("Error: Contact not updated , Profile updated successfully");
         return res.status(200).json({ Contact_message: "Contact update failed.", Profile_message: "Profile updated successfully." });
       }
     } else {

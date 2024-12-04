@@ -4,7 +4,7 @@ const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployeCardModel = require('../../models/enterpriseEmployeCard.model');
 const mailSender = require('../../util/mailSender');
 const Contact  = require('../../models/contact.individul.model');
-const { deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
+const { deleteImageFromS3, uploadImageToS3 } = require('../../services/AWS/s3Bucket');
 const { individualUserCollection } = require('../../DBConfig');
 
 
@@ -120,25 +120,42 @@ module.exports.createCard = async (req, res) => {
             cardNo: 0,
         });
 
-        if (!newUser) {
-            return res.status(404).json({ message: "User creation failed" });
+        if (newUser) {
+          const existingContact = await Contact.find({ phnNumber: newUser.phnNumber });
+          if (existingContact) {
+            const contact = await Contact.updateOne(
+              { phnNumber: newUser.phnNumber },
+              { $set: { isDiskussUser: true, userId: newUser._id } }
+            );
+            if (contact.modifiedCount > 0) {
+              console.log("Contact updated successfully, User created successfully");
+              res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created successfully.", user: newUser });
+            } else {
+              console.log("Contact not updated , User created successfully");
+              res.status(201).json({ Contact_message: "Contact update failed.", message: "User created successfully.", user: newUser});
+            }
+          } else {
+            console.log("Error: Contact not found.");
+            res.status(404).json({ Contact_message: "Error: Contact not found." });
+          }
+        } else {
+          return res.status(400).json({ message: "Error: User creation failed." });
         }
 
         // Image URL handling
         let imageUrl = image;
 
-        // Uncomment and complete S3 upload functionality if needed
-        // if (image) {
-        //     const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-        //     const fileName = `${newUser._id}-businessCard.jpg`;
-        //     try {
-        //         const uploadResult = await uploadImageToS3(imageBuffer, fileName);
-        //         imageUrl = uploadResult.Location;
-        //     } catch (uploadError) {
-        //         console.log("Error uploading image to S3:", uploadError);
-        //         return res.status(500).json({ message: "Failed to upload image", error: uploadError });
-        //     }
-        // }
+        if (image) {
+            const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+            const fileName = `${newUser._id}-businessCard.jpg`;
+            try {
+                const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+                imageUrl = uploadResult.Location;
+            } catch (uploadError) {
+                console.log("Error uploading image to S3:", uploadError);
+                return res.status(500).json({ message: "Failed to upload image", error: uploadError });
+            }
+        }
 
         // Create new card
         const newCard = new enterpriseEmployeCardModel({
