@@ -189,7 +189,13 @@ const CreateMeeting = async (req, res) => {
     await ownerProfile.updateOne({ $push: { meetings: savedMeeting._id } });
 
 
-    const notificationContent = `You have been invited to a meeting titled "${meetingTitle}" on ${selectedDate} at ${startTime}.`;
+    const selectedDateObj = new Date(selectedDate);
+    const day = String(selectedDateObj.getDate()).padStart(2, '0');
+    const month = String(selectedDateObj.getMonth() + 1).padStart(2, '0'); // months are 0-based
+    const year = selectedDateObj.getFullYear();
+
+    const formattedDate = `${day}/${month}/${year}`;
+    const notificationContent = `You have been invited to a meeting titled ${meetingTitle} on ${formattedDate} at ${startTime}.`;
 
     // Send notification to admin backend
     await axios.post("https://diskuss-admin.onrender.com/api/v1/fcm/sendMeetingNotification", {
