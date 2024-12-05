@@ -5,6 +5,7 @@ const { individualUserCollection: User } = require("../../DBConfig");
 // const Contact = require("../../models/contact.individul.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
+const axios = require("axios");
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
