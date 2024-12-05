@@ -8,6 +8,7 @@ const otpGenerator = require("otp-generator");
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const { createProfile } = require('../Profile/profileController');
 const Contact  = require('../../models/contact.individul.model');
+const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 
 
 module.exports.postIndividualLogin = async (req, res) => {
