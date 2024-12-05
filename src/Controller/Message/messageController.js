@@ -5,6 +5,7 @@ const { individualUserCollection: User } = require("../../DBConfig");
 // const Contact = require("../../models/contact.individul.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
+const axios = require("axios");
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
@@ -77,6 +78,18 @@ exports.sendMessage = async (req, res) => {
       senderName: sender.username || sender.name || "Unknown Sender", // Use appropriate field for sender name
       receiverName: receiver.username || receiver.name || "Unknown Receiver", // Use appropriate field for receiver name
     });
+
+    // Notify the receiver using the admin backend
+    try {
+      await axios.post("https://diskuss-admin.onrender.com/api/v1/fcm/sendMessageNotification", {
+        receiverId,
+        senderName: sender.username || sender.name || "Unknown Sender",
+        content,
+        chatId,
+      });
+    } catch (notificationError) {
+      console.error("Error sending notification:", notificationError.message);
+    }
 
     // Respond with the message
     res.status(201).json({
