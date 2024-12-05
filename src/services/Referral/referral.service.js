@@ -1,6 +1,9 @@
 const {Referral} = require('../../models/referral.model');
-const individualUserCollection = require('../../models/individualUser')
+const individualUserCollection = require('../../models/individualUser');
+const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
 const User = individualUserCollection.individualUserCollection;
+const { ObjectId } = require('mongodb');
+
 // Send Invite
 const sendInvite = async (referrerId, inviteePhoneNo) => {
     const referral = new Referral({
@@ -25,8 +28,14 @@ const registerInvitee = async (referralId, inviteeId) => {
     referral.rewardsEarned += 50; // Award 50 coins for registration
     await referral.save();
 
+    // Update invitee's coin balance
+    const totalCoins = await Referral.aggregate([ 
+        { $match: { referrer: referral.referrer } }, 
+        { $group: { total: { $sum: '$rewardsEarned' } } } ]).lean().exec();
+    
+
     // Update referrerId's coin balance
-    await  (referral.referrer, { $inc: { coins: 50 } });
+    await User.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
     
     return referral;
 };
@@ -41,19 +50,54 @@ const createCardByInvitee = async (referralId) => {
     referral.rewardsEarned += 50; // Award 50 coins for card creation
     await referral.save();
 
-    // Update referrer's coin balance
-    await User.findByIdAndUpdate(referral.referrer, { $inc: { coins: 50 } });
+    // Update invitee's coin balance
+    const totalCoins = await Referral.aggregate([ 
+        { $match: { referrer: referral.referrer } }, 
+        { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]);
+    
+
+    // Update referrerId's coin balance
+    await User.findByIdAndUpdate(referral.referrer,  { coins: totalCoins } );
     
     return referral;
 };
 
 // Get Referral Details
 const getReferralDetails = async (userId) => {
-    const referrals = await Referral.find({ referrer: userId }).select('inviteeEmail status rewardsEarned createdAt');
-    const user = await User.findById(userId);
-    const coins = user.coins;
+    const referrals = await Referral.find({ referrer: userId }).populate('referrer', 'username image').exec();
+    const totalReferrals = referrals.length;
+    const cardCreated = referrals.filter(referral => referral.status === 'Card Created').length;
+    const registered = referrals.filter(referral => referral.status === 'Registered').length;
+    const invited = referrals.filter(referral => referral.status === 'Invited').length;
+
+    // Update invitee's coin balance
+    const totalCoinsData = await Referral.aggregate([ 
+        { $match: { referrer : new  ObjectId("6731e31c1637d690957d8e69")} }, 
+        { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]);
     
-    return { coins, invitedUsers: referrals };
+    // console.log("totalCoins : ", totalCoinsData);
+
+    // Update referrerId's coin balance
+    // await User.findByIdAndUpdate( userId,  { coins:  } );
+
+    // const userData = await User.findById(userId).select('coins referralCode').lean().exec();
+    // const coins = userData ? userData.coins : 0; // Default to 0 if no user found
+    // console.log("coins : ", coins);
+    const userData = await User.findById(userId).select('referralCode').lean().exec();
+    const referralCode = userData ? userData.referralCode : ''; // Default to empty string if no user found
+    console.log("referralCode : ", referralCode);
+    
+
+    const response = {
+        totalReferrals,
+        cardCreated,
+        registered,
+        invited,
+        referralCode,
+        totalCoins : totalCoinsData[0].total,
+        invitedUsers: referrals
+    }
+    return response;
 };
 
 module.exports = {
