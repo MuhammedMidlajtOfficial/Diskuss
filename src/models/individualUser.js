@@ -42,6 +42,7 @@ const IndividualUserSchema = new mongoose.Schema({
   phnNumber: {
     type: String,
     required:true,
+    
   },
   address: {
     type:String,
@@ -55,6 +56,10 @@ const IndividualUserSchema = new mongoose.Schema({
     type: String,
     unique: true,
   }, // Ensure referral codes are unique
+  referralCodeUsed: {
+    type: String,
+    default: null,
+  }, // Referral code used by the user
   status:{
     type:String,
     default : 'active'

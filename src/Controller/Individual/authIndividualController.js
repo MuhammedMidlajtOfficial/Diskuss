@@ -9,6 +9,7 @@ const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Buc
 const { createProfile } = require('../Profile/profileController');
 const Contact  = require('../../models/contact.individul.model');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
+const referralService = require('../../services/Referral/referral.service');
 
 
 module.exports.postIndividualLogin = async (req, res) => {
@@ -42,7 +43,7 @@ module.exports.postIndividualLogin = async (req, res) => {
 };
 
 module.exports.postIndividualSignup = async (req, res) => {
-  const { username, email, phnNumber, otp } = req.body;
+  const { username, email, phnNumber, otp, referralCode } = req.body;
   const passwordRaw = req.body.password;
 
   try {
@@ -60,6 +61,12 @@ module.exports.postIndividualSignup = async (req, res) => {
     if (!otpRecord || otpRecord.otp !== otp) {
       return res.status(400).json({ success: false, message: 'The OTP is not valid or has expired' });
     }
+    
+    // check if referral code is valid
+    const isReferralCodeValid = await individualUserCollection.findOne({ referralCode}).exec();
+    if (!isReferralCodeValid) {
+      return res.status(400).json({ message: "The referral code is invalid" });
+    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
@@ -69,6 +76,7 @@ module.exports.postIndividualSignup = async (req, res) => {
       email,
       phnNumber,
       password: hashedPassword,
+      referralCodeUsed : referralCode,
       // cardNo: 0,
     });
     console.log(newUser);

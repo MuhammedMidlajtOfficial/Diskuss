@@ -45,11 +45,22 @@ const getReferralDetails = async (req, res) => {
     }
 };
 
+const checkReferralCode = async (req, res) => {
+    try {
+        const { referralCode } = req.params;
+        const referral = await referralService.checkReferralCode(referralCode);
+        res.status(200).json(referral);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     sendInvite,
     registerInvitee,
     createCardByInvitee,
-    getReferralDetails
+    getReferralDetails,
+    checkReferralCode
 }
 
 // // controllers/referralController.js

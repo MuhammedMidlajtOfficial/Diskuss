@@ -34,6 +34,14 @@ const enterpriseUserSchema = new mongoose.Schema({
       type:String,
       required:true,
     },
+    referralCode: {
+      type: String,
+      unique: true,
+    }, // Ensure referral codes are unique
+    referralCodeUsed: {
+      type: String,
+      default: null,
+    }, // Referral code used by the user
     aboutUs: {
         type:String,
         default : ''
@@ -91,4 +99,33 @@ const enterpriseUserSchema = new mongoose.Schema({
 },{ timestamps:true })
 
 
-module.exports = mongoose.model('EnterpriseUser',enterpriseUserSchema)
+module.exports.enterpriseUserCollection = mongoose.model('EnterpriseUser',enterpriseUserSchema)
+
+
+// Generate a unique referral code using crypto or any other method
+enterpriseUserSchema.pre('save', async function(next) {
+  if (!this.referralCode) {
+    const generateReferralCode = () => {
+      return crypto.randomBytes(4).toString('hex').toUpperCase(); // Generate 12 character long referral code
+    };
+
+    let referralCode = generateReferralCode();
+    
+    // Ensure the referral code is unique
+    let isUnique = false;
+    while (!isUnique) {
+      const existingUser = await mongoose.model('User').findOne({ 'referralCode': referralCode });
+      const existingEnterpriseUser = await mongoose.model('EnterpriseUser').findOne({ 'referralCode': referralCode });
+      if (!existingUser && !existingEnterpriseUser) {
+        isUnique = true;
+      } else {
+        referralCode = generateReferralCode(); // Generate a new code if it's not unique
+      }
+    }
+
+    this.referralCode = referralCode;
+  }
+
+  next();
+});
+
