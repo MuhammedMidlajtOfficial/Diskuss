@@ -93,6 +93,10 @@ mongoose.connect( process.env.MongoDBURL,{
       ref: "Meeting", // Reference to Meeting model
       required: false,
     }],
+    status:{
+      type:String,
+      default : 'active'
+    },
     socialMedia: {
       whatsappNo: {
         type:String,

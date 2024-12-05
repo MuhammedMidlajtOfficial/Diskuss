@@ -32,7 +32,7 @@ const enterpriseUserSchema = new mongoose.Schema({
     },
     phnNumber: {
       type:String,
-      default : ''
+      required:true,
     },
     aboutUs: {
         type:String,
@@ -45,7 +45,11 @@ const enterpriseUserSchema = new mongoose.Schema({
     address: {
         type:String,
         default : ''
-      },
+    },
+    status:{
+      type:String,
+      default : 'active'
+    },
     socialMedia: {
       whatsappNo: {
         type:String,

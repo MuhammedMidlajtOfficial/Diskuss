@@ -41,7 +41,7 @@ const IndividualUserSchema = new mongoose.Schema({
   },
   phnNumber: {
     type: String,
-    default: '',
+    required:true,
   },
   address: {
     type:String,
@@ -53,7 +53,11 @@ const IndividualUserSchema = new mongoose.Schema({
   },
   referralCode: {
     type: String,
-    unique: true, // Ensure referral codes are unique
+    unique: true,
+  }, // Ensure referral codes are unique
+  status:{
+    type:String,
+    default : 'active'
   },
   socialMedia: {
     whatsappNo: {
