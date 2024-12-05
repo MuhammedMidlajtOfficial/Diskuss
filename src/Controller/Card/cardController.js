@@ -3,7 +3,7 @@ const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
 const enterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
-const { uploadImageToS3 } = require("../../services/AWS/s3Bucket");
+const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
 
 module.exports.getCards = async (req, res) => {
   try {
@@ -74,6 +74,8 @@ module.exports.createCard = async (req, res) => {
     }
   }
 
+  console.log("imageUrl of new card logo - ",imageUrl);
+
   const newCard = new Card({
     userId,
     businessName,
@@ -84,7 +86,7 @@ module.exports.createCard = async (req, res) => {
     email,
     location,
     services,
-    image, // Use S3 image URL
+    image:imageUrl, // Use S3 image URL
     position,
     cardType,
     color,
@@ -154,6 +156,10 @@ module.exports.updateCard = async (req, res) => {
 
     // Upload image to S3 if a new image is provided
     if (image) {
+      // Delete the old image from S3 (if exists)
+      if (existingCard?.image) {
+        await deleteImageFromS3(existingCard.image); // Delete the old image from S3
+      }
       const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
       const fileName = `${userId}-businessCard-${cardId}.jpg`; // Unique file name based on user ID and card ID
       try {

@@ -14,6 +14,7 @@ const groupmessageController = require('./Controller/Message/groupmessageControl
 // const enterpriseMessageController = require('./Controller/EnterpriseMessage/enterpriseMessageController.js');
 const socketControllers = require('./Controller/Socket.io/NotificationSocketIo.js');
 const notificationSocketController = require('./Controller/Socket.io/NotificationSocketIo');
+require('./services/Cron/cron.service.js');
 
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
 // const authEnterpriseRouter = require('./Routes/Enterprise/authEnterpriseRouter.js')

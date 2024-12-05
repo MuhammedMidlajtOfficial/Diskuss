@@ -4,6 +4,8 @@ const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployeCardModel = require('../../models/enterpriseEmployeCard.model');
 const mailSender = require('../../util/mailSender');
 const Contact  = require('../../models/contact.individul.model');
+const { deleteImageFromS3, uploadImageToS3 } = require('../../services/AWS/s3Bucket');
+const { individualUserCollection } = require('../../DBConfig');
 
 
 module.exports.getCardForUser = async (req, res) => {
@@ -57,7 +59,7 @@ module.exports.createCard = async (req, res) => {
         enterpriseId,
         email,
         businessName,
-        empName,
+        yourName,
         designation,
         mobile,
         location,
@@ -72,7 +74,7 @@ module.exports.createCard = async (req, res) => {
 
     try {
         // Check for missing fields
-        if (!email || !passwordRaw || !enterpriseId || !businessName || !empName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
+        if (!email || !passwordRaw || !enterpriseId || !businessName || !yourName || !designation || !mobile || !location || !services || !image || !position || !color || !website) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -89,6 +91,23 @@ module.exports.createCard = async (req, res) => {
             return res.status(409).json({ message: "Enterprise user not found" });
         }
 
+        // Check if phone number exists in any of the collections
+        const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+        const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+        const isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+
+        if (isIndividualExist) {
+          return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+        }
+
+        if (isEnterpriseExist) {
+          return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+        }
+
+        if (isEnterpriseEmployeeExist) {
+          return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+        }
+
         // Hash password
         const hashedPassword = await bcrypt.hash(passwordRaw, 10);
 
@@ -96,36 +115,54 @@ module.exports.createCard = async (req, res) => {
         const newUser = await enterpriseEmployeModel.create({
             username,
             email,
+            phnNumber,
             password: hashedPassword,
             cardNo: 0,
         });
 
-        if (!newUser) {
-            return res.status(404).json({ message: "User creation failed" });
+        if (newUser) {
+          const existingContact = await Contact.find({ phnNumber: newUser.phnNumber });
+          if (existingContact) {
+            const contact = await Contact.updateOne(
+              { phnNumber: newUser.phnNumber },
+              { $set: { isDiskussUser: true, userId: newUser._id } }
+            );
+            if (contact.modifiedCount > 0) {
+              console.log("Contact updated successfully, User created successfully");
+              res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created successfully.", user: newUser });
+            } else {
+              console.log("Contact not updated , User created successfully");
+              res.status(201).json({ Contact_message: "Contact update failed.", message: "User created successfully.", user: newUser});
+            }
+          } else {
+            console.log("Error: Contact not found.");
+            res.status(404).json({ Contact_message: "Error: Contact not found." });
+          }
+        } else {
+          return res.status(400).json({ message: "Error: User creation failed." });
         }
 
         // Image URL handling
         let imageUrl = image;
 
-        // Uncomment and complete S3 upload functionality if needed
-        // if (image) {
-        //     const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-        //     const fileName = `${newUser._id}-businessCard.jpg`;
-        //     try {
-        //         const uploadResult = await uploadImageToS3(imageBuffer, fileName);
-        //         imageUrl = uploadResult.Location;
-        //     } catch (uploadError) {
-        //         console.log("Error uploading image to S3:", uploadError);
-        //         return res.status(500).json({ message: "Failed to upload image", error: uploadError });
-        //     }
-        // }
+        if (image) {
+            const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+            const fileName = `${newUser._id}-businessCard.jpg`;
+            try {
+                const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+                imageUrl = uploadResult.Location;
+            } catch (uploadError) {
+                console.log("Error uploading image to S3:", uploadError);
+                return res.status(500).json({ message: "Failed to upload image", error: uploadError });
+            }
+        }
 
         // Create new card
         const newCard = new enterpriseEmployeCardModel({
             userId: newUser._id,
             businessName,
             email,
-            empName,
+            yourName,
             designation,
             mobile,
             location,
@@ -176,11 +213,32 @@ module.exports.updateProfile = async (req, res) => {
       if (!isUserExist) {
         return res.status(401).json({ message: "User not found" });
       }
+
+      // Check if phone number exists in any of the collections
+      const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+      const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+      const isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+
+      if (isIndividualExist) {
+        return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+      }
+
+      if (isEnterpriseExist) {
+        return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+      }
+
+      if (isEnterpriseEmployeeExist) {
+        return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+      }
   
-      let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
+      let imageUrl = isUserExist?.image; // Default to existing image if no new image is provided
   
       // Upload image to S3 if a new image is provided
       if (image) {
+        // Delete the old image from S3 (if exists)
+        if (isUserExist?.image) {
+          await deleteImageFromS3(isUserExist.image); // Delete the old image from S3
+        }
         const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
         const fileName = `${userId}-profile.jpg`; // Create a unique file name based on user ID
         const uploadResult = await uploadImageToS3(imageBuffer, fileName);
@@ -232,45 +290,85 @@ module.exports.updateProfile = async (req, res) => {
 };
 
 module.exports.resetPassword = async (req, res ) => {
-    try {
-      console.log(req.body);
-      const { email, oldPassword } = req.body
-      const passwordRaw = req.body.password
-       
-      if (!email || !passwordRaw || !oldPassword ) {
-        return res.status(400).json({ message: "All fields are Required"})
-      }
-  
-      const isEmailExist = await enterpriseEmployeModel.findOne({ email: email }).exec();
-      console.log("isEmailExist-",isEmailExist);
-      if(!isEmailExist){
-        return res.status(401).json({ message : "email not found"})
-      }
-      // Check password match
-      const passwordMatch = await bcrypt.compare(oldPassword, isEmailExist.password);
-      if(!passwordMatch){
-        return res.status(401).json({ message : "Password not matching"})
-      }
-      // hash password
-      const hashedPassword = await bcrypt.hash(passwordRaw, 10);
-      // Update password
-      const user = await enterpriseEmployeModel.updateOne(
-        { email: email },
-        { $set: { password: hashedPassword } }
-      );
-      console.log('user',user);
-  
-      if (user.modifiedCount > 0) {
-        return res.status(200).json({ message: "Password changed successfully." });
-      } else {
-        return res.status(400).json({ message: "Error: Password update failed." });
-      }
-        
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: 'Server error' });
+  try {
+    console.log(req.body);
+    const { email, oldPassword } = req.body
+    const passwordRaw = req.body.password
+     
+    if (!email || !passwordRaw || !oldPassword ) {
+      return res.status(400).json({ message: "All fields are Required"})
     }
+
+    const isEmailExist = await enterpriseEmployeModel.findOne({ email: email }).exec();
+    console.log("isEmailExist-",isEmailExist);
+    if(!isEmailExist){
+      return res.status(401).json({ message : "email not found"})
+    }
+    // Check password match
+    const passwordMatch = await bcrypt.compare(oldPassword, isEmailExist.password);
+    if(!passwordMatch){
+      return res.status(401).json({ message : "Password not matching"})
+    }
+    // hash password
+    const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+    // Update password
+    const user = await enterpriseEmployeModel.updateOne(
+      { email: email },
+      { $set: { password: hashedPassword } }
+    );
+    console.log('user',user);
+
+    if (user.modifiedCount > 0) {
+      return res.status(200).json({ message: "Password changed successfully." });
+    } else {
+      return res.status(400).json({ message: "Error: Password update failed." });
+    }
+      
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Server error' });
   }
+}
+
+module.exports.removeEmployee = async (req, res) => {
+  try {
+    const { empId, enterpriseId } = req.body;
+
+    if (!empId || !enterpriseId) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if the employee exists
+    const isEmpExist = await enterpriseEmployeModel.findById(empId);
+    if (!isEmpExist) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // Check if the enterprise exists
+    const isEnterpriseExist = await enterpriseUser.findById(enterpriseId);
+    if (!isEnterpriseExist) {
+      return res.status(404).json({ message: "Enterprise not found" });
+    }
+
+    // Find and delete the employee's card
+    const getCard = await enterpriseEmployeCardModel.findOne({ userId: empId });
+    if (getCard) {
+      await enterpriseEmployeCardModel.deleteOne({ userId: empId });
+    }
+
+    // Update enterprise details by removing empId and empCards
+    await enterpriseUser.updateOne(
+      { _id: enterpriseId },
+      { $pull: { empId, empCards: getCard?._id } }
+    );
+
+    return res.status(200).json({ message: "Employee deleted successfully." });
+  } catch (error) {
+    console.error("Error removing employee:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 async function sendVerificationEmail(email,newEmail,newPassword) {
     try {

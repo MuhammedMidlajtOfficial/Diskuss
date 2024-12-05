@@ -21,7 +21,7 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
       type:String,
       required : true
     },
-    empName:  {
+    yourName:  {
       type:String,
       required : true
     },
@@ -44,7 +44,6 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
     } ],  
     image:  {
       type:String,
-      required : true,
       default:''
     },
     position:  {

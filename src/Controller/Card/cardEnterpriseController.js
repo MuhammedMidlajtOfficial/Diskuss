@@ -5,7 +5,7 @@ const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
 const mailSender = require("../../util/mailSender");
 const bcrypt = require('bcrypt');
-const { uploadImageToS3 } = require("../../services/AWS/s3Bucket");
+const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
 module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id
@@ -127,7 +127,7 @@ module.exports.createCard = async (req, res) => {
         businessName,
         businessType,
         email,
-        empName : yourName,
+        yourName : yourName,
         designation,
         mobile,
         location,
@@ -206,6 +206,10 @@ module.exports.updateCard = async (req, res) => {
 
     // Upload image to S3 if a new image is provided
     if (image) {
+      // Delete the old image from S3 (if exists)
+      if (existingCard?.image) {
+        await deleteImageFromS3(existingCard.image); // Delete the old image from S3
+      }
       const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
       const fileName = `${userId}-businessCard-${cardId}.jpg`; // Unique file name based on user ID and card ID
       try {

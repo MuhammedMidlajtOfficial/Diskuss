@@ -20,14 +20,16 @@ const getUserSubscriptions = async (req, res) => {
 };
 
 const getUserSubscriptionByUserId = async (req, res) => {
-    try {
-        const { user_id } = req.params;
-        const userSubscriptions = await UserSubscriptionService.findOneById(user_id);
-        return res.status(200).json({ userSubscriptions });
-    } catch (e) {
-        return res.status(500).json({ error: e.message });
-    }
+  try {
+    const { user_id } = req.params;
+    const userSubscriptions = await UserSubscriptionService.findOneById(user_id);
+    return res.status(200).json({ userSubscriptions });
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
 }
+
+
 
 /**
  * Create a new UserSubscription
@@ -117,7 +119,7 @@ const verifyPayment = async (req, res) => {
 
     // Update the subscription status to active on successful payment verification
     await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'active' , payment:razorpay_payment_id});
-    
+
     await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id,{ isSubscribed:true })
 
     return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
@@ -226,11 +228,21 @@ const getStartEndDate = async (planId) => {
     return {startDate, endDate, newPlanId};
 };
 
+const deactivateSubscriptions = async (req, res) => {
+  try {
+    const result = await UserSubscriptionService.deactivateExpiredSubscriptions();
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: "Error deactivating expired subscriptions" });
+  }
+};
+
 module.exports = {
     getUserSubscriptions,
     getUserSubscriptionByUserId,
     createUserSubscription,
     updateUserSubscription,
     deleteUserSubscription,
-    verifyPayment
+    verifyPayment,
+    deactivateSubscriptions
 };
