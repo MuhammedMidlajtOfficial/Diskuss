@@ -13,14 +13,19 @@ const Contact  = require('../../models/contact.individul.model');
 module.exports.postIndividualLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     const user = await individualUserCollection.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'No account found with this email address' });
     }
     // Check password match
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Incorrect password. Please try again' });
     }
     // Set jwt token
     const payload = { id: user._id, email: user.email };
@@ -31,7 +36,7 @@ module.exports.postIndividualLogin = async (req, res) => {
     return res.status(200).json({ message: 'Login successful', accessToken, refreshToken,user });
   } catch (error) {
     console.error('Error during login:', error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
 
@@ -90,7 +95,7 @@ module.exports.postIndividualSignup = async (req, res) => {
     }
   } catch (error) {
     console.error("Error in postIndividualSignup:", error); // Detailed error logging
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later' });
   }
 }
 
@@ -127,13 +132,18 @@ module.exports.postforgotPassword = async (req, res ) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
 module.exports.OtpValidate = async (req, res ) => {
   try {
     const { email, otp } = req.body
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Both email and new password are required" });
+    }
+
     const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
     if(isEmailExist){
       const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
@@ -143,7 +153,7 @@ module.exports.OtpValidate = async (req, res ) => {
       } else {
         return res.status(200).json({ success: true, message: 'The OTP is valid' })
       }
-    } return res.status(401).json({ message: "Email not exist" })
+    } return res.status(401).json({ message: "No user found with the provided email address" })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });
@@ -153,9 +163,12 @@ module.exports.OtpValidate = async (req, res ) => {
 module.exports.sendForgotPasswordOTP = async (req, res) => {
   try {
     const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
     const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
     if(!isEmailExist){
-      return res.status(401).json({ message: "Email not exist" })
+      return res.status(401).json({ message: "No account found with the provided email address" })
     }
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
@@ -191,6 +204,7 @@ module.exports.sendOTP = async (req, res) => {
     if ( !email || !phnNumber) {
       return res.status(400).json({ message :"email & phnNumber are required"}); // Correct response handling
     }
+
 
     // Check if email exists
     const isEmailExist = await individualUserCollection.findOne({ email }).exec();
@@ -249,8 +263,8 @@ module.exports.sendOTP = async (req, res) => {
 
 
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    console.log(error)
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
 
@@ -266,12 +280,12 @@ module.exports.resetPassword = async (req, res ) => {
     const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
     console.log("isEmailExist-",isEmailExist);
     if(!isEmailExist){
-      return res.status(401).json({ message : "email not found"})
+      return res.status(401).json({ message : "The provided email is not registered. Please check and try again."})
     }
     // Check password match
     const passwordMatch = await bcrypt.compare(oldPassword, isEmailExist.password);
     if(!passwordMatch){
-      return res.status(401).json({ message : "Password not matching"})
+      return res.status(401).json({ message : "The current password you entered is incorrect."})
     }
     // hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
@@ -283,14 +297,14 @@ module.exports.resetPassword = async (req, res ) => {
     console.log('user',user);
 
     if (user.modifiedCount > 0) {
-      return res.status(200).json({ message: "Password changed successfully." });
+      return res.status(200).json({ message: "Your password has been updated successfully" });
     } else {
-      return res.status(400).json({ message: "Error: Password update failed." });
+      return res.status(400).json({ message: "An error occurred while updating your password. Please try again later" });
     }
       
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
@@ -300,7 +314,7 @@ module.exports.updateProfile = async (req, res) => {
 
     const isUserExist = await individualUserCollection.findOne({ _id: userId }).exec();
     if (!isUserExist) {
-      return res.status(401).json({ message: "User not found" });
+      return res.status(401).json({ message: "The specified user does not exist. Please check the user ID and try again." });
     }
 
     let isIndividualExist;
@@ -381,7 +395,7 @@ module.exports.updateProfile = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
 
@@ -390,11 +404,11 @@ module.exports.getProfile = async (req, res ) => {
     const { id: userId } = req.params;
     const user = await individualUserCollection.findOne({ _id : userId });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'The specified user does not exist' });
     }
     return res.status(200).json({ user })
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later' });
   }
 }

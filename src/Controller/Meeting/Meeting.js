@@ -220,7 +220,7 @@ const CreateMeeting = async (req, res) => {
     res.status(201).json({ message: "Meeting created successfully.", meeting: savedMeeting });
   } catch (error) {
     console.error("Error creating meeting:", error);
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json({ message: "Internal server error while creating meeting. Please try again later." });
   }
 };
 

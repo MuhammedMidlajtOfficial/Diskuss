@@ -5,7 +5,7 @@ const messageSchema = new mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   receiverId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   content: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now },
+  timestamp: { type: Date, default: Date.now },           
   localTime: { type: String },
   isRead: { type: Boolean, default: false },
 });
