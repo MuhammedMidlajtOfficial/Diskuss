@@ -13,13 +13,13 @@ module.exports.postEnterpriseLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find enterprise user
+    // Find enterprise user 
     const enterprise = await enterpriseUser.findOne({ email });
     const enterpriseEmp = await enterpriseEmployeModel.findOne({ email });
 
     // Check if neither user is found
     if (!enterprise && !enterpriseEmp) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'No account associated with the provided email address.' });
     }
 
     let user = null;
@@ -45,7 +45,7 @@ module.exports.postEnterpriseLogin = async (req, res) => {
 
     // If password does not match for both, return invalid credentials
     if (!passwordMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'The password you entered is incorrect.' });
     }
 
     // Set JWT token if a match was found
@@ -58,7 +58,7 @@ module.exports.postEnterpriseLogin = async (req, res) => {
     
   } catch (error) {
     console.error('Error during login:', error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
 
@@ -115,7 +115,7 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
@@ -152,7 +152,7 @@ module.exports.postforgotPassword = async (req, res ) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
@@ -168,10 +168,10 @@ module.exports.OtpValidate = async (req, res ) => {
       } else {
         return res.status(200).json({ success: true, message: 'The OTP is valid' })
       } 
-    } return res.status(401).json({ message: "Email not exist" })
+    } return res.status(401).json({ message: "User Not Found with this email" })
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
@@ -203,7 +203,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
     });
   } catch (error) {
     console.log(error)
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
 
@@ -303,7 +303,7 @@ module.exports.resetPassword = async (req, res ) => {
       
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
@@ -399,7 +399,7 @@ module.exports.updateProfile = async (req, res) => {
           return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
         } else {
           console.log(" Contact not updated , Profile updated successfully");
-          return res.status(200).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
+          return res.status(200).json({ Contact_message: "Contact update failed!!.", Profile_message: "Profile updated successfully." });
         }
       } else {
         console.log("Error: Contact not found.");
@@ -411,7 +411,7 @@ module.exports.updateProfile = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
 
@@ -437,6 +437,6 @@ module.exports.getProfile = async (req, res) => {
     return res.status(200).json({ user });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
