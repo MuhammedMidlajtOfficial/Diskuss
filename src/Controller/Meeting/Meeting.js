@@ -10,6 +10,7 @@ const Contact = require('../../models/contact.individul.model')
 const Notification = require('../../models/NotificationModel')
 const { emitNotification } = require('../../Controller/Socket.io/NotificationSocketIo');
 const { required } = require("joi");
+const axios = require("axios");
 
 
 
@@ -187,6 +188,18 @@ const CreateMeeting = async (req, res) => {
 
     await ownerProfile.updateOne({ $push: { meetings: savedMeeting._id } });
 
+
+    const notificationContent = `You have been invited to a meeting titled "${meetingTitle}" on ${selectedDate} at ${startTime}.`;
+
+    // Send notification to admin backend
+    await axios.post("https://diskuss-admin.onrender.com/api/v1/fcm/sendMeetingNotification", {
+      userIds: invitedPeople,
+      notification: {
+        title: "Meeting Invitation",
+        body: notificationContent,
+      },
+    });
+    
     // Notify invited users and update their profiles
     await Promise.all(
       invitedPeople.map(async (userId) => {
