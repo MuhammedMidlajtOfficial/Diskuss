@@ -1,7 +1,9 @@
 const {Referral} = require('../../models/referral.model');
 const individualUserCollection = require('../../models/individualUser');
+const enterpriseUserCollection = require('../../models/enterpriseUser');
 const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
-const User = individualUserCollection.individualUserCollection;
+const IndividualUser = individualUserCollection.individualUserCollection;
+const EnterpriseUser = enterpriseUserCollection.enterpriseUserCollection
 const { ObjectId } = require('mongodb');
 
 // Send Invite
@@ -100,11 +102,21 @@ const getReferralDetails = async (userId) => {
     return response;
 };
 
+const checkReferralCode = async (referralCode) => {
+    const individualUser = await IndividualUser.findOne({ referralCode }).exec();
+    const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
+    if (!individualUser && !enterpriseUser) {
+        return { valid: false };
+    }
+    return { valid: true };
+};
+
 module.exports = {
     sendInvite,
     registerInvitee,
     createCardByInvitee,
-    getReferralDetails
+    getReferralDetails,
+    checkReferralCode
 }
 
 // const {Referral} = require('../../models/referral.model');

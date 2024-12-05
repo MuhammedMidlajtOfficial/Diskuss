@@ -64,7 +64,7 @@ module.exports.postEnterpriseLogin = async (req, res) => {
 
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
-    const { companyName, industryType, phnNumber, email, otp } = req.body
+    const { companyName, industryType, phnNumber, email, otp, referralCode } = req.body
     const passwordRaw = req.body.password
 
     if (!companyName || !email || !industryType || !passwordRaw || !otp || !phnNumber) {
@@ -75,6 +75,12 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
     if (isEmailExist) {
       return res.status(409).json({message:"A user with this email address already exists. Please login instead"}); // Correct response handling
     }
+    
+    const referralCodeValid = await enterpriseUser.findOne({ referral}).exec();
+    if (!referralCodeValid) {
+      return res.status(409).json({message:"Invalid referral code"}); // Correct response handling
+    }
+
     // Validate OTP
     const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
     if (response.length === 0 || otp !== response[0].otp) {
@@ -89,6 +95,7 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
       email,
       phnNumber,
       password: hashedPassword,
+      referralCodeUsed : referralCode
     });
     console.log(newUser);
     

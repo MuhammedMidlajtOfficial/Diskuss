@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
-const { individualUserCollection } = require('../models/individualUser'); // Adjust the path accordingly
+const { enterpriseUserCollection } = require('../models/enterpriseUser'); // Adjust the path accordingly
 
 const generateReferralCode = () => {
     return crypto.randomBytes(4).toString('hex').toUpperCase(); // Generate 8 character long referral code
@@ -12,8 +12,9 @@ const assignReferralCodesToExistingUsers = async () => {
         await mongoose.connect('mongodb+srv://muhammedmidlaj236:muhammedmidlaj236@cluster0.cdoh9.mongodb.net/Diskuss', { useNewUrlParser: true, useUnifiedTopology: true });
 
         // Find all users who do not have a referral code
-        const usersWithoutReferralCode = await individualUserCollection.find({ referralCode: { $exists: false } });
+        const usersWithoutReferralCode = await enterpriseUserCollection.find({ referralCode: { $exists: false } });
 
+        console.log(`Found ${usersWithoutReferralCode.length} users without referral codes.`);
 
         for (const user of usersWithoutReferralCode) {
             let referralCode = generateReferralCode();
@@ -21,7 +22,7 @@ const assignReferralCodesToExistingUsers = async () => {
 
             // Ensure the referral code is unique
             while (!isUnique) {
-                const existingUser = await individualUserCollection.findOne({ referralCode });
+                const existingUser = await enterpriseUserCollection.findOne({ referralCode });
                 if (!existingUser) {
                     isUnique = true;
                 } else {
