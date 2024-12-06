@@ -76,7 +76,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo) => {
     }
     else if (enterpriseUser) {
         referral = await Referral.findOne({ referrer: enterpriseUser._id, inviteePhoneNo,status: 'Invited' }).exec();
-        if (!referral) {P
+        if (!referral) {
             const referral = new Referral({
                 referrer: enterpriseUser._id,
                 inviteePhoneNo,
