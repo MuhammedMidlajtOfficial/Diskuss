@@ -51,16 +51,16 @@ module.exports.createCard = async (req, res) => {
       topServices
     } = req.body;
     const passwordRaw = '123'
-    console.log('create enterprise card- image',image);
+    // console.log('create enterprise card- image',image);
     // Check if user email exists
     const isEmailExist = await enterpriseEmployeModel.findOne({ email }).exec();
     const isEmailExistInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
-    console.log('isEmailExist || isEmailExistInEnterpriseUser--',isEmailExist );
+    // console.log('isEmailExist || isEmailExistInEnterpriseUser--',isEmailExist );
     if (isEmailExist) {
       return res.status(409).json({ message: "A user with this email address already exists. Please use another email" });
     }
 
-    console.log('isEmailExistInEnterpriseUser--',isEmailExistInEnterpriseUser);
+    // console.log('isEmailExistInEnterpriseUser--',isEmailExistInEnterpriseUser);
     // Check if Enterprise ID exists
     const isEnterpriseIDExist = await enterpriseUser.findOne({ _id: userId }).exec();
     if (!isEnterpriseIDExist) {
