@@ -44,104 +44,6 @@ const getContactById = async (req, res) => {
  * @param {Response} res
  * @returns {Promise<Response>}
  */
-// const createContact = async (req, res) => {
-//     try {
-//         const {
-//             name,
-//             companyName,
-//             designation,
-//             phnNumber,
-//             email,
-//             website,
-//             businessCategory,
-//             scheduled,
-//             scheduledTime,
-//             notes,
-//             contactOwnerId,
-//         } = req.body;
-
-//         if ( !name || !phnNumber || !contactOwnerId) {
-//             return res.status(400).json({ message: "All fields are required" });
-//         }
-
-//         console.log('contactOwnerId:', contactOwnerId);
-
-//         let existUser;
-
-//         const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
-//         console.log('EnterpriseUser:', EnterpriseUser);
-//         const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
-//         console.log('EnterpriseEmpUser:', EnterpriseEmpUser);
-
-//         existUser = EnterpriseUser || EnterpriseEmpUser;
-//         console.log('existUser:', existUser);
-
-//         let newContact;
-
-//         const contactDetails = {
-//             contactOwnerId,
-//             contactOwnerType: EnterpriseUser ? 'EnterpriseUser' : 'EnterpriseEmployee',
-//             contacts: [{
-//                 name,
-//                 companyName,
-//                 designation,
-//                 phnNumber,
-//                 email,
-//                 website,
-//                 businessCategory,
-//                 scheduled,
-//                 scheduledTime,
-//                 notes,
-//                 isDiskussUser: !!existUser,
-//             }]
-//         };
-
-//         console.log('existUser._id:', existUser ? existUser?._id : 'existUser is null');
-//         console.log('contactDetails:', contactDetails);
-
-//         if (existUser && existUser?._id) {
-//             contactDetails.contacts[0].userId = existUser?._id;
-//         }
-
-//         newContact = await Contact.create(contactDetails);
-//         console.log('newContact:', newContact);
-
-//         console.log('existUser:', existUser);
-//         if (existUser?.userType !== 'employee') {
-//             const updateUser = await enterpriseUser.findById(contactOwnerId);
-//             console.log('updateUser:', updateUser);
-//             if (updateUser) {
-//                 await enterpriseUser.updateOne(
-//                     { _id: contactOwnerId },
-//                     { $push: { contacts: newContact?._id } }
-//                 );
-//                 console.log('Updated contact owner with new contact ID:', newContact._id);
-//             } else {
-//                 console.log('Contact owner not found');
-//                 return res.status(404).json({ message: "Contact owner not found" });
-//             }
-//         }else{
-//             const updateUser = await enterpriseEmployeModel.findById(contactOwnerId);
-//             console.log('updateUser:', updateUser);
-//             if (updateUser) {
-//                 await enterpriseEmployeModel.updateOne(
-//                     { _id: contactOwnerId },
-//                     { $push: { contacts: newContact?._id } }
-//                 );
-//                 console.log('Updated contact owner with new contact ID:', newContact._id);
-//             } else {
-//                 console.log('Contact owner not found');
-//                 return res.status(404).json({ message: "Contact owner not found" });
-//             }
-//         }
-
-//         return res.status(201).json({ message: "Contact created successfully", contact: newContact });
-//     } catch (e) {
-//         console.log('Error:', e);
-//         return res.status(500).json({ error: e.message });
-//     }
-// };
-
 const createContact = async (req, res) => {
     try {
         const {
@@ -158,90 +60,188 @@ const createContact = async (req, res) => {
             contactOwnerId,
         } = req.body;
 
-        if (!name || !phnNumber || !contactOwnerId) {
+        if ( !name || !phnNumber || !contactOwnerId) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        console.log('contactOwnerId--', contactOwnerId);
 
-        const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
-        const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
-        const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
+        console.log('contactOwnerId:', contactOwnerId);
 
-        let userId = null;
-        let isDiskussUser = false;
+        let existUser;
 
-        // Determine the user ID based on the type of user
-        if (existIndividualUser) {
-            userId = existIndividualUser._id;
-            isDiskussUser = true;
-        } else if (existEnterpriseUser) {
-            userId = existEnterpriseUser._id;
-            isDiskussUser = true;
-        } else if (existEnterpriseEmploye) {
-            userId = existEnterpriseEmploye._id;
-            isDiskussUser = true;
-        }
+        const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+        console.log('EnterpriseUser:', EnterpriseUser);
+        const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
+        console.log('EnterpriseEmpUser:', EnterpriseEmpUser);
 
-        const newContact = {
-            name,
-            companyName,
-            designation,
-            phnNumber,
-            email,
-            website,
-            businessCategory,
-            scheduled,
-            scheduledTime,
-            notes,
-            userId: userId,  // Set the userId based on the type of user
-            isDiskussUser: isDiskussUser
+        existUser = EnterpriseUser || EnterpriseEmpUser;
+        console.log('existUser:', existUser);
+
+        let newContact;
+
+        const contactDetails = {
+            contactOwnerId,
+            contactOwnerType: EnterpriseUser ? 'EnterpriseUser' : 'EnterpriseEmployee',
+            contacts: [{
+                name,
+                companyName,
+                designation,
+                phnNumber,
+                email,
+                website,
+                businessCategory,
+                scheduled,
+                scheduledTime,
+                notes,
+                isDiskussUser: !!existUser,
+            }]
         };
 
-        // Check if the contactOwnerId already has a contact document
-        const existingContact = await Contact.findOne({ contactOwnerId });
-        let createdContact;
-        
-        if (existingContact) {
-            // If the contact document exists, update the contacts array
-            await Contact.updateOne(
-                { contactOwnerId },
-                { $push: { contacts: newContact } }
-            );
-        } else {
-            // If no existing contact document, create a new contact document
-            createdContact = await Contact.create({
-                contactOwnerId,
-                contacts: [newContact]
-            });
+        console.log('existUser._id:', existUser ? existUser?._id : 'existUser is null');
+        console.log('contactDetails:', contactDetails);
+
+        if (existUser && existUser?._id) {
+            contactDetails.contacts[0].userId = existUser?._id;
         }
 
-        // Add the contact to the user's respective collection
-        if (existIndividualUser) {
-            // Add the contact to individualUserCollection
-            await individualUserCollection.updateOne(
-                { _id: contactOwnerId },
-                { $push: { contacts: existingContact ? existingContact._id : createdContact._id } }
-            );
-        } else if (existEnterpriseUser) {
-            // Add the contact to enterpriseUserCollection
-            await enterpriseUser.updateOne(
-                { _id: contactOwnerId },
-                { $push: { contacts: existingContact ? existingContact._id : createdContact._id } }
-            );
-        } else if (existEnterpriseEmploye) {
-            // Add the contact to enterpriseEmployeeCollection
-            await enterpriseEmployeModel.updateOne(
-                { _id: contactOwnerId },
-                { $push: { contacts: existingContact ? existingContact._id : createdContact._id } }
-            );
+        newContact = await Contact.create(contactDetails);
+        console.log('newContact:', newContact);
+
+        console.log('existUser:', existUser);
+        if (existUser?.userType !== 'employee') {
+            const updateUser = await enterpriseUser.findById(contactOwnerId);
+            console.log('updateUser:', updateUser);
+            if (updateUser) {
+                await enterpriseUser.updateOne(
+                    { _id: contactOwnerId },
+                    { $push: { contacts: newContact?._id } }
+                );
+                console.log('Updated contact owner with new contact ID:', newContact._id);
+            } else {
+                console.log('Contact owner not found');
+                return res.status(404).json({ message: "Contact owner not found" });
+            }
+        }else{
+            const updateUser = await enterpriseEmployeModel.findById(contactOwnerId);
+            console.log('updateUser:', updateUser);
+            if (updateUser) {
+                await enterpriseEmployeModel.updateOne(
+                    { _id: contactOwnerId },
+                    { $push: { contacts: newContact?._id } }
+                );
+                console.log('Updated contact owner with new contact ID:', newContact._id);
+            } else {
+                console.log('Contact owner not found');
+                return res.status(404).json({ message: "Contact owner not found" });
+            }
         }
 
-        return res.status(201).json({ message: "Contact created or updated successfully" });
+        return res.status(201).json({ message: "Contact created successfully", contact: newContact });
     } catch (e) {
-        console.log(e);
-        return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+        console.log('Error:', e);
+        return res.status(500).json({ error: e.message });
     }
 };
+
+// const createContact = async (req, res) => {
+//     try {
+//         const {
+//             name,
+//             companyName,
+//             designation,
+//             phnNumber,
+//             email,
+//             website,
+//             businessCategory,
+//             scheduled,
+//             scheduledTime,
+//             notes,
+//             contactOwnerId,
+//         } = req.body;
+
+//         if (!name || !phnNumber || !contactOwnerId) {
+//             return res.status(400).json({ message: "All fields are required" });
+//         }
+//         console.log('contactOwnerId--', contactOwnerId);
+
+//         const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
+//         const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+//         const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
+
+//         let userId = null;
+//         let isDiskussUser = false;
+
+//         // Determine the user ID based on the type of user
+//         if (existIndividualUser) {
+//             userId = existIndividualUser._id;
+//             isDiskussUser = true;
+//         } else if (existEnterpriseUser) {
+//             userId = existEnterpriseUser._id;
+//             isDiskussUser = true;
+//         } else if (existEnterpriseEmploye) {
+//             userId = existEnterpriseEmploye._id;
+//             isDiskussUser = true;
+//         }
+
+//         const newContact = {
+//             name,
+//             companyName,
+//             designation,
+//             phnNumber,
+//             email,
+//             website,
+//             businessCategory,
+//             scheduled,
+//             scheduledTime,
+//             notes,
+//             userId: userId,  // Set the userId based on the type of user
+//             isDiskussUser: isDiskussUser
+//         };
+
+//         // Check if the contactOwnerId already has a contact document
+//         const existingContact = await Contact.findOne({ contactOwnerId });
+//         let createdContact;
+        
+//         if (existingContact) {
+//             // If the contact document exists, update the contacts array
+//             await Contact.updateOne(
+//                 { contactOwnerId },
+//                 { $push: { contacts: newContact } }
+//             );
+//         } else {
+//             // If no existing contact document, create a new contact document
+//             createdContact = await Contact.create({
+//                 contactOwnerId,
+//                 contacts: [newContact]
+//             });
+//         }
+
+//         // Add the contact to the user's respective collection
+//         if (existIndividualUser) {
+//             // Add the contact to individualUserCollection
+//             await individualUserCollection.updateOne(
+//                 { _id: contactOwnerId },
+//                 { $push: { contacts: existingContact ? existingContact._id : createdContact._id } }
+//             );
+//         } else if (existEnterpriseUser) {
+//             // Add the contact to enterpriseUserCollection
+//             await enterpriseUser.updateOne(
+//                 { _id: contactOwnerId },
+//                 { $push: { contacts: existingContact ? existingContact._id : createdContact._id } }
+//             );
+//         } else if (existEnterpriseEmploye) {
+//             // Add the contact to enterpriseEmployeeCollection
+//             await enterpriseEmployeModel.updateOne(
+//                 { _id: contactOwnerId },
+//                 { $push: { contacts: existingContact ? existingContact._id : createdContact._id } }
+//             );
+//         }
+
+//         return res.status(201).json({ message: "Contact created or updated successfully" });
+//     } catch (e) {
+//         console.log(e);
+//         return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+//     }
+// };
 
 
 /**
