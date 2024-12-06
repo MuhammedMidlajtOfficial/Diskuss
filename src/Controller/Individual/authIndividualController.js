@@ -7,7 +7,7 @@ const EnterpriseEmployee = require('../../models/enterpriseEmploye.model');
 const otpGenerator = require("otp-generator");
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const { createProfile } = require('../Profile/profileController');
-const Contact  = require('../../models/contact.individul.model');
+const Contact  = require('../../models/contact.individual.model');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const referralService = require('../../services/Referral/referral.service');
 

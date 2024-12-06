@@ -2,7 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-// const Contact = require("../../models/contact.individul.model");
+// const Contact = require("../../models/contact.individual.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
 const axios = require("axios");

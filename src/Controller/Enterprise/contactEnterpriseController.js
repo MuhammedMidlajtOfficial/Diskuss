@@ -1,4 +1,4 @@
-const Contact = require('../../models/contact.enterprise.model');
+const Contact = require('../../models/contact.individual.model');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const enterpriseUser = require('../../models/enterpriseUser');
 const ContactService = require('../../services/contact.enterprise.service');

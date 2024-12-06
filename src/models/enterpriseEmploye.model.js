@@ -53,7 +53,7 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     contacts: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'ContactEnterprise',
+        ref: 'Contact',
         default: []
       }
     ],    

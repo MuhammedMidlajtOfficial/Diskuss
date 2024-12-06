@@ -5,7 +5,7 @@ const Profile = require("../../models/enterpriseEmploye.model");
 const enterprise = require("../../models/enterpriseUser");
 const { individualUserCollection } = require("../../DBConfig");
 const mongoose = require("mongoose");
-const Contact = require("../../models/contact.individul.model");
+const Contact = require("../../models/contact.individual.model");
 const Notification = require("../../models/NotificationModel");
 const {
   emitNotification,
