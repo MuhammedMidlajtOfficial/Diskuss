@@ -1,9 +1,8 @@
 const {Referral} = require('../../models/referral.model');
-const IndividualUser = require('../../models/individualUser');
 const EnterpriseUser = require('../../models/enterpriseUser');
 const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
 const { ObjectId } = require('mongodb');
-
+const { individualUserCollection: IndividualUser } = require('../../DBConfig');
 const checkUserType = async (userId) => {
     const individualUser = await IndividualUser.findById(userId).exec();
     const enterpriseUser = await EnterpriseUser.findById(userId).exec();
