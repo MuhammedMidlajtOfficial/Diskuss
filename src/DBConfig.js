@@ -1,4 +1,5 @@
 require('dotenv').config();
+const crypto = require('crypto');
 
 const mongoose = require('mongoose');
 const mailSender = require('./util/mailSender');
@@ -115,6 +116,14 @@ mongoose.connect( process.env.MongoDBURL,{
         default : ''
       },
     },
+    referralCode: {
+      type: String,
+      unique: true,
+    }, // Ensure referral codes are unique
+    referralCodeUsed: {
+      type: String,
+      default: null,
+    }, // Referral code used by the user
   } ,{ timestamps: true });
 
   const otpSchema = new mongoose.Schema({
@@ -164,5 +173,33 @@ mongoose.connect( process.env.MongoDBURL,{
     next();
   });
   
+// Set referral code as unique
+// Generate a unique referral code using crypto or any other method
+individualUserSchema.pre('save', async function(next) {
+  if (!this.referralCode) {
+    const generateReferralCode = () => {
+      return crypto.randomBytes(4).toString('hex').toUpperCase(); // Generate 12 character long referral code
+    };
+
+    let referralCode = generateReferralCode();
+    
+    // Ensure the referral code is unique
+    let isUnique = false;
+    while (!isUnique) {
+      const existingUser = await mongoose.model('User').findOne({ 'referralCode': referralCode });
+      if (!existingUser) {
+        isUnique = true;
+      } else {
+        referralCode = generateReferralCode(); // Generate a new code if it's not unique
+      }
+    }
+
+    this.referralCode = referralCode;
+  }
+
+  next();
+});
+
+
 module.exports.individualUserCollection = mongoose.model('user', individualUserSchema);
 module.exports.otpCollection = mongoose.model('otp', otpSchema);
