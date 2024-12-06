@@ -115,6 +115,7 @@ module.exports.createCard = async (req, res) => {
         const newUser = await enterpriseEmployeModel.create({
           username:yourName,
           email,
+          phnNumber:mobile,
           password: hashedPassword,
           cardNo: 0,
       });
