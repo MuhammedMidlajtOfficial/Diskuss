@@ -7,7 +7,7 @@ router.post('/invite', ReferralController.sendInvite);
 router.post('/register', ReferralController.registerInvitee);
 router.post('/card', ReferralController.createCardByInvitee);
 router.get('/details/:userId', ReferralController.getReferralDetails);
-
+router.get('/code-check/:referralCode', ReferralController.checkReferralCode);
 // Old Referral Routes
 // router.post('/', ReferralController.createReferral);
 // router.get('/', ReferralController.getAllReferrals);

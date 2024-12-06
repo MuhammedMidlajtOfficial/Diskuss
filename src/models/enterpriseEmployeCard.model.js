@@ -13,11 +13,15 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
       type:String,
       required : true
     },
+    businessType: {
+      type:String,
+      required : true
+    },
     email: {
       type:String,
       required : true
     },
-    empName:  {
+    yourName:  {
       type:String,
       required : true
     },
@@ -37,10 +41,9 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
     services: [ {
       type:String,
       required : true
-    } ], 
+    } ],  
     image:  {
       type:String,
-      required : true,
       default:''
     },
     position:  {

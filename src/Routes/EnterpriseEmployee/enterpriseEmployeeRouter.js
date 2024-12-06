@@ -6,6 +6,8 @@ enterpriseEmployeeRouter.get('/getCardForUser/:id', enterpriseEmployeeController
 enterpriseEmployeeRouter.get('/getContactOfEmployee/:id', enterpriseEmployeeController.getContactOfEmployee)
 enterpriseEmployeeRouter.get('/getProfile/:id', enterpriseEmployeeController.getProfile)
 enterpriseEmployeeRouter.post('/createProfile', enterpriseEmployeeController.createCard)
+enterpriseEmployeeRouter.post('/resetpassword',enterpriseEmployeeController.resetPassword)
+enterpriseEmployeeRouter.delete('/removeEmployee', enterpriseEmployeeController.removeEmployee);
 
 enterpriseEmployeeRouter.patch('/updateProfile', enterpriseEmployeeController.updateProfile)
 

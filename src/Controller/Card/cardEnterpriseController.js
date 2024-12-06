@@ -5,7 +5,7 @@ const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
 const mailSender = require("../../util/mailSender");
 const bcrypt = require('bcrypt');
-
+const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
 module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id
@@ -35,6 +35,7 @@ module.exports.createCard = async (req, res) => {
     const {
       userId,
       businessName,
+      businessType,
       yourName,
       designation,
       mobile,
@@ -50,16 +51,16 @@ module.exports.createCard = async (req, res) => {
       topServices
     } = req.body;
     const passwordRaw = '123'
-
+    // console.log('create enterprise card- image',image);
     // Check if user email exists
     const isEmailExist = await enterpriseEmployeModel.findOne({ email }).exec();
     const isEmailExistInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
-    console.log('isEmailExist || isEmailExistInEnterpriseUser--',isEmailExist );
+    // console.log('isEmailExist || isEmailExistInEnterpriseUser--',isEmailExist );
     if (isEmailExist) {
       return res.status(409).json({ message: "A user with this email address already exists. Please use another email" });
     }
 
-    console.log('isEmailExistInEnterpriseUser--',isEmailExistInEnterpriseUser);
+    // console.log('isEmailExistInEnterpriseUser--',isEmailExistInEnterpriseUser);
     // Check if Enterprise ID exists
     const isEnterpriseIDExist = await enterpriseUser.findOne({ _id: userId }).exec();
     if (!isEnterpriseIDExist) {
@@ -83,6 +84,7 @@ module.exports.createCard = async (req, res) => {
       const newCard = new Card({
         userId,
         businessName,
+        businessType,
         yourName,
         designation,
         mobile,
@@ -113,6 +115,7 @@ module.exports.createCard = async (req, res) => {
         const newUser = await enterpriseEmployeModel.create({
           username:yourName,
           email,
+          phnNumber:mobile,
           password: hashedPassword,
           cardNo: 0,
       });
@@ -123,8 +126,9 @@ module.exports.createCard = async (req, res) => {
       const newCard = new enterpriseEmployeCardModel({
         userId : newUser._id,
         businessName,
+        businessType,
         email,
-        empName : yourName,
+        yourName : yourName,
         designation,
         mobile,
         location,
@@ -171,6 +175,7 @@ module.exports.updateCard = async (req, res) => {
       userId,
       cardId,
       businessName,
+      businessType,
       yourName,
       designation,
       mobile,
@@ -190,7 +195,8 @@ module.exports.updateCard = async (req, res) => {
     if(!isUserExist){
       return res.status(400).json({ message: 'Invalid user ID' });
     }
-
+    console.log('updateCard _ cardId--',cardId);
+    console.log('Update enterprise card- image',image);
     // Find existing card to retrieve the current image URL if no new image is provided
     const existingCard = await Card.findById(cardId);
     if (!existingCard) {
@@ -201,6 +207,10 @@ module.exports.updateCard = async (req, res) => {
 
     // Upload image to S3 if a new image is provided
     if (image) {
+      // Delete the old image from S3 (if exists)
+      if (existingCard?.image) {
+        await deleteImageFromS3(existingCard.image); // Delete the old image from S3
+      }
       const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
       const fileName = `${userId}-businessCard-${cardId}.jpg`; // Unique file name based on user ID and card ID
       try {
@@ -218,6 +228,7 @@ module.exports.updateCard = async (req, res) => {
       { 
         $set: { 
           businessName, 
+          businessType,
           yourName, 
           designation, 
           mobile, 
@@ -242,7 +253,7 @@ module.exports.updateCard = async (req, res) => {
     res.status(200).json({ message: 'Card updated successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to update card', error });
+    res.status(500).json({ message: 'Failed to update card . Please try again later.', error });
   }
 };
 

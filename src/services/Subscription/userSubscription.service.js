@@ -18,23 +18,26 @@ const findAll = async () => {
   }
   };  
 
-const findOneById = async (userId) => {
-  try {
-    console.log("user id :", userId);
-
-
-    const userSubscriptions =  await UserSubscription.find({userId})
-      .populate('userId')
-      .populate('planId')
-      .exec();
-    console.log("user subscription : ", userSubscriptions);
-
-    return userSubscriptions;
-  } catch (error) {
-    console.error("Error fetching User Subscriptions plan:", error);
-    throw error; // Re-throw the error for higher-level handling if needed
-  }
-  };  
+  const findOneById = async (userId) => {
+    try {
+      console.log("user id :", userId);
+  
+      const userSubscriptions = await UserSubscription.find({ userId, status: 'active' }) // Assuming `status` is a field indicating activity
+        .sort({ startDate: -1 }) // Sort by `startDate` in descending order (latest first)
+        .populate('userId')
+        .populate('planId')
+        .limit(1) // Fetch only the latest subscription
+        .exec();
+  
+      console.log("Latest active user subscription:", userSubscriptions);
+  
+      return userSubscriptions.length > 0 ? userSubscriptions : []; // Return the single subscription or null if none found
+    } catch (error) {
+      console.error("Error fetching User Subscriptions plan:", error);
+      throw error; // Re-throw the error for higher-level handling if needed
+    }
+  };
+   
 
 
 
@@ -138,42 +141,76 @@ const findOneById = async (userId) => {
       // Find the user subscription by razorpayOrderId
       const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
       if (!userSubscription) {
+        console.log('User Subscription plan not found');
         throw new Error("User Subscription plan not found");
       }
       
-      // Update the subscription plan status with the new data
-      const updatedUserSubscription = await UserSubscription.updateOne(
-        { razorpayOrderId: razorpay_order_id }, // Search by razorpayOrderId, not _id
-        { $set: updateData }, // Update the subscription with the new data
-        { new: true }
-        ).exec();
-
         const userId = userSubscription.userId;
 
-        const isIndividualUserExist = await individualUserCollection.findOne({ userId }).exec();
-        const isEnterpriseEmployeExist = await enterpriseEmployeModel.findOne({ userId }).exec();
-        const isEnterpriseUserExist = await enterpriseUser.findOne({ userId }).exec();
+        const isIndividualUserExist = await individualUserCollection.findOne({ _id:userId }).exec();
+        const isEnterpriseEmployeExist = await enterpriseEmployeModel.findOne({ _id:userId }).exec();
+        const isEnterpriseUserExist = await enterpriseUser.findOne({ _id:userId }).exec();
         
         if (isIndividualUserExist) {
+          console.log("IndividualUser isSubscribed:true ---- ", isIndividualUserExist);
+
+          // Deactivate Old Subscriptions of individual user
+          await deactivateOldSubscriptions(isIndividualUserExist._id)
+
           // Update individual user collection
-          await individualUserCollection.updateOne({ _id: userId }, updateData);
+          await individualUserCollection.updateOne({ _id: userId }, {isSubscribed:true});
         } else if (isEnterpriseEmployeExist) {
+          console.log("isEnterpriseEmployeExist isSubscribed:true ---- ", isEnterpriseEmployeExist);
+
+          // Deactivate Old Subscriptions of employee 
+          await deactivateOldSubscriptions(isEnterpriseEmployeExist._id)
+
           // Update enterprise employee collection
-          await enterpriseEmployeModel.updateOne({ _id: userId }, updateData);
+          await enterpriseEmployeModel.updateOne({ _id: userId }, {isSubscribed:true});
         } else if (isEnterpriseUserExist) {
+          console.log("isEnterpriseUserExist isSubscribed:true ---- ", isEnterpriseUserExist);
+
+          // Deactivate Old Subscriptions of enterprise user 
+          await deactivateOldSubscriptions(isEnterpriseUserExist._id)
+
           // Update enterprise user collection
-          await enterpriseUser.updateOne({ _id: userId }, updateData);
+          await enterpriseUser.updateOne({ _id: userId }, {isSubscribed:true});
         } else {
           // Handle case when user doesn't exist in any collection
           console.log("User not found in any collection");
         }
-  
-      return updatedUserSubscription; // Return the result of the update operation
+        console.log("subscribed ---------------");
+      return;
     } catch (error) {
       console.error("Error updating UserSubscription:", error);
       throw error; // Re-throw the error for higher-level handling
     }
   };
+
+  const deactivateOldSubscriptions = async (userId) => {
+    try {
+      // Fetch all subscriptions for the user, sorted by creation date
+      const subscriptions = await UserSubscription.find({ userId }).sort({ createdAt: -1 }).exec();
+  
+      if (!subscriptions || subscriptions.length === 0) {
+        console.log("No subscriptions found for user.");
+        return;
+      }
+  
+      // Keep the latest subscription active and deactivate others
+      const latestSubscriptionId = subscriptions[0]._id;
+      await UserSubscription.updateMany(
+        { userId, _id: { $ne: latestSubscriptionId } }, // Exclude the latest subscription
+        { $set: { isActive: false } }
+      );
+  
+      console.log("Old subscriptions deactivated, latest subscription remains active.");
+    } catch (error) {
+      console.error("Error deactivating old subscriptions:", error);
+      throw error;
+    }
+  };
+  
   
 /**
  * Delete a UserSubscription plan by plan_id.
@@ -197,6 +234,157 @@ const findOneById = async (userId) => {
   };
   
   
+// // Import your deactivateExpiredSubscriptions function
+// const deactivateExpiredSubscriptions = async () => {
+//   try {
+//     const currentDate = new Date();
+
+//     // Find all subscriptions with endDate in the past and status as 'active'
+//     const expiredSubscriptions = await UserSubscription.find({
+//       status: 'active',
+//       endDate: { $lt: currentDate },
+//     }).exec();
+
+//     if (expiredSubscriptions.length === 0) {
+//       console.log("No expired subscriptions to deactivate.");
+//       return { message: "No expired subscriptions found." };
+//     }
+
+//     // Update the status of expired subscriptions to 'inactive'
+//     const updateResult = await UserSubscription.updateMany(
+//       { _id: { $in: expiredSubscriptions.map(sub => sub._id) } },
+//       { $set: { status: 'inactive' } }
+//     );
+
+//     console.log(`${updateResult.modifiedCount} subscriptions deactivated successfully.`);
+//     return { message: `${updateResult.modifiedCount} subscriptions deactivated successfully.` };
+//   } catch (error) {
+//     console.error("Error deactivating expired subscriptions:", error);
+//     throw error;
+//   }
+// };
+
+
+const deactivateExpiredSubscriptions = async () => {
+  try {
+    const currentDate = new Date();
+
+    // Find active subscriptions
+    const activeSubscriptions = await UserSubscription.find({
+      status: "active",
+    }).exec();
+
+    if (!activeSubscriptions.length) {
+      console.log("No active subscriptions to process.");
+      return { message: "No active subscriptions found." };
+    }
+
+    for (const subscription of activeSubscriptions) {
+      const userId = subscription.userId;
+
+      // Get all active subscriptions for the user
+      const userActiveSubscriptions = await UserSubscription.find({
+        userId,
+        status: "active",
+      })
+        .sort({ endDate: -1 }) // Sort by endDate (latest first)
+        .exec();
+
+      if (userActiveSubscriptions.length > 1) {
+        // Deactivate all subscriptions except the latest one
+        const subscriptionsToDeactivate = userActiveSubscriptions.slice(1);
+
+        for (const sub of subscriptionsToDeactivate) {
+          const deactivateResult = await UserSubscription.updateOne(
+            { _id: sub._id },
+            { $set: { status: "inactive" } }
+          );
+
+          if (deactivateResult.modifiedCount > 0) {
+            console.log(`Subscription ${sub._id} deactivated successfully.`);
+          } else {
+            console.log(`Failed to deactivate subscription ${sub._id}`);
+          }
+        }
+      }
+
+      // If the subscription is expired, deactivate it
+      if (subscription.endDate < currentDate) {
+        const expireResult = await UserSubscription.updateOne(
+          { _id: subscription._id },
+          { $set: { status: "inactive" } }
+        );
+
+        if (expireResult.modifiedCount > 0) {
+          console.log(`Expired subscription ${subscription._id} deactivated.`);
+        } else {
+          console.log(`Failed to deactivate expired subscription ${subscription._id}`);
+        }
+      }
+
+      // Update user status if they have no active subscriptions
+      const updateUserStatusResult = await updateUserStatus(userId);
+
+      if (updateUserStatusResult) {
+        console.log(`User ${userId} status updated successfully.`);
+      } else {
+        // console.log(`User ${userId} still has active subscriptions.`);
+      }
+    }
+
+    return { message: "Subscription processing completed successfully." };
+  } catch (error) {
+    console.error("Error deactivating expired subscriptions:", error);
+    throw error;
+  }
+};
+
+const updateUserStatus = async (userId) => {
+  try {
+    // Check if the user has any active subscriptions
+    const activeSubscriptions = await UserSubscription.find({
+      userId,
+      status: "active",
+    }).exec();
+
+    if (!activeSubscriptions.length) {
+      // No active subscriptions, update user status
+      const userUpdates = [
+        individualUserCollection.updateOne(
+          { _id: userId },
+          { $set: { isSubscribed: false } }
+        ),
+        enterpriseEmployeModel.updateOne(
+          { _id: userId },
+          { $set: { isSubscribed: false } }
+        ),
+        enterpriseUser.updateOne(
+          { _id: userId },
+          { $set: { isSubscribed: false } }
+        ),
+      ];
+
+      const results = await Promise.all(userUpdates);
+
+      results.forEach((result, index) => {
+        if (result.modifiedCount > 0) {
+          console.log(
+            `${
+              ["Individual", "Enterprise Employee", "Enterprise User"][index]
+            } user ${userId} updated successfully.`
+          );
+        }
+      });
+
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    throw error;
+  }
+};
 
 
 
@@ -208,5 +396,7 @@ module.exports = {
     updateUserSubscriptionById,
     deleteUserSubscriptionById,
     updateSubscriptionStatus,
-    updateSubscriptionStatusInUsers
+    updateSubscriptionStatusInUsers,
+    deactivateOldSubscriptions,
+    deactivateExpiredSubscriptions,
 };

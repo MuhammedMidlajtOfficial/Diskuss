@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const crypto = require('crypto');
 
 const IndividualUserSchema = new mongoose.Schema({
   username: {
@@ -41,7 +41,8 @@ const IndividualUserSchema = new mongoose.Schema({
   },
   phnNumber: {
     type: String,
-    default: '',
+    required:true,
+    
   },
   address: {
     type:String,
@@ -50,6 +51,18 @@ const IndividualUserSchema = new mongoose.Schema({
   contacts : {
     type : Array,
     default : []
+  },
+  referralCode: {
+    type: String,
+    unique: true,
+  }, // Ensure referral codes are unique
+  referralCodeUsed: {
+    type: String,
+    default: null,
+  }, // Referral code used by the user
+  status:{
+    type:String,
+    default : 'active'
   },
   socialMedia: {
     whatsappNo: {
@@ -67,21 +80,53 @@ const IndividualUserSchema = new mongoose.Schema({
     twitterLink: {
       type:String,
       default : ''
-    },
-    referralCode: String,  // Unique referral code
+    }
+  },
     coins: { type: Number, default: 0 },
-    invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }]
-    },
+
+    invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
+
+  
     meetings: [
-    {
-      type: String,
-      ref: "EnterpriseMeeting", // Reference to Meeting model
-      required: false,
-    },
-  ],
-} ,{ timestamps: true });
+      {
+        type: String,
+        ref: "Meeting", // Reference to Meeting model
+        required: false,
+      },
+    ],
+ }, { timestamps: true });
+
+// Set referral code as unique
+// Generate a unique referral code using crypto or any other method
+IndividualUserSchema.pre('save', async function(next) {
+  if (!this.referralCode) {
+    const generateReferralCode = () => {
+      return crypto.randomBytes(4).toString('hex').toUpperCase(); // Generate 12 character long referral code
+    };
+
+    let referralCode = generateReferralCode();
+    
+    // Ensure the referral code is unique
+    let isUnique = false;
+    while (!isUnique) {
+      const existingUser = await mongoose.model('User').findOne({ 'referralCode': referralCode });
+      if (!existingUser) {
+        isUnique = true;
+      } else {
+        referralCode = generateReferralCode(); // Generate a new code if it's not unique
+      }
+    }
+
+    this.referralCode = referralCode;
+  }
+
+  next();
+});
+
+
+
   
-  module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);
+  // module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);
   
-  // module.exports = mongoose.model('User', IndividualUserSchema);
+  module.exports = mongoose.model('User', IndividualUserSchema);
   

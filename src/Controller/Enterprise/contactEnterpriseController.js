@@ -1,4 +1,5 @@
-const Contact = require('../../models/contact.enterprise.model');
+const { individualUserCollection } = require('../../DBConfig');
+const Contact = require('../../models/contact.individual.model');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const enterpriseUser = require('../../models/enterpriseUser');
 const ContactService = require('../../services/contact.enterprise.service');
@@ -47,6 +48,7 @@ const createContact = async (req, res) => {
     try {
         const {
             name,
+            companyName,
             designation,
             phnNumber,
             email,
@@ -81,6 +83,7 @@ const createContact = async (req, res) => {
             contactOwnerType: EnterpriseUser ? 'EnterpriseUser' : 'EnterpriseEmployee',
             contacts: [{
                 name,
+                companyName,
                 designation,
                 phnNumber,
                 email,
@@ -138,6 +141,107 @@ const createContact = async (req, res) => {
         return res.status(500).json({ error: e.message });
     }
 };
+
+// const createContact = async (req, res) => {
+//     try {
+//         const {
+//             name,
+//             companyName,
+//             designation,
+//             phnNumber,
+//             email,
+//             website,
+//             businessCategory,
+//             scheduled,
+//             scheduledTime,
+//             notes,
+//             contactOwnerId,
+//         } = req.body;
+
+//         if (!name || !phnNumber || !contactOwnerId) {
+//             return res.status(400).json({ message: "All fields are required" });
+//         }
+//         console.log('contactOwnerId--', contactOwnerId);
+
+//         const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
+//         const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+//         const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
+
+//         let userId = null;
+//         let isDiskussUser = false;
+
+//         // Determine the user ID based on the type of user
+//         if (existIndividualUser) {
+//             userId = existIndividualUser._id;
+//             isDiskussUser = true;
+//         } else if (existEnterpriseUser) {
+//             userId = existEnterpriseUser._id;
+//             isDiskussUser = true;
+//         } else if (existEnterpriseEmploye) {
+//             userId = existEnterpriseEmploye._id;
+//             isDiskussUser = true;
+//         }
+
+//         const newContact = {
+//             name,
+//             companyName,
+//             designation,
+//             phnNumber,
+//             email,
+//             website,
+//             businessCategory,
+//             scheduled,
+//             scheduledTime,
+//             notes,
+//             userId: userId,  // Set the userId based on the type of user
+//             isDiskussUser: isDiskussUser
+//         };
+
+//         // Check if the contactOwnerId already has a contact document
+//         const existingContact = await Contact.findOne({ contactOwnerId });
+//         let createdContact;
+        
+//         if (existingContact) {
+//             // If the contact document exists, update the contacts array
+//             await Contact.updateOne(
+//                 { contactOwnerId },
+//                 { $push: { contacts: newContact } }
+//             );
+//         } else {
+//             // If no existing contact document, create a new contact document
+//             createdContact = await Contact.create({
+//                 contactOwnerId,
+//                 contacts: [newContact]
+//             });
+//         }
+
+//         // Add the contact to the user's respective collection
+//         if (existIndividualUser) {
+//             // Add the contact to individualUserCollection
+//             await individualUserCollection.updateOne(
+//                 { _id: contactOwnerId },
+//                 { $push: { contacts: existingContact ? existingContact._id : createdContact._id } }
+//             );
+//         } else if (existEnterpriseUser) {
+//             // Add the contact to enterpriseUserCollection
+//             await enterpriseUser.updateOne(
+//                 { _id: contactOwnerId },
+//                 { $push: { contacts: existingContact ? existingContact._id : createdContact._id } }
+//             );
+//         } else if (existEnterpriseEmploye) {
+//             // Add the contact to enterpriseEmployeeCollection
+//             await enterpriseEmployeModel.updateOne(
+//                 { _id: contactOwnerId },
+//                 { $push: { contacts: existingContact ? existingContact._id : createdContact._id } }
+//             );
+//         }
+
+//         return res.status(201).json({ message: "Contact created or updated successfully" });
+//     } catch (e) {
+//         console.log(e);
+//         return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+//     }
+// };
 
 
 /**

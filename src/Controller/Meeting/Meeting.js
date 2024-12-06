@@ -1,4 +1,3 @@
-
 const MeetingBase = require("../../models/EnterpriseMeetingModel")
 const moment = require('moment');
 const cron = require('node-cron');
@@ -12,6 +11,49 @@ const { emitNotification } = require('../../Controller/Socket.io/NotificationSoc
 const { required } = require("joi");
 
 
+//     // Save the meeting
+//     const newMeeting = new MeetingBase(newMeetingData);
+//     const savedMeeting = await newMeeting.save();
+
+//     // Fetch the meeting owner profile
+//     const ownerProfile = await Profile.findById(meetingOwner) || await enterprise.findById(meetingOwner);
+//     if (!ownerProfile) {
+//       return res.status(400).json({ message: `No user found with ID: ${meetingOwner}` });
+//     }
+//     await ownerProfile.updateOne({ $push: { meetings: savedMeeting._id } });
+
+//     // Notify invited users and update their profiles
+//     await Promise.all(
+//       invitedPeople.map(async (userId) => {
+//         const invitedUserProfile = await Profile.findById(userId) || await enterprise.findById(userId);
+//         if (invitedUserProfile) {
+//           await invitedUserProfile.updateOne({ $push: { meetings: savedMeeting._id } });
+
+//           // Create notification
+//           const ownerName = ownerProfile.username || ownerProfile.companyName || "Unknown";
+//           const notificationContent = `You have been invited to a meeting titled "${meetingTitle}" on ${selectedDate} at ${startTime}, created by ${ownerName}.`;
+
+//           const notification = new Notification({
+//             sender: meetingOwner,
+//             receiver: userId,
+//             type: "meeting",
+//             content: notificationContent,
+//             status: "unread",
+//           });
+//           await notification.save();
+
+//           // Emit notification
+//           emitNotification(userId, notification);
+//         }
+//       })
+//     );
+
+//     res.status(201).json({ message: "Meeting created successfully.", meeting: savedMeeting });
+//   } catch (error) {
+//     console.error("Error creating meeting:", error);
+//     res.status(500).json({ message: "Internal server error." });
+//   }
+// };
 
 // CreateMeeting controller 
 
@@ -225,18 +267,36 @@ const CreateMeeting = async (req, res) => {
 };
 
 
+    // Update the meeting status for the user
+    const updatedMeeting = await MeetingBase.findOneAndUpdate(
+      { _id: meetingId, "invitedPeople.user": userId },
+      {
+        $set: {
+          "invitedPeople.$.status": status,
+          ...(status === "rejected" || (status === "accepted" && reason)
+            ? { "invitedPeople.$.reason": reason }
+            : {}),
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedMeeting) {
+      return res.status(404).json({ message: "Meeting or user not found." });
+    }
 
 const updateMeetingStatus = async (req, res) => {
     const { meetingId, userId, status, reason } = req.body;
 
-    try {
-        // Validate input
-        if (!meetingId || !userId || !status) {
-            return res.status(400).json({ message: "Meeting ID, User ID, and status are required." });
-        }
 
-        if (!['pending', 'accepted', 'rejected'].includes(status)) {
-            return res.status(400).json({ message: "Invalid status. Valid options are 'pending', 'accepted', or 'rejected'." });
+            // Fetch the meeting owner's profile to get their userId
+            const ownerProfile =
+            await Profile.findById(meetingOwner) ||
+            await enterprise.findById(meetingOwner) ||
+            await individualUserCollection.findById(meetingOwner);
+
+        if (!ownerProfile) {
+            return res.status(400).json({ message: `No user found with ID: ${meetingOwner}` });
         }
 
         if (status === 'rejected' && !reason) {
@@ -254,19 +314,25 @@ const updateMeetingStatus = async (req, res) => {
                     ? { "invitedPeople.$.reason": reason } 
                     : {})
             }
+
             },
-            { new: true }
-        );
+        };
 
-        if (!updatedMeeting) {
-            return res.status(404).json({ message: "Meeting or user not found." });
-        }
-
-        // Notify the meeting owner about the user's decision
-        const meetingOwner = updatedMeeting.meetingOwner;
-        const meetingTitle = updatedMeeting.meetingTitle;
-        const decision = status === 'accepted' ? "accepted" : "rejected";
-        const notificationContent = `User ${userId} has ${decision} your meeting titled "${meetingTitle}".`;
+        // Send notification to admin backend
+        try {
+            await axios.post(
+                "https://diskuss-admin.onrender.com/api/v1/fcm/send-meeting-acceptance", // Ensure this URL is correct
+                notificationPayload,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            console.log("Meeting acceptance notification sent successfully.");
+        }  catch (notificationError) {
+          console.error("Error sending meeting acceptance notification:", notificationError.response?.data || notificationError.message);
+      }
 
         
 
@@ -280,8 +346,67 @@ const updateMeetingStatus = async (req, res) => {
         console.error("Error updating meeting status:", error);
         res.status(500).json({ message: "Internal server error." });
     }
+
 };
 
+// const CreateMeeting = async (req, res) => {
+//     try {
+//         const {
+//             meetingOwner,
+//             meetingTitle,
+//             type, // 'online' or 'offline'
+//             selectedDate,
+//             startTime,
+//             endTime,
+//             invitedPeople,
+//             description,
+//             isRemind,
+//             meetingPlatform, // Only for online
+//             meetingLink, // Only for online
+//             meetingPlace, // Only for offline
+//             roomNo, // Only for offline
+//             cabinNo // Only for offline
+//         } = req.body;
+
+//         // Validate the required fields
+//         if (!meetingTitle || !selectedDate || !startTime || !endTime || !invitedPeople) {
+//             return res.status(400).json({ message: "Meeting title, date, start time, end time, and invited people are required." });
+//         }
+
+//         // Create a new meeting object
+//         const newMeetingData = {
+//             meetingOwner,
+//             meetingTitle,
+//             type,
+//             selectedDate,
+//             startTime,
+//             endTime,
+//             invitedPeople,
+//             description,
+//             isRemind
+//         };
+
+//         // Add online or offline-specific fields
+//         if (type === 'online') {
+//             if (!meetingPlatform || !meetingLink) {
+//                 return res.status(400).json({ message: "Meeting platform and meeting link are required for online meetings." });
+//             }
+//             newMeetingData.meetingPlatform = meetingPlatform;
+//             newMeetingData.meetingLink = meetingLink;
+//         } else if (type === 'offline') {
+//             if (!meetingPlace || !roomNo) {
+//                 return res.status(400).json({ message: "Meeting place and room number are required for offline meetings." });
+//             }
+//             newMeetingData.meetingPlace = meetingPlace;
+//             newMeetingData.roomNo = roomNo;
+//             newMeetingData.cabinNo = cabinNo; // Optional
+//         } else {
+//             return res.status(400).json({ message: "Invalid meeting type. Please specify 'online' or 'offline'." });
+//         }
+
+//         // Save the new meeting
+//         const newMeeting = new MeetingBase(newMeetingData);
+//         const savedMeeting = await newMeeting.save();
 
 // const updateMeetingStatus = async (req, res) => {
 //     const { meetingId, userId, status, reason } = req.body;
@@ -452,50 +577,88 @@ const updateMeetingStatus = async (req, res) => {
 
 
 
+//         if (ownerProfile) {
+//             await ownerProfile.updateOne({ $push: { meetings: savedMeeting._id } });
+//         } else {
+//             return res.status(400).json({ message: `No user found with ID: ${meetingOwner}` });
+//         }
 
+//         // Update each invited user's profile
+//         await Promise.all(
+//             invitedPeople.map(async (userId) => {
 
+//                 let invitedUserProfile = await Profile.findById(userId) || enterprise.findById(userId);
 
+//                 if (invitedUserProfile) {
+//                     await invitedUserProfile.updateOne({ $push: { meetings: savedMeeting._id } });
 
+//                     // Create a notification for the invited user
+//                     const ownerName = ownerProfile.username || ownerProfile.companyName || "Unknown";
 
-        
+//                  // Create the notification content dynamically based on the available information
+//                    const notificationContent = `You have been invited to a meeting titled "${meetingTitle}" on ${selectedDate} at ${startTime} created by ${ownerName}.`;
+
+//                   // Create a notification for the invited user
+//                    const notification = new Notification({
+//                       sender: meetingOwner,
+//                       receiver: userId,
+//                         type: 'meeting',
+//                        content: notificationContent,
+//                       status: 'unread'
+//                      });
+//                     await notification.save();
+
+//                     // Emit notification
+//                     emitNotification(userId, notification);
+//                 }
+//             })
+//         );
+
+//         return res.status(201).json({ message: "Meeting created successfully.", meeting: savedMeeting });
+//     } catch (error) {
+//         console.error("Error creating meeting:", error);
+//         return res.status(500).json({ message: "Internal server error." });
+//     }
+// };
+
 // getUpcoming controller and its take req.params //
 const getUpcomingMeetings = async (req, res) => {
-    const { userId } = req.params; // Get the user ID from the request parameters
+  const { userId } = req.params; // Get the user ID from the request parameters
 
-    try {
-        // Get the current date and time
-        const currentDateTime = moment();
+  try {
+    // Get the current date and time
+    const currentDateTime = moment();
 
-        // Find all upcoming meetings organized by the user
-        const upcomingMeetings = await MeetingBase.find({
-            meetingOwner: userId, // Filter by user ID
-            selectedDate: { $gte: currentDateTime.toDate() } // Filter for upcoming meetings for today
-        }).exec();
+    // Find all upcoming meetings organized by the user
+    const upcomingMeetings = await MeetingBase.find({
+      meetingOwner: userId, // Filter by user ID
+      selectedDate: { $gte: currentDateTime.toDate() }, // Filter for upcoming meetings for today
+    }).exec();
 
-        // Check if there are no upcoming meetings
-        if (upcomingMeetings.length === 0) {
-            return res.status(404).json({ message: "No upcoming meetings found." });
-        }
-
-        return res.status(200).json(upcomingMeetings);
-    } catch (error) {
-        console.error("Error fetching upcoming meetings:", error);
-        return res.status(500).json({ message: "Internal server error." });
+    // Check if there are no upcoming meetings
+    if (upcomingMeetings.length === 0) {
+      return res.status(404).json({ message: "No upcoming meetings found." });
     }
-}
 
+    return res.status(200).json(upcomingMeetings);
+  } catch (error) {
+    console.error("Error fetching upcoming meetings:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
 
 // get meeting by ids  //
 // const getMeetingsByIds = async (req, res) => {
 //     try {
 //         const { userId } = req.params; // Extract userId from request parameters
 //         //  console.log(userId);
-         
+
 //         // Find the user's profile by userId and populate meetings if referenced in schema
 //         // console.log(userId);
 //         let userInfo = await Profile.findById(userId).populate({
 //             path: 'meetings',
 //             strictPopulate: false, 
+
 //         });
 
 //         // If not found in Profile collection, check in the enterprise collection
@@ -503,6 +666,7 @@ const getUpcomingMeetings = async (req, res) => {
 //             userInfo = await enterprise.findById(userId).populate({
 //                 path: 'meetings',
 //                 strictPopulate: false, 
+
 //             });
 //         }
 
@@ -516,7 +680,7 @@ const getUpcomingMeetings = async (req, res) => {
 //         // Extract meeting IDs from the user's profile
 //         const meetingIds = userInfo?.meetings?.map(meeting => meeting._id);
 //         // console.log("meeting ids from line no 176",meetingIds);
-        
+
 //           // Get the current date and set the time to 00:00:00 for accurate filtering
 //           const today = new Date();
 //           today.setHours(0, 0, 0, 0);
@@ -524,7 +688,7 @@ const getUpcomingMeetings = async (req, res) => {
 //         // Find meetings in MeetingBase collection that match the extracted meeting IDs
 //         // const meetings = await MeetingBase.find({ _id: { $in: meetingIds } });
 
-//         const meetings = await MeetingBase.find({ 
+//         const meetings = await MeetingBase.find({
 //             _id: { $in: meetingIds },
 //             selectedDate: { $gte: today } // Filter meetings where date is today or in the future
 //         });
@@ -541,12 +705,12 @@ const getUpcomingMeetings = async (req, res) => {
 //         const invitedPeopleIds = meetings.flatMap(meeting => meeting.invitedPeople);
 //         // console.log("from line no 190",meetingOwnerIds);
 //         // console.log("from line no 190",invitedPeopleIds);
-        
 
 //         // Fetch profiles of meeting owners and invited people based on their IDs
 //         const ownerProfiles = await Profile.find({ _id: { $in: meetingOwnerIds } }); 
 
 //         const ownerProfilesenterprise = await enterprise.find({ _id: { $in: meetingOwnerIds } }); 
+
 
 
 //         const invitedProfiles = await Profile.find({ _id: { $in: invitedPeopleIds } });
@@ -559,6 +723,7 @@ const getUpcomingMeetings = async (req, res) => {
 //         const profilesMap = [...ownerProfiles,...ownerProfilesenterprise, ...invitedProfiles,...additionalInvitedProfiles].reduce((acc, profile) => {
 //             acc[profile._id] = {
   
+
 //                 username: profile.username || profile.companyName,
 //                 email: profile.email,
 //                 image: profile.image,
@@ -579,7 +744,6 @@ const getUpcomingMeetings = async (req, res) => {
 //         });
 
 //         // console.log(enrichedMeetings);
-        
 
 
 //         // Send back the enriched meetings as the response
@@ -598,6 +762,7 @@ const getUpcomingMeetings = async (req, res) => {
 //     try {
 //       const { userId } = req.params;
    
+
 //       // Fetch user profile from Profile or Enterprise collection
 //       let userInfo = await Profile.findById(userId).populate({
 //         path: "meetings",
@@ -626,6 +791,7 @@ const getUpcomingMeetings = async (req, res) => {
 //       const today = new Date();
 //       today.setHours(0, 0, 0, 0);
   
+
 //       // Fetch meetings for today or in the future
 //       const meetings = await MeetingBase.find({
 //         _id: { $in: meetingIds },
@@ -638,6 +804,7 @@ const getUpcomingMeetings = async (req, res) => {
 //         return res.status(200).json({ meetings: [] });
 //       }
   
+
 //       // Extract IDs for meeting owners and invited users
 //       const meetingOwnerIds = meetings.map((meeting) => meeting.meetingOwner);
 //       const invitedPeopleIds = meetings.flatMap((meeting) =>
@@ -647,17 +814,20 @@ const getUpcomingMeetings = async (req, res) => {
 //       console.log("frpm line no 473", meetingOwnerIds)
 //       console.log("frpm line no 473", invitedPeopleIds)
   
+
 //       // Fetch profiles of meeting owners and invited users
 //       const [ownerProfiles, invitedProfiles] = await Promise.all([
 //         Profile.find({ _id: { $in: meetingOwnerIds } }),
 //         Profile.find({ _id: { $in: invitedPeopleIds } }),
 //       ]);
   
+
 //       const [enterpriseOwnerProfiles, enterpriseInvitedProfiles] = await Promise.all([
 //         enterprise.find({ _id: { $in: meetingOwnerIds } }),
 //         enterprise.find({ _id: { $in: invitedPeopleIds } }),
 //       ]);
   
+
 //       // Create a unified profile map for fast lookups
 //       const profilesMap = [
 //         ...ownerProfiles,
@@ -678,6 +848,7 @@ const getUpcomingMeetings = async (req, res) => {
 //       const enrichedMeetings = meetings.map((meeting) => {
 //         const meetingOwnerInfo = profilesMap[meeting.meetingOwner] || null;
   
+
 //         // Map invited people with detailed info
 //         const invitedInfo = meeting.invitedPeople.map((invitee) => ({
 //           ...profilesMap[invitee.user],
@@ -685,6 +856,7 @@ const getUpcomingMeetings = async (req, res) => {
 //           reason: invitee.reason || null,
 //         }));
   
+
 //         return {
 //           ...meeting.toObject(),
 //           meetingOwnerInfo,
@@ -692,6 +864,7 @@ const getUpcomingMeetings = async (req, res) => {
 //         };
 //       });
   
+
 //       // Send enriched meetings
 //       return res.status(200).json({ meetings: enrichedMeetings.reverse() });
 //     } catch (error) {
@@ -819,8 +992,20 @@ const getMeetingsByIds = async (req, res) => {
 
 
 
+    if (!userInfo) {
+      return res.status(404).json({ message: "User profile not found." });
+    }
 
+    const meetingIds = userInfo.meetings?.map((meeting) => meeting._id);
+    console.log(meetingIds);
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const meetings = await MeetingBase.find({
+      _id: { $in: meetingIds },
+      selectedDate: { $gte: today },
+    });
 
 // const deleteMeeting = async (req, res) => {
 //     const { meetingId } = req.params; // Get the meeting ID from the request parameters
@@ -999,11 +1184,19 @@ const deleteMeeting = async (req, res) => {
 };
 
 
+//                     // Create the notification content dynamically based on the available information
+//                       const notificationContent = `There are no meetings scheduled for the specified time. The meeting titled '${meetingToDelete.meetingTitle}' scheduled for ${meetingToDelete.selectedDate} at ${meetingToDelete.startTime}, created by ${ownerName}, has been cancelled`;
+
+
 // const UpdateMeeting = async (req, res) => {
 //     try {
 //         const { meetingId } = req.params; // Get meeting ID from request parameters
 //         const updatedData = req.body; // Get updated meeting data from request body
          
+//         if (updatedData.invitedPeople) {
+//           updatedData.invitedPeople = updatedData.invitedPeople.map(user => ({ user, status: "pending" }));
+//       }
+
 //         if (updatedData.invitedPeople) {
 //           updatedData.invitedPeople = updatedData.invitedPeople.map(user => ({ user, status: "pending" }));
 //       }
@@ -1042,6 +1235,7 @@ const deleteMeeting = async (req, res) => {
 //               const userId = user.toString()
 //                 try {
 //                     let updatedProfileOrEnterprise = await Profile.findById(userId) 
+
 //                         || await enterprise.findById(userId);
 
 //                         console.log(updatedProfileOrEnterprise)
@@ -1143,6 +1337,7 @@ const UpdateMeeting = async (req, res) => {
 
                       // Uncomment the below section to create and emit a notification for the invited user
                       /*
+
                       const ownerName = ownerProfileOrEnterprise.username || ownerProfileOrEnterprise.companyName || "Unknown";
 
                       const content = `You have been invited to a meeting titled "${updatedMeeting.meetingTitle}" on ${updatedMeeting.selectedDate} at ${updatedMeeting.startTime} by ${ownerName}.`;
@@ -1182,3 +1377,4 @@ const UpdateMeeting = async (req, res) => {
 
 
 module.exports = { CreateMeeting ,getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting,updateMeetingStatus};
+

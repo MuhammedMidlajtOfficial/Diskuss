@@ -6,7 +6,7 @@ const Profile = require('../../models/enterpriseEmploye.model')
 const enterprise = require('../../models/enterpriseUser')
 const { individualUserCollection } = require("../../models/individualUser");
 const mongoose = require("mongoose");
-const Contact = require('../../models/contact.individul.model')
+const Contact = require('../../models/contact.individual.model')
 const Notification = require('../../models/NotificationModel')
 const { emitNotification } = require('../../Controller/Socket.io/NotificationSocketIo');
 const { required } = require("joi");
@@ -137,7 +137,9 @@ const CreateMeeting = async (req, res) => {
     if (!meetingOwner || !meetingTitle || !type || !selectedDate || !startTime || !endTime || !invitedPeople) {
       return res.status(400).json({ message: "Missing required fields." });
     }
-
+    console.log('-----------------------------------------');
+    console.log('invitedPeople-----',invitedPeople);
+    console.log('-----------------------------------------');
     // Initialize meeting data
     const newMeetingData = {
       meetingOwner,
@@ -771,6 +773,19 @@ const getMeetingsByIds = async (req, res) => {
 };
 
 
+      return {
+        ...meeting.toObject(),
+        meetingOwnerInfo,
+        invitedInfo,
+      };
+    });
+
+    return res.status(200).json({ meetings: enrichedMeetings.reverse() });
+  } catch (error) {
+    console.error("Error fetching meetings by IDs:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
 
 
 
@@ -805,6 +820,7 @@ const getMeetingsByIds = async (req, res) => {
 //             { $pull: { meetings: meetingId } },
 //             { new: true }
 //         );
+
 
 //         if (!ownerUpdated) {
 //             console.log(`No profile or enterprise found for meeting owner ID: ${meetingOwner}`);

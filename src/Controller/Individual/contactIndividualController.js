@@ -1,5 +1,5 @@
 const { individualUserCollection } = require('../../DBConfig');
-const Contact = require('../../models/contact.individul.model');
+const Contact = require('../../models/contact.individual.model');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const enterpriseUser = require('../../models/enterpriseUser');
 const ContactService = require('../../services/contact.Individual.service');
@@ -48,6 +48,7 @@ const createContact = async (req, res) => {
     try {
         const {
             name,
+            companyName,
             designation,
             phnNumber,
             email,
@@ -59,7 +60,7 @@ const createContact = async (req, res) => {
             contactOwnerId,
         } = req.body;
 
-        if ( !name || !phnNumber || !contactOwnerId) {
+        if ( !name || !phnNumber || !contactOwnerId ) {
             return res.status(400).json({ message: "All fields are required" });
         }
         console.log('contactOwnerId--', contactOwnerId);
@@ -89,6 +90,7 @@ const createContact = async (req, res) => {
             contactOwnerId,
             contacts: [{
                 name,
+                companyName,
                 designation,
                 phnNumber,
                 email,
@@ -129,7 +131,7 @@ const createContact = async (req, res) => {
         return res.status(201).json({ message: "Contact created successfully", contact: newContact });
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e.message });
+        return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
     }
 };
 
@@ -144,6 +146,7 @@ const updateContact = async (req, res) => {
         const { contact_id } = req.params;
         const {
             name,
+            companyName,
             designation,
             phnNumber,
             email,
@@ -192,6 +195,7 @@ const updateContact = async (req, res) => {
             {
                 $set: {
                     name,
+                    companyName,
                     designation,
                     phnNumber,
                     email,

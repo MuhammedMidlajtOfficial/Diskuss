@@ -20,6 +20,27 @@ module.exports.getAllTeamById = async (req, res) => {
     }
 };
 
+module.exports.getAllTeamByTeamLead = async (req, res) => {
+    try {
+        const teamLeadId = req.params.id;
+        if (!teamLeadId) {
+            return res.status(400).json({ message: "teamLeadId is required" });
+        }
+
+        const team = await teamModel.find({ 
+            $or: [{ teamLead: teamLeadId }, { teamMembers: teamLeadId }]
+         })
+            .populate('teamMembers')
+            .populate('teamLead')
+            .exec();
+            console.log('team',team);
+        return res.status(200).json({ team });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to fetch team", error });
+    }
+};
+
 module.exports.getMembersOfTeam = async (req, res) => {
     try {
         const teamId= req.params.id
@@ -69,7 +90,6 @@ module.exports.createTeam = async (req, res) => {
         res.status(500).json({ message: "Failed to add team", error });
     }
 };
-
 
 module.exports.editTeam = async (req, res) => {
     try {

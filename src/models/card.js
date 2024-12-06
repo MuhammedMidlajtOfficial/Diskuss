@@ -9,6 +9,10 @@ const cardSchema = new mongoose.Schema({
     type:String,
     required : true
   },
+  businessType: {
+    type:String,
+    required : true
+  },
   yourName:  {
     type:String,
     required : true
@@ -35,7 +39,7 @@ const cardSchema = new mongoose.Schema({
   } ], 
   image:  {
     type:String,
-    required : true
+    default:''
   },       
   position:  {
     type:String,

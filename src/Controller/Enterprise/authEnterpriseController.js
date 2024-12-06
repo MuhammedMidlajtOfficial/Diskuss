@@ -3,23 +3,23 @@ const bcrypt = require('bcrypt');
 const otpGenerator = require("otp-generator")
 const mongoose = require('mongoose');
 
-const { otpCollection } = require('../../DBConfig');
-const { uploadImageToS3 } = require('../../services/AWS/s3Bucket');
+const { otpCollection, individualUserCollection } = require('../../DBConfig');
+const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
-const Contact  = require('../../models/contact.individul.model');
+const Contact  = require('../../models/contact.individual.model');
 const enterpriseUser = require('../../models/enterpriseUser');
 
 module.exports.postEnterpriseLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find enterprise user
+    // Find enterprise user 
     const enterprise = await enterpriseUser.findOne({ email });
     const enterpriseEmp = await enterpriseEmployeModel.findOne({ email });
 
     // Check if neither user is found
     if (!enterprise && !enterpriseEmp) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'No account associated with the provided email address.' });
     }
 
     let user = null;
@@ -45,7 +45,7 @@ module.exports.postEnterpriseLogin = async (req, res) => {
 
     // If password does not match for both, return invalid credentials
     if (!passwordMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'The password you entered is incorrect.' });
     }
 
     // Set JWT token if a match was found
@@ -58,17 +58,16 @@ module.exports.postEnterpriseLogin = async (req, res) => {
     
   } catch (error) {
     console.error('Error during login:', error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
 
-
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
-    const { companyName, industryType, email, otp } = req.body
+    const { companyName, industryType, phnNumber, email, otp, referralCode } = req.body
     const passwordRaw = req.body.password
 
-    if (!companyName || !email || !industryType || !passwordRaw || !otp) {
+    if (!companyName || !email || !industryType || !passwordRaw || !otp || !phnNumber) {
       return res.status(400).json({message:"All fields are required"}); // Correct response handling
     }
     // Check if email exists
@@ -76,6 +75,14 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
     if (isEmailExist) {
       return res.status(409).json({message:"A user with this email address already exists. Please login instead"}); // Correct response handling
     }
+    
+    if (referralCode) {
+    const referralCodeValid = await enterpriseUser.findOne({ referralCode}).exec();
+    if (!referralCodeValid) {
+      return res.status(409).json({message:"Invalid referral code"}); // Correct response handling
+    }
+  }
+
     // Validate OTP
     const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
     if (response.length === 0 || otp !== response[0].otp) {
@@ -88,13 +95,36 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
       companyName,
       industryType,
       email,
+      phnNumber,
       password: hashedPassword,
+      referralCodeUsed : referralCode || ""
     });
     console.log(newUser);
-    return res.status(201).json({ message: "User created", user: newUser });
+    
+    if (newUser) {
+      const existingContact = await Contact.find({ phnNumber: newUser.phnNumber });
+      if (existingContact) {
+        const contact = await Contact.updateOne(
+          { phnNumber: newUser.phnNumber },
+          { $set: { isDiskussUser: true, userId: newUser._id } }
+        );
+        if (contact.modifiedCount > 0) {
+          console.log("Contact updated successfully, Profile updated successfully");
+          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created", user: newUser });
+        } else {
+          console.log(" Contact not updated , Profile updated successfully");
+          return res.status(201).json({ Contact_message: "Contact not updated ", message: "User created", user: newUser });
+        }
+      } else {
+        console.log("Error: Contact not found.");
+        return res.status(404).json({ Contact_message: "Error: Contact not found." });
+      }
+    } else {
+      return res.status(400).json({ message: "Error: User creation failed." });
+    }
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
@@ -131,7 +161,7 @@ module.exports.postforgotPassword = async (req, res ) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
@@ -147,10 +177,10 @@ module.exports.OtpValidate = async (req, res ) => {
       } else {
         return res.status(200).json({ success: true, message: 'The OTP is valid' })
       } 
-    } return res.status(401).json({ message: "Email not exist" })
+    } return res.status(401).json({ message: "User Not Found with this email" })
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
@@ -182,13 +212,43 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
     });
   } catch (error) {
     console.log(error)
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
 
 module.exports.sendOTP = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, phnNumber } = req.body;
+
+    // Check for missing fields
+    if ( !email || !phnNumber) {
+      return res.status(400).json({ message :"email & phnNumber are required"}); // Correct response handling
+    }
+    
+    // Check if email exists in enterpriseUser or enterpriseEmployee
+    const isEmailInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
+    const isEmailInEnterpriseEmployee = await enterpriseEmployeModel.findOne({ email }).exec();
+
+    if (isEmailInEnterpriseUser || isEmailInEnterpriseEmployee) {
+      return res.status(409).json({ message: "A user with this email address already exists. Please login instead" });
+    }
+
+    // Check if phone number exists in any of the collections
+    const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+    const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+    const isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+
+    if (isIndividualExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+    }
+
+    if (isEnterpriseExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+    }
+
+    if (isEnterpriseEmployeeExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+    }
 
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
@@ -252,7 +312,7 @@ module.exports.resetPassword = async (req, res ) => {
       
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 }
 
@@ -278,10 +338,37 @@ module.exports.updateProfile = async (req, res) => {
       return res.status(401).json({ message: "User not found" });
     }
 
+    let isIndividualExist;
+    let isEnterpriseExist;
+    let isEnterpriseEmployeeExist;
+
+    if(phnNumber){
+      // Check if phone number exists in any of the collections
+      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+    }
+
+    if (isIndividualExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+    }
+
+    if (isEnterpriseExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+    }
+
+    if (isEnterpriseEmployeeExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+    }
+
     let imageUrl = isUserExist.image; // Default to existing image if no new image is provided
 
     // Upload image to S3 if a new image is provided
     if (image) {
+      // Delete the old image from S3 (if exists)
+      if (isUserExist?.image) {
+        await deleteImageFromS3(isUserExist.image); // Delete the old image from S3
+      }
       const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
       const fileName = `${userId}-company-profile.jpg`; // Unique file name based on user ID
       const uploadResult = await uploadImageToS3(imageBuffer, fileName);
@@ -321,7 +408,7 @@ module.exports.updateProfile = async (req, res) => {
           return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
         } else {
           console.log(" Contact not updated , Profile updated successfully");
-          return res.status(200).json({ Contact_message: "Error: Contact update failed.", Profile_message: "Profile updated successfully." });
+          return res.status(200).json({ Contact_message: "Contact update failed!!.", Profile_message: "Profile updated successfully." });
         }
       } else {
         console.log("Error: Contact not found.");
@@ -333,10 +420,9 @@ module.exports.updateProfile = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
-
 
 module.exports.getProfile = async (req, res) => {
   try {
@@ -360,6 +446,6 @@ module.exports.getProfile = async (req, res) => {
     return res.status(200).json({ user });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };

@@ -40,16 +40,20 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     },
     phnNumber: {
       type:String,
-      default : ''
+      required:true,
     },
     address: {
       type:String,
       default : ''
     },
+    status:{
+      type:String,
+      default : 'active'
+    },
     contacts: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'ContactEnterprise',
+        ref: 'Contact',
         default: []
       }
     ],    
