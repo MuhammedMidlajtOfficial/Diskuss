@@ -27,13 +27,14 @@ const sendInvite = async (referrerId, inviteePhoneNo) => {
 };
 
 // Register Invitee
-const registerInvitee = async (referralId, inviteeId) => {
+const registerInvitee = async (referralId, inviteePhoneNo) => {
     const referral = await Referral.findById(referralId);
     if (!referral) throw new Error('Referral not found');
     if (referral.status !== 'Invited') throw new Error('Invitee already registered or card created');
     
-    referral.invitee = inviteeId;
+    referral.invitee = inviteePhoneNo;
     referral.status = 'Registered';
+    referral.registeredAt = new Date();
     referral.rewardsEarned += 50; // Award 50 coins for registration
     await referral.save();
 
@@ -53,7 +54,7 @@ const registerInvitee = async (referralId, inviteeId) => {
 };
 
 // Register Invitee by Referral Code
-const registerInviteeByReferralCode = async (referralCode, inviteeId) => {
+const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo) => {
     const individualUser = await IndividualUser.findOne({ referralCode }).exec();
     const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
     const referral = null;
@@ -61,15 +62,35 @@ const registerInviteeByReferralCode = async (referralCode, inviteeId) => {
         throw new Error('Invalid referral code');
     }
     else if (individualUser) {
-        referral = await Referral.findOne({ referrer: individualUser._id, inviteeId, status: 'Invited' }).exec();    
+        referral = await Referral.findOne({ referrer: individualUser._id, inviteePhoneNo, status: 'Invited' }).exec(); 
+        if (!referral) {
+            const referral = new Referral({
+                referrer: individualUser._id,
+                inviteePhoneNo,
+                status: "Registered",
+                rewardsEarned: 0,
+                registeredAt: new Date()
+            });
+            await referral.save();
+        };   
     }
     else if (enterpriseUser) {
-        referral = await Referral.findOne({ referrer: enterpriseUser._id, inviteeId,status: 'Invited' }).exec();
+        referral = await Referral.findOne({ referrer: enterpriseUser._id, inviteePhoneNo,status: 'Invited' }).exec();
+        if (!referral) {
+            const referral = new Referral({
+                referrer: enterpriseUser._id,
+                inviteePhoneNo,
+                status: "Registered",
+                rewardsEarned: 0,
+                registeredAt: new Date()
+            });
+            await referral.save();
+        };   
     }
     if (!referral) throw new Error('Referral not found');
     if (referral.status !== 'Invited') throw new Error('Invitee already registered or card created');
 
-    referral.invitee = inviteeId;
+    referral.invitee = inviteePhoneNo;
     referral.status = 'Registered';
     referral.rewardsEarned += 50; // Award 50 coins for registration
     await referral.save();
@@ -96,6 +117,7 @@ const createCardByInvitee = async (referralId) => {
     if (referral.status !== 'Registered') throw new Error('Invitee must be registered before creating a card');
     
     referral.status = 'Card Created';
+    referral.cardCreatedAt = new Date();
     referral.rewardsEarned += 50; // Award 50 coins for card creation
     await referral.save();
 
