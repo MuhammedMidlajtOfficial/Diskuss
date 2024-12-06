@@ -101,34 +101,47 @@ const createUserSubscription = async (req, res) => {
   }
 };
 
+// Mutex to ensure only one request is processed at a time
+let isProcessing = false;
+
 const verifyPayment = async (req, res) => {
+  if (isProcessing) {
+    return res.status(429).json({ message: "Payment verification already in process. Please wait." });
+  }
+
   try {
+    isProcessing = true; // Lock the process
+
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-     
+
     // Generate the signature to verify the payment authenticity
     const generatedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_API_SECRET)  // Use your Razorpay key secret
+      .createHmac("sha256", process.env.RAZORPAY_API_SECRET) // Use your Razorpay key secret
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
+      .digest("hex");
 
     if (generatedSignature !== razorpay_signature) {
-      // Update the subscription status to failed on Payment verification failed 
-      await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'failed' });
+      // Update the subscription status to failed on Payment verification failed
+      await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, { status: "failed" });
       return res.status(400).json({ message: "Payment verification failed." });
     }
 
     // Update the subscription status to active on successful payment verification
-    await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id,{ status : 'active' , payment:razorpay_payment_id});
+    await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, {
+      status: "active",
+      payment: razorpay_payment_id,
+    });
 
-    await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id,{ isSubscribed:true })
+    await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id, { isSubscribed: true });
 
     return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
   } catch (error) {
     console.error("Payment verification failed:", error);
     res.status(500).json({ error: error.message });
+  } finally {
+    isProcessing = false; // Unlock the process
   }
 };
-
 
 /**
  * Update a UserSubscription
