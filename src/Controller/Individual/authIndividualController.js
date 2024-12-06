@@ -62,11 +62,13 @@ module.exports.postIndividualSignup = async (req, res) => {
       return res.status(400).json({ success: false, message: 'The OTP is not valid or has expired' });
     }
     
+    if(referralCode){
     // check if referral code is valid
     const isReferralCodeValid = await individualUserCollection.findOne({ referralCode}).exec();
     if (!isReferralCodeValid) {
       return res.status(400).json({ message: "The referral code is invalid" });
     }
+  }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
@@ -76,7 +78,7 @@ module.exports.postIndividualSignup = async (req, res) => {
       email,
       phnNumber,
       password: hashedPassword,
-      referralCodeUsed : referralCode,
+      referralCodeUsed : referralCode || "",
       // cardNo: 0,
     });
     console.log(newUser);
