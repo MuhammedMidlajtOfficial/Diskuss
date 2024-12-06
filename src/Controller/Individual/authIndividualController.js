@@ -68,8 +68,6 @@ module.exports.postIndividualSignup = async (req, res) => {
       return res.status(400).json({ message: "The referral code is invalid" });
     }
 
-    
-
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
     // Create a new user

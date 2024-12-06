@@ -174,6 +174,7 @@ module.exports = {
     getReferralDetails,
     checkReferralCode,
     registerInviteeByReferralCode
+
 }
 
 // const {Referral} = require('../../models/referral.model');
