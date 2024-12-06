@@ -353,7 +353,7 @@ const updateMeetingStatus = async (req, res) => {
         // Send notification to admin backend
         try {
             await axios.post(
-                "http://localhost:9000/api/v1/fcm/send-meeting-acceptance", // Ensure this URL is correct
+                "https://diskuss-admin.onrender.com/api/v1/fcm/send-meeting-acceptance", // Ensure this URL is correct
                 notificationPayload,
                 {
                     headers: {
