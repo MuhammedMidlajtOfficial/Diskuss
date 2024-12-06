@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+  const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { otpCollection } = require('../../DBConfig');
 const enterpriseUser = require('../../models/enterpriseUser');
@@ -82,7 +82,7 @@ module.exports.postIndividualSignup = async (req, res) => {
     console.log(newUser);
 
     if (newUser) {
-      const referralUpdate = await referralService.registerInviteeByReferralCode(referralCode, newUser._id);
+      await referralService.registerInviteeByReferralCode(referralCode, newUser._id);
       // console.log(referralUpdate);
 
 
