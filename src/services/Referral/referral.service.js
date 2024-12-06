@@ -56,14 +56,15 @@ const registerInvitee = async (referralId, inviteeId) => {
 const registerInviteeByReferralCode = async (referralCode, inviteeId) => {
     const individualUser = await IndividualUser.findOne({ referralCode }).exec();
     const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
+    const referral = null;
     if (!individualUser && !enterpriseUser) {
         throw new Error('Invalid referral code');
     }
     else if (individualUser) {
-        const referral = await Referral.findOne({ referrer: individualUser._id, inviteeId, status: 'Invited' }).exec();    
+        referral = await Referral.findOne({ referrer: individualUser._id, inviteeId, status: 'Invited' }).exec();    
     }
     else if (enterpriseUser) {
-        const referral = await Referral.findOne({ referrer: enterpriseUser._id, inviteeId,status: 'Invited' }).exec();
+        referral = await Referral.findOne({ referrer: enterpriseUser._id, inviteeId,status: 'Invited' }).exec();
     }
     if (!referral) throw new Error('Referral not found');
     if (referral.status !== 'Invited') throw new Error('Invitee already registered or card created');
