@@ -103,7 +103,6 @@ const enterpriseUserSchema = new mongoose.Schema({
 module.exports = mongoose.model('EnterpriseUser',enterpriseUserSchema)
 
 
-
 // Generate a unique referral code using crypto or any other method
 enterpriseUserSchema.pre('save', async function(next) {
   if (!this.referralCode) {

@@ -76,10 +76,12 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
       return res.status(409).json({message:"A user with this email address already exists. Please login instead"}); // Correct response handling
     }
     
-    const referralCodeValid = await enterpriseUser.findOne({ referral}).exec();
+    if (referralCode) {
+    const referralCodeValid = await enterpriseUser.findOne({ referralCode}).exec();
     if (!referralCodeValid) {
       return res.status(409).json({message:"Invalid referral code"}); // Correct response handling
     }
+  }
 
     // Validate OTP
     const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
@@ -95,7 +97,7 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
       email,
       phnNumber,
       password: hashedPassword,
-      referralCodeUsed : referralCode
+      referralCodeUsed : referralCode || ""
     });
     console.log(newUser);
     
