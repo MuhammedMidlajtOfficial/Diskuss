@@ -4,7 +4,7 @@ const moment = require('moment');
 const cron = require('node-cron');
 const Profile = require('../../models/enterpriseEmploye.model')
 const enterprise = require('../../models/enterpriseUser')
-const { individualUserCollection } = require("../../DBConfig");
+const { individualUserCollection } = require("../../models/individualUser");
 const mongoose = require("mongoose");
 const Contact = require('../../models/contact.individual.model')
 const Notification = require('../../models/NotificationModel')
@@ -773,6 +773,19 @@ const getMeetingsByIds = async (req, res) => {
 };
 
 
+      return {
+        ...meeting.toObject(),
+        meetingOwnerInfo,
+        invitedInfo,
+      };
+    });
+
+    return res.status(200).json({ meetings: enrichedMeetings.reverse() });
+  } catch (error) {
+    console.error("Error fetching meetings by IDs:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
 
 
 
@@ -807,6 +820,7 @@ const getMeetingsByIds = async (req, res) => {
 //             { $pull: { meetings: meetingId } },
 //             { new: true }
 //         );
+
 
 //         if (!ownerUpdated) {
 //             console.log(`No profile or enterprise found for meeting owner ID: ${meetingOwner}`);
