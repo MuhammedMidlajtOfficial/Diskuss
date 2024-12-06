@@ -124,7 +124,7 @@ IndividualUserSchema.pre('save', async function(next) {
 
 
   
-  module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);
+  // module.exports.individualUserCollection = mongoose.model('User', IndividualUserSchema);
   
-  // module.exports = mongoose.model('User', IndividualUserSchema);
+  module.exports = mongoose.model('User', IndividualUserSchema);
   

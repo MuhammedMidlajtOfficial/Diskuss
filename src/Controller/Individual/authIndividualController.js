@@ -68,6 +68,8 @@ module.exports.postIndividualSignup = async (req, res) => {
       return res.status(400).json({ message: "The referral code is invalid" });
     }
 
+    
+
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
     // Create a new user
@@ -82,6 +84,10 @@ module.exports.postIndividualSignup = async (req, res) => {
     console.log(newUser);
 
     if (newUser) {
+      const referralUpdate = await referralService.registerInviteeByReferralCode(referralCode, newUser._id);
+      // console.log(referralUpdate);
+
+
       const existingContact = await Contact.find({ phnNumber: newUser.phnNumber });
       if (existingContact) {
         const contact = await Contact.updateOne(

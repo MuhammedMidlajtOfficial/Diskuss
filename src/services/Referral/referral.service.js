@@ -1,10 +1,17 @@
 const {Referral} = require('../../models/referral.model');
-const individualUserCollection = require('../../models/individualUser');
-const enterpriseUserCollection = require('../../models/enterpriseUser');
+const IndividualUser = require('../../models/individualUser');
+const EnterpriseUser = require('../../models/enterpriseUser');
 const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
-const IndividualUser = individualUserCollection.individualUserCollection;
-const EnterpriseUser = enterpriseUserCollection.enterpriseUserCollection
 const { ObjectId } = require('mongodb');
+
+const checkUserType = async (userId) => {
+    const individualUser = await IndividualUser.findById(userId).exec();
+    const enterpriseUser = await EnterpriseUser.findById(userId).exec();
+    if (!individualUser && !enterpriseUser) {
+        throw new Error('Invalid user');
+    }
+    return individualUser ? 'individual' : 'enterprise';
+}
 
 // Send Invite
 const sendInvite = async (referrerId, inviteePhoneNo) => {
@@ -35,12 +42,51 @@ const registerInvitee = async (referralId, inviteeId) => {
         { $match: { referrer: referral.referrer } }, 
         { $group: { total: { $sum: '$rewardsEarned' } } } ]).lean().exec();
     
-
+    const userType = await checkUserType(referral.referrer);
     // Update referrerId's coin balance
-    await User.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
-    
+    if (userType === 'individual') {
+        await IndividualUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+    } else {
+        await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+    }    
     return referral;
 };
+
+// Register Invitee by Referral Code
+const registerInviteeByReferralCode = async (referralCode, inviteeId) => {
+    const individualUser = await IndividualUser.findOne({ referralCode }).exec();
+    const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
+    if (!individualUser && !enterpriseUser) {
+        throw new Error('Invalid referral code');
+    }
+    else if (individualUser) {
+        const referral = await Referral.findOne({ referrer: individualUser._id, inviteeId, status: 'Invited' }).exec();    
+    }
+    else if (enterpriseUser) {
+        const referral = await Referral.findOne({ referrer: enterpriseUser._id, inviteeId,status: 'Invited' }).exec();
+    }
+    if (!referral) throw new Error('Referral not found');
+    if (referral.status !== 'Invited') throw new Error('Invitee already registered or card created');
+
+    referral.invitee = inviteeId;
+    referral.status = 'Registered';
+    referral.rewardsEarned += 50; // Award 50 coins for registration
+    await referral.save();
+
+    // Update invitee's coin balance
+    const totalCoins = await Referral.aggregate([ 
+        { $match: { referrer: referral.referrer } }, 
+        { $group: { total: { $sum: '$rewardsEarned' } } } ]).lean().exec();
+    
+    const userType = await checkUserType(referral.referrer);
+    // Update referrerId's coin balance
+    if (userType === 'individual') {
+        await IndividualUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+    } else {
+        await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+    }    
+    return referral;
+}   
 
 // Create Card by Invitee
 const createCardByInvitee = async (referralId) => {
@@ -55,11 +101,15 @@ const createCardByInvitee = async (referralId) => {
     // Update invitee's coin balance
     const totalCoins = await Referral.aggregate([ 
         { $match: { referrer: referral.referrer } }, 
-        { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]);
+        { $group: { total: { $sum: '$rewardsEarned' } } } ]).lean().exec();
     
-
+    const userType = await checkUserType(referral.referrer);
     // Update referrerId's coin balance
-    await User.findByIdAndUpdate(referral.referrer,  { coins: totalCoins } );
+    if (userType === 'individual') {
+        await IndividualUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+    } else {
+        await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+    }    
     
     return referral;
 };
@@ -85,7 +135,13 @@ const getReferralDetails = async (userId) => {
     // const userData = await User.findById(userId).select('coins referralCode').lean().exec();
     // const coins = userData ? userData.coins : 0; // Default to 0 if no user found
     // console.log("coins : ", coins);
-    const userData = await User.findById(userId).select('referralCode').lean().exec();
+    const userType = await checkUserType(userId);
+    const userData = {};
+    if (userType === 'individual') {
+        userData = await IndividuaxlUser.findById(userId).select('referralCode').lean().exec();
+    } else {
+        userData = await EnterpriseUser.findById(userId).select('referralCode').lean().exec();
+    }
     const referralCode = userData ? userData.referralCode : ''; // Default to empty string if no user found
     console.log("referralCode : ", referralCode);
     
@@ -116,7 +172,8 @@ module.exports = {
     registerInvitee,
     createCardByInvitee,
     getReferralDetails,
-    checkReferralCode
+    checkReferralCode,
+    registerInviteeByReferralCode
 }
 
 // const {Referral} = require('../../models/referral.model');
