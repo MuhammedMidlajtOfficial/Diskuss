@@ -88,11 +88,17 @@ module.exports.postIndividualSignup = async (req, res) => {
       // console.log(referralUpdate);
 
 
-      const existingContact = await Contact.find({ phnNumber: newUser.phnNumber });
+      const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });
       if (existingContact) {
+        // Update the contact that matches the phone number.
         const contact = await Contact.updateOne(
-          { phnNumber: newUser.phnNumber },
-          { $set: { isDiskussUser: true, userId: newUser._id } }
+          { 'contacts.phnNumber': newUser.phnNumber }, // Filter criteria
+          {
+            $set: { 
+              'contacts.$.isDiskussUser': true,  // Update the contact's `isDiskussUser` field
+              'contacts.$.userId': newUser._id // Update the `userId` field for the contact
+            }
+          }
         );
         if (contact.modifiedCount > 0) {
           console.log("Contact updated successfully, User created successfully");
@@ -336,11 +342,11 @@ module.exports.updateProfile = async (req, res) => {
     let isEnterpriseExist;
     let isEnterpriseEmployeeExist;
 
-    if(phnNumber){
-      // Check if phone number exists in any of the collections
-      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
-      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
-      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+    if (phnNumber) {
+      // Check if phone number exists in any of the collections, excluding the current user
+      isIndividualExist = await individualUserCollection.findOne({ phnNumber, _id: { $ne: userId } }).exec();
+      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber, _id: { $ne: userId } }).exec();
+      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber, _id: { $ne: userId } }).exec();
     }
 
     if (isIndividualExist) {
@@ -390,35 +396,53 @@ module.exports.updateProfile = async (req, res) => {
       }
     );
 
-  const forNumber = await individualUserCollection.findOne({ _id: userId }).select('phnNumber').exec();
+    const forNumber = await individualUserCollection.findOne({ _id: userId }).select('phnNumber').exec();
 
-  if (!forNumber || !forNumber.phnNumber) {
-    return res.status(400).json({ message: "Phone number not found for the user." });
-  }
-
-  const existingContact = await Contact.findOne({ phnNumber: forNumber.phnNumber });
-
-  if (existingContact) {
-    try {
-      const contact = await Contact.updateOne(
-        { phnNumber: forNumber.phnNumber },
-        { $set: { isDiskussUser: true, userId: forNumber._id } }
-      );
-      if (contact.modifiedCount > 0) {
-        console.log("Contact updated successfully, Profile updated successfully");
-        return res.status(200).json({ Contact_message: "Contact updated successfully.", Profile_message: "Profile updated successfully.", contact });
-      } else {
-        console.log("Error: Contact not updated , Profile updated successfully");
-        return res.status(200).json({ Contact_message: "Contact update failed.", Profile_message: "Profile updated successfully." });
-      }
-    } catch (err) {
-      console.log("Error updating contact:", err);
-      return res.status(500).json({ message: "An error occurred while updating the contact." });
+    if (!forNumber || !forNumber.phnNumber) {
+      return res.status(400).json({ message: "Phone number not found for the user." });
     }
-  } else {
-    console.log("Error: Contact not found.");
-    return res.status(404).json({ Contact_message: "Error: Contact not found." });
-  }
+    
+    console.log("forNumber.phnNumber value:", forNumber.phnNumber);
+    
+    // Query the Contact collection to find an existing contact with the matching phone number.
+    const existingContact = await Contact.findOne({ 'contacts.phnNumber': forNumber.phnNumber });
+    console.log("existingContact-", existingContact);
+    
+    if (existingContact) {
+      try {
+        // Update the contact that matches the phone number.
+        const contact = await Contact.updateOne(
+          { 'contacts.phnNumber': forNumber.phnNumber }, // Filter criteria
+          {
+            $set: { 
+              'contacts.$.isDiskussUser': true,  // Update the contact's `isDiskussUser` field
+              'contacts.$.userId': forNumber._id // Update the `userId` field for the contact
+            }
+          }
+        );
+        
+        if (contact.modifiedCount > 0) {
+          console.log("Contact updated successfully, Profile updated successfully");
+          return res.status(200).json({ 
+            Contact_message: "Contact updated successfully.", 
+            Profile_message: "Profile updated successfully.", 
+            contact 
+          });
+        } else {
+          console.log("Error: Contact not updated, Profile updated successfully");
+          return res.status(200).json({ 
+            Contact_message: "Contact update failed.", 
+            Profile_message: "Profile updated successfully." 
+          });
+        }
+      } catch (err) {
+        console.log("Error updating contact:", err);
+        return res.status(500).json({ message: "An error occurred while updating the contact." });
+      }
+    } else {
+      console.log("Error: Contact not found.");
+      return res.status(404).json({ Contact_message: "Error: Contact not found." });
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
