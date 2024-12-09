@@ -163,7 +163,7 @@ const getReferralDetails = async (userId) => {
     const userType = await checkUserType(userId);
     const userData = {};
     if (userType === 'individual') {
-        userData = await IndividuaxlUser.findById(userId).select('referralCode').lean().exec();
+        userData = await IndividualUser.findById(userId).select('referralCode').lean().exec();
     } else {
         userData = await EnterpriseUser.findById(userId).select('referralCode').lean().exec();
     }
