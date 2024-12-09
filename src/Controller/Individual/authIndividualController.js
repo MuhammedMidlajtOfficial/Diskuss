@@ -336,11 +336,11 @@ module.exports.updateProfile = async (req, res) => {
     let isEnterpriseExist;
     let isEnterpriseEmployeeExist;
 
-    if(phnNumber){
-      // Check if phone number exists in any of the collections
-      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
-      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
-      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+    if (phnNumber) {
+      // Check if phone number exists in any of the collections, excluding the current user
+      isIndividualExist = await individualUserCollection.findOne({ phnNumber, _id: { $ne: userId } }).exec();
+      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber, _id: { $ne: userId } }).exec();
+      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber, _id: { $ne: userId } }).exec();
     }
 
     if (isIndividualExist) {
