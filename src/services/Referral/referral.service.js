@@ -161,7 +161,7 @@ const getReferralDetails = async (userId) => {
     // const coins = userData ? userData.coins : 0; // Default to 0 if no user found
     // console.log("coins : ", coins);
     const userType = await checkUserType(userId);
-    const userData = {};
+    let userData = {};
     if (userType === 'individual') {
         userData = await IndividualUser.findById(userId).select('referralCode').lean().exec();
     } else {
