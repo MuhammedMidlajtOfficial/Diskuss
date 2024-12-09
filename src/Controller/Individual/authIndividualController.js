@@ -390,9 +390,16 @@ module.exports.updateProfile = async (req, res) => {
       }
     );
 
-    const forNumber = await individualUserCollection.findOne({ _id: userId }).select('phnNumber').exec();
-    const existingContact = await Contact.find({ phnNumber: forNumber.phnNumber });
-    if (existingContact) {
+  const forNumber = await individualUserCollection.findOne({ _id: userId }).select('phnNumber').exec();
+
+  if (!forNumber || !forNumber.phnNumber) {
+    return res.status(400).json({ message: "Phone number not found for the user." });
+  }
+
+  const existingContact = await Contact.findOne({ phnNumber: forNumber.phnNumber });
+
+  if (existingContact) {
+    try {
       const contact = await Contact.updateOne(
         { phnNumber: forNumber.phnNumber },
         { $set: { isDiskussUser: true, userId: forNumber._id } }
@@ -404,10 +411,14 @@ module.exports.updateProfile = async (req, res) => {
         console.log("Error: Contact not updated , Profile updated successfully");
         return res.status(200).json({ Contact_message: "Contact update failed.", Profile_message: "Profile updated successfully." });
       }
-    } else {
-      console.log("Error: Contact not found.");
-      return res.status(404).json({ Contact_message: "Error: Contact not found." });
+    } catch (err) {
+      console.log("Error updating contact:", err);
+      return res.status(500).json({ message: "An error occurred while updating the contact." });
     }
+  } else {
+    console.log("Error: Contact not found.");
+    return res.status(404).json({ Contact_message: "Error: Contact not found." });
+  }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
