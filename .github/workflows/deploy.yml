@@ -21,4 +21,5 @@ jobs:
       - name: Deploy to EC2
         run: |
           # Run the deploy commands on your EC2 instance
-          ssh -o StrictHostKeyChecking=no ubuntu@your-ec2-ip 'cd /home/ubuntu/Diskuss && git pull && pm2 restart diskuss'
+          ssh -o StrictHostKeyChecking=no ubuntu@13.203.24.247 'cd /home/ubuntu/Diskuss && git pull && pm2 restart diskuss'
+
