@@ -192,13 +192,41 @@ const checkReferralCode = async (referralCode) => {
     return { valid: true };
 };
 
+const findAllReferrals = async (page, limit) => {
+    try {
+        const referrals = await Referral.find()
+        .populate('referrer', 'username email image')
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean()
+        .exec();
+
+        const totalReferrals = await Referral.countDocuments().exec();
+        const totalPages = Math.ceil(totalReferrals / limit);
+        const response = {
+            page,
+            limit,
+            totalPages,
+            totalReferrals,
+            referrals
+        };
+
+        return response;
+    } catch (error) {
+        console.error("Error fetching referrals:", error);
+        throw error; // Re-throw the error for higher-level handling if needed
+    }
+};
+
 module.exports = {
     sendInvite,
     registerInvitee,
     createCardByInvitee,
     getReferralDetails,
     checkReferralCode,
-    registerInviteeByReferralCode
+    registerInviteeByReferralCode,
+    findAllReferrals
 
 }
 
