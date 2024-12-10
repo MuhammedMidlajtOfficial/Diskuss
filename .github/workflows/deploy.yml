@@ -1,0 +1,24 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # Change to your branch name, e.g., 'main' or 'master'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DISKUSS_SSH_PRIVATE_KEY }}  # This uses the secret added earlier
+
+      - name: Deploy to EC2
+        run: |
+          # Run the deploy commands on your EC2 instance
+          ssh -o StrictHostKeyChecking=no ubuntu@your-ec2-ip 'cd /home/ubuntu/Diskuss && git pull && pm2 restart diskuss'
