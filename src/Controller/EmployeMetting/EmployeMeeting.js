@@ -433,98 +433,191 @@ const deleteMeeting = async (req, res) => {
 
 
 
+// const UpdateMeeting = async (req, res) => {
+//   try {
+//       const { meetingId } = req.params; // Get the meeting ID from request parameters
+//       const updatedData = req.body; // Get the updated meeting data from the request body
+
+//       // If there are invitedPeople in the updated data, reset their status to "pending"
+//       if (updatedData.invitedPeople) {
+//           updatedData.invitedPeople = updatedData.invitedPeople.map(user => ({ user, status: "pending" }));
+//       }
+
+//       // Find the meeting by ID and update it with the new data
+//       const updatedMeeting = await MeetingBase.findByIdAndUpdate(meetingId, updatedData, {
+//           new: true, // Return the updated document after modification
+//           runValidators: true // Ensure schema validation rules are respected
+//       });
+
+//       // If the meeting is not found, return a 404 response
+//       if (!updatedMeeting) {
+//           return res.status(404).json({ message: "Meeting not found" });
+//       }
+
+//       // Update the meeting reference in the meeting owner's profile, enterprise, or individualUserCollection
+//       try {
+//           // Look for the meeting owner in Profile, Enterprise, or individualUserCollection
+//           var ownerProfileOrEnterprise = await Profile.findById(updatedMeeting.meetingOwner)
+//               || await enterprise.findById(updatedMeeting.meetingOwner)
+//               || await individualUserCollection.findById(updatedMeeting.meetingOwner);
+
+//           // If the meeting owner is found, update their meetings array
+//           if (ownerProfileOrEnterprise) {
+//               await ownerProfileOrEnterprise.updateOne(
+//                   { $addToSet: { meetings: updatedMeeting._id } }, // Add the meeting ID only if it does not already exist
+//                   { new: true }
+//               );
+//           } else {
+//               console.log(`No profile, enterprise, or individual user found for meeting owner ID: ${updatedMeeting.meetingOwner}`);
+//           }
+//       } catch (error) {
+//           console.error(`Error updating profile, enterprise, or individual user for meeting owner ID: ${updatedMeeting.meetingOwner}`, error);
+//       }
+
+//       // Update each invited user's profile, enterprise, or individualUserCollection to include the meeting ID
+//       await Promise.all(
+//           updatedMeeting.invitedPeople.map(async ({ user }) => {
+//               const userId = user.toString(); // Convert the user ID to a string for consistency
+//               try {
+//                   // Look for the invited user in Profile, Enterprise, or individualUserCollection
+//                   let updatedProfileOrEnterprise = await Profile.findById(userId)
+//                       || await enterprise.findById(userId)
+//                       || await individualUserCollection.findById(userId);
+
+//                   // If the user is found, update their meetings array
+//                   if (updatedProfileOrEnterprise) {
+//                       await updatedProfileOrEnterprise.updateOne(
+//                           { $addToSet: { meetings: updatedMeeting._id } }, // Add the meeting ID only if it does not already exist
+//                           { new: true }
+//                       );
+
+//                       // Uncomment the below section to create and emit a notification for the invited user
+//                       /*
+//                       const ownerName = ownerProfileOrEnterprise.username || ownerProfileOrEnterprise.companyName || "Unknown";
+
+//                       const content = `You have been invited to a meeting titled "${updatedMeeting.meetingTitle}" on ${updatedMeeting.selectedDate} at ${updatedMeeting.startTime} by ${ownerName}.`;
+
+//                       const notification = new Notification({
+//                           sender: updatedMeeting.meetingOwner,
+//                           receiver: userId,
+//                           type: 'meeting',
+//                           content: content,
+//                           status: 'unread'
+//                       });
+//                       await notification.save();
+
+//                       emitNotification(userId.toString(), notification); // Emit real-time notification
+//                       */
+
+//                   } else {
+//                       console.log(`No profile, enterprise, or individual user found with ID: ${userId}`);
+//                   }
+//               } catch (error) {
+//                   console.error(`Error updating profile, enterprise, or individual user for user ID: ${userId}`, error);
+//               }
+//           })
+//       );
+
+//       // Return the updated meeting information
+//       return res.status(200).json({ data: updatedMeeting, success: true, message: "Successfully updated" });
+//   } catch (error) {
+//       console.error(error);
+//       return res.status(500).json({ message: "Failed to update meeting", error: error.message });
+//   }
+// };
+
 const UpdateMeeting = async (req, res) => {
   try {
-      const { meetingId } = req.params; // Get the meeting ID from request parameters
-      const updatedData = req.body; // Get the updated meeting data from the request body
+    const { meetingId } = req.params;
+    const updatedData = req.body;
 
-      // If there are invitedPeople in the updated data, reset their status to "pending"
-      if (updatedData.invitedPeople) {
-          updatedData.invitedPeople = updatedData.invitedPeople.map(user => ({ user, status: "pending" }));
-      }
+    // Fetch the original meeting
+    const oldMeeting = await MeetingBase.findById(meetingId);
+    if (!oldMeeting) {
+      return res.status(404).json({ message: "Meeting not found" });
+    }
 
-      // Find the meeting by ID and update it with the new data
-      const updatedMeeting = await MeetingBase.findByIdAndUpdate(meetingId, updatedData, {
-          new: true, // Return the updated document after modification
-          runValidators: true // Ensure schema validation rules are respected
-      });
+    // Store the old invited people
+    const oldInvitedPeople = oldMeeting.invitedPeople.map(person => person.user.toString());
 
-      // If the meeting is not found, return a 404 response
-      if (!updatedMeeting) {
-          return res.status(404).json({ message: "Meeting not found" });
-      }
+    // Reset status to "pending" for updated invited people
+    if (updatedData.invitedPeople) {
+      updatedData.invitedPeople = updatedData.invitedPeople.map(user => ({ user, status: "pending" }));
+    }
 
-      // Update the meeting reference in the meeting owner's profile, enterprise, or individualUserCollection
-      try {
-          // Look for the meeting owner in Profile, Enterprise, or individualUserCollection
-          var ownerProfileOrEnterprise = await Profile.findById(updatedMeeting.meetingOwner)
-              || await enterprise.findById(updatedMeeting.meetingOwner)
-              || await individualUserCollection.findById(updatedMeeting.meetingOwner);
+    // Update the meeting
+    const updatedMeeting = await MeetingBase.findByIdAndUpdate(meetingId, updatedData, {
+      new: true,
+      runValidators: true,
+    });
 
-          // If the meeting owner is found, update their meetings array
-          if (ownerProfileOrEnterprise) {
-              await ownerProfileOrEnterprise.updateOne(
-                  { $addToSet: { meetings: updatedMeeting._id } }, // Add the meeting ID only if it does not already exist
-                  { new: true }
-              );
+    if (!updatedMeeting) {
+      return res.status(404).json({ message: "Meeting not found after update" });
+    }
+
+    // Store the new invited people
+    const newInvitedPeople = updatedMeeting.invitedPeople.map(person => person.user.toString());
+
+    // Find removed users (present in old but not in new)
+    const removedPeople = oldInvitedPeople.filter(userId => !newInvitedPeople.includes(userId));
+
+    // Remove meeting ID from removed users
+    await Promise.all(
+      removedPeople.map(async userId => {
+        try {
+          const profileOrEnterprise = await Profile.findById(userId)
+            || await enterprise.findById(userId)
+            || await individualUserCollection.findById(userId);
+
+          if (profileOrEnterprise) {
+            await profileOrEnterprise.updateOne(
+              { $pull: { meetings: updatedMeeting._id } }, // Remove the meeting ID
+              { new: true }
+            );
           } else {
-              console.log(`No profile, enterprise, or individual user found for meeting owner ID: ${updatedMeeting.meetingOwner}`);
+            console.log(`No profile, enterprise, or individual user found with ID: ${userId}`);
           }
-      } catch (error) {
-          console.error(`Error updating profile, enterprise, or individual user for meeting owner ID: ${updatedMeeting.meetingOwner}`, error);
-      }
+        } catch (error) {
+          console.error(`Error removing meeting ID from user ID: ${userId}`, error);
+        }
+      })
+    );
 
-      // Update each invited user's profile, enterprise, or individualUserCollection to include the meeting ID
-      await Promise.all(
-          updatedMeeting.invitedPeople.map(async ({ user }) => {
-              const userId = user.toString(); // Convert the user ID to a string for consistency
-              try {
-                  // Look for the invited user in Profile, Enterprise, or individualUserCollection
-                  let updatedProfileOrEnterprise = await Profile.findById(userId)
-                      || await enterprise.findById(userId)
-                      || await individualUserCollection.findById(userId);
+    // Add meeting ID to new invited users
+    await Promise.all(
+      newInvitedPeople.map(async userId => {
+        try {
+          const profileOrEnterprise = await Profile.findById(userId)
+            || await enterprise.findById(userId)
+            || await individualUserCollection.findById(userId);
 
-                  // If the user is found, update their meetings array
-                  if (updatedProfileOrEnterprise) {
-                      await updatedProfileOrEnterprise.updateOne(
-                          { $addToSet: { meetings: updatedMeeting._id } }, // Add the meeting ID only if it does not already exist
-                          { new: true }
-                      );
+          if (profileOrEnterprise) {
+            await profileOrEnterprise.updateOne(
+              { $addToSet: { meetings: updatedMeeting._id } }, // Add the meeting ID
+              { new: true }
+            );
+          } else {
+            console.log(`No profile, enterprise, or individual user found with ID: ${userId}`);
+          }
+        } catch (error) {
+          console.error(`Error adding meeting ID to user ID: ${userId}`, error);
+        }
+      })
+    );
 
-                      // Uncomment the below section to create and emit a notification for the invited user
-                      /*
-                      const ownerName = ownerProfileOrEnterprise.username || ownerProfileOrEnterprise.companyName || "Unknown";
-
-                      const content = `You have been invited to a meeting titled "${updatedMeeting.meetingTitle}" on ${updatedMeeting.selectedDate} at ${updatedMeeting.startTime} by ${ownerName}.`;
-
-                      const notification = new Notification({
-                          sender: updatedMeeting.meetingOwner,
-                          receiver: userId,
-                          type: 'meeting',
-                          content: content,
-                          status: 'unread'
-                      });
-                      await notification.save();
-
-                      emitNotification(userId.toString(), notification); // Emit real-time notification
-                      */
-
-                  } else {
-                      console.log(`No profile, enterprise, or individual user found with ID: ${userId}`);
-                  }
-              } catch (error) {
-                  console.error(`Error updating profile, enterprise, or individual user for user ID: ${userId}`, error);
-              }
-          })
-      );
-
-      // Return the updated meeting information
-      return res.status(200).json({ data: updatedMeeting, success: true, message: "Successfully updated" });
+    // Return the updated meeting information
+    return res.status(200).json({ data: updatedMeeting, success: true, message: "Successfully updated" });
   } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Failed to update meeting", error: error.message });
+    console.error(error);
+    return res.status(500).json({ message: "Failed to update meeting", error: error.message });
   }
 };
+
+
+
+
+
+
 
 
 
