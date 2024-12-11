@@ -27,7 +27,7 @@ module.exports.getCards = async (req, res) => {
     //   return res.status(200).json({ message: 'Card not found' });
     // }
     // console.log(card);
-    return res.status(200).json(card);
+    return res.status(200).json({ message:"card fetched",card});
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Failed to get cards", error });
