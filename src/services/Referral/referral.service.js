@@ -161,9 +161,9 @@ const getReferralDetails = async (userId) => {
     // const coins = userData ? userData.coins : 0; // Default to 0 if no user found
     // console.log("coins : ", coins);
     const userType = await checkUserType(userId);
-    const userData = {};
+    let userData = {};
     if (userType === 'individual') {
-        userData = await IndividuaxlUser.findById(userId).select('referralCode').lean().exec();
+        userData = await IndividualUser.findById(userId).select('referralCode').lean().exec();
     } else {
         userData = await EnterpriseUser.findById(userId).select('referralCode').lean().exec();
     }
@@ -192,13 +192,41 @@ const checkReferralCode = async (referralCode) => {
     return { valid: true };
 };
 
+const findAllReferrals = async (page, limit) => {
+    try {
+        const referrals = await Referral.find()
+        .populate('referrer', 'username email image')
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean()
+        .exec();
+
+        const totalReferrals = await Referral.countDocuments().exec();
+        const totalPages = Math.ceil(totalReferrals / limit);
+        const response = {
+            page,
+            limit,
+            totalPages,
+            totalReferrals,
+            referrals
+        };
+
+        return response;
+    } catch (error) {
+        console.error("Error fetching referrals:", error);
+        throw error; // Re-throw the error for higher-level handling if needed
+    }
+};
+
 module.exports = {
     sendInvite,
     registerInvitee,
     createCardByInvitee,
     getReferralDetails,
     checkReferralCode,
-    registerInviteeByReferralCode
+    registerInviteeByReferralCode,
+    findAllReferrals
 
 }
 

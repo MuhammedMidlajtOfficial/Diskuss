@@ -126,11 +126,6 @@ const defaultRoutes = [
     path: '/Preferences',
     route: Preferences
   },
-  {
-    path: '/analytic',
-    route: analyticRouter
-  }
-  
 ];
 
 defaultRoutes.forEach((route) => {

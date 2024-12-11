@@ -1,7 +1,6 @@
 const Analytic = require("../models/analytics/analytic.model")
 
 const Profile = require("../models/profile")
-const individualUser = require("../models/individualUser")
 const enterprise = require("../models/enterpriseUser")
 const MeetingBase = require("../models/EnterpriseMeetingModel")
 const individualMeeting = require("../models/MeetingModel")
@@ -10,6 +9,7 @@ const Employee = require("../models/enterpriseEmploye.model")
 const Team = require("../models/team.model")
 const Contact = require("../models/contact.enterprise.model")
 const filterByDate = require("../util/filterByDate")
+const { individualUserCollection } = require("../DBConfig")
 
 exports.logShare = async (cardId, userId) => {
     const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
@@ -236,7 +236,7 @@ exports.getEnterpriseMeetings = async (enterpriseId) => {
 //get individual Meetinbg By Id
 exports.getIndividualMeetings = async (individualId) => {
 
-    const userInfo = await individualUser.individualUserCollection.findById(individualId).exec()
+    const userInfo = await individualUserCollection.findOne({_id:individualId}).exec()
     console.log("userInfo : ", userInfo)
 
 

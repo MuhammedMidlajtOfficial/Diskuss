@@ -113,15 +113,15 @@ const createSubscriptionPlan = async (req,res)=>{
     try {
         
          // Destructure plan data from the request body
-    const { name, price, features, duration } = req.body;
+    const { name, price, features,type, duration } = req.body;
 
     // Check if required fields are provided
-    if (!name || !price || ! duration) {
+    if (!name || !price || ! duration ||! type) {
       return res.status(400).json({ message: "Name, price and duration are required." });
     }
 
     // Prepare planData to pass to the function
-    const planData = { name, price, features, duration };
+    const planData = { name, price, features,type, duration };
 
     // Call the function to create a SubscriptionPlan plan
     const newPlan = await SubscriptionPlanService.createSubscriptionPlan(planData);

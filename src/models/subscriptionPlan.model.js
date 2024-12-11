@@ -6,6 +6,7 @@ const SubscriptionPlanSchema = new mongoose.Schema({
   name: { type: String, required: true, maxlength: 100 },
   price: { type: mongoose.Schema.Types.Decimal128, required: true },
   features: { type: mongoose.Schema.Types.Mixed, default: {} }, // Flexible JSON format
+  type: {type: String, enum: ['Individual', 'Enterprise'],required: true},
   duration : { type: Number, required: true },
 
 }, { timestamps: true });

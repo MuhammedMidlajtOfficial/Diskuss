@@ -84,6 +84,8 @@ const createContact = async (req, res) => {
             isDiskussUser = true;
         }
 
+        console.log('userId-',userId);
+
         let newContact;
 
         const contactDetails = {

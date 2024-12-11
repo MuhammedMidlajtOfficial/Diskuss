@@ -1,0 +1,43 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # You can change this to the branch you use for deployment
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Set up SSH Agent and add the SSH private key from GitHub Secrets
+    - name: Set up SSH agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.DISKUSS_SSH_PRIVATE_KEY }}
+
+    # Deploy to EC2 instance
+    - name: Deploy to EC2
+      run: |
+        # Ensure known_hosts is set up (to avoid interactive prompts)
+        mkdir -p ~/.ssh
+        ssh-keyscan -H 13.203.24.247 >> ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/known_hosts
+        
+        # Run the deploy commands on your EC2 instance
+        ssh -o StrictHostKeyChecking=no ubuntu@13.203.24.247 << 'EOF'
+          cd ~/Diskuss
+          git pull origin main  # Pull latest code from GitHub
+          npm install  # Install dependencies
+          # Restart the application or any service you need here (e.g., pm2 restart, etc.)
+          pm2 restart all  # Example if you use pm2 to manage your application
+        EOF
+
+    # Complete the job
+    - name: Complete job
+      run: echo "Deployment successful!"
+
