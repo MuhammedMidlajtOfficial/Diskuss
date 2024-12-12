@@ -2,7 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-// const Contact = require("../../models/contact.individul.model");
+// const Contact = require("../../models/contact.individual.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
 const axios = require("axios");
@@ -81,12 +81,15 @@ exports.sendMessage = async (req, res) => {
 
     // Notify the receiver using the admin backend
     try {
-      await axios.post("https://diskuss-admin.onrender.com/api/v1/fcm/sendMessageNotification", {
-        receiverId,
-        senderName: sender.username || sender.name || "Unknown Sender",
-        content,
-        chatId,
-      });
+      await axios.post(
+        "https://diskuss-admin.onrender.com/api/v1/fcm/sendMessageNotification",
+        {
+          receiverId,
+          senderName: sender.username || sender.name || "Unknown Sender",
+          content,
+          chatId,
+        }
+      );
     } catch (notificationError) {
       console.error("Error sending notification:", notificationError.message);
     }
@@ -99,7 +102,9 @@ exports.sendMessage = async (req, res) => {
     });
   } catch (error) {
     console.error("Error sending message:", error.message || error);
-    res.status(500).json({ error: "Error sending message.", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Error sending message.", details: error.message });
   }
 };
 
@@ -243,10 +248,15 @@ exports.getMessages = async (req, res) => {
                 { $arrayElemAt: ["$receiverContactInfo.name", 0] },
                 { $arrayElemAt: ["$receiverContactInfo.username", 0] },
                 { $arrayElemAt: ["$receiverContactInfo.companyName", 0] },
-                // { $arrayElemAt: ["$receiverUserInfo.username", 0] },
-                // { $arrayElemAt: ["$receiverEnterpriseInfo.companyName", 0] },
-                // { $arrayElemAt: ["$receiverEmployeeInfo.username", 0] },
-                "Unknown Receiver",
+                {
+                  $ifNull: [
+                    // Fallback to receiver number if name is not found
+                    { $arrayElemAt: ["$receiverUserInfo.phnNumber", 0] },
+                    { $arrayElemAt: ["$receiverEnterpriseInfo.phnNumber", 0] },
+                    { $arrayElemAt: ["$receiverEmployeeInfo.phnNumber", 0] },
+                    "Unknown Receiver",
+                  ],
+                },
               ],
             },
             "lastMessage.receiverNumber": {
@@ -304,9 +314,8 @@ exports.getMessages = async (req, res) => {
         {
           $replaceRoot: { newRoot: "$lastMessage" },
         },
-        
-        {
 
+        {
           $project: {
             _id: 0,
             senderUserInfo: 0,
@@ -316,9 +325,8 @@ exports.getMessages = async (req, res) => {
           },
         },
       ]);
-      
-      return res.status(200).json(lastMessages);
 
+      return res.status(200).json(lastMessages);
     } else {
       return res
         .status(400)

@@ -1,4 +1,4 @@
-const Contact = require('../models/contact.individul.model');
+const Contact = require('../models/contact.individual.model');
 
 /**
  * Find all Contacts
