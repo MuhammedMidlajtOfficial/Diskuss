@@ -66,6 +66,15 @@ const getAllReferrals = async (req, res) => {
     }
 };
 
+const getMonthlyReferralsCounts = async (req, res) => {
+    const year = req.query.year || new Date().getFullYear();
+    try {
+        const referrals = await referralService.findMonthlyReferralsCounts(year);
+        return res.status(200).json({ referrals });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+};
 
 module.exports = {
     sendInvite,
@@ -74,6 +83,7 @@ module.exports = {
     getReferralDetails,
     checkReferralCode,
     getAllReferrals,
+    getMonthlyReferralsCounts
 }
 
 // // controllers/referralController.js
