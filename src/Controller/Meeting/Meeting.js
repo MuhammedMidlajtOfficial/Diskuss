@@ -135,9 +135,9 @@ const updateMeetingStatus = async (req, res) => {
             return res.status(400).json({ message: "Invalid status. Valid options are 'pending', 'accepted', or 'rejected'." });
         }
 
-        if (status === 'rejected' && !reason) {
-            return res.status(400).json({ message: "Reason is required for rejection." });
-        }
+        // if (status === 'rejected' && !reason) {
+        //     return res.status(400).json({ message: "Reason is required for rejection." });
+        // }
 
         // Update the meeting status for the user
         const updatedMeeting = await MeetingBase.findOneAndUpdate(
