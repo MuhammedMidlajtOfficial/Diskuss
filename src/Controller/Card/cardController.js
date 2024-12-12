@@ -4,6 +4,7 @@ const { ObjectId } = require('mongodb');
 const enterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
 const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
+const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
 
 module.exports.getCards = async (req, res) => {
   try {
@@ -209,28 +210,86 @@ module.exports.updateCard = async (req, res) => {
 module.exports.deleteCard = async (req, res) => {
   const { userId, cardId } = req.body;
 
-  const isUserExist = individualUserCollection.findOne({ _id:userId })
-  if(!isUserExist){
+  // Check if the user exists in any of the collections
+  const isIndividualUser = await individualUserCollection.findOne({ _id: userId });
+  const isEnterpriseUser = await enterpriseUserCollection.findOne({ _id: userId });
+  const isEnterpriseEmployee = await enterpriseEmployeeCollection.findOne({ _id: userId });
+
+  // If the user doesn't exist in any collection, return error
+  if (!isIndividualUser && !isEnterpriseUser && !isEnterpriseEmployee) {
     return res.status(400).json({ message: 'Invalid user ID' });
   }
 
   try {
+    // Handle enterprise employee card and employee deletion
+    if (isEnterpriseEmployee) {
+      // Find and delete the employee's card from enterpriseEmployeeCardModel
+      const getCard = await enterpriseEmployeCardModel.findOne({ userId });
+      if (getCard) {
+        await enterpriseEmployeCardModel.deleteOne({ userId });
+      }
+
+      // Check if the employee's phnNumber is used in any contact
+      const existingContact = await Contact.findOne({ phnNumber: isEnterpriseEmployee.phnNumber });
+      if (existingContact) {
+        // Update the contact details if phnNumber is used by the employee
+        const contactUpdate = await Contact.updateOne(
+          { phnNumber: isEnterpriseEmployee.phnNumber },
+          { $set: { isDiskussUser: false, userId: null } } // Removing the userId and marking as not a Diskuss user
+        );
+
+        if (contactUpdate.modifiedCount > 0) {
+          console.log("Contact updated successfully.");
+        } else {
+          console.log("Contact not updated.");
+        }
+      }
+
+      // Remove the employee from the enterprise
+      const enterpriseId = isEnterpriseEmployee.enterpriseId; // Assuming this field exists
+      await enterpriseUser.updateOne(
+        { _id: enterpriseId },
+        { $pull: { empId: userId, empCards: getCard?._id } }
+      );
+
+      // Optionally, delete the employee from the enterpriseEmployeeCollection
+      await enterpriseEmployeeCollection.deleteOne({ _id: userId });
+
+      return res.status(200).json({ message: "Employee and card deleted successfully" });
+    }
+
+    // Delete the card from the Card collection
     const result = await Card.deleteOne({ userId, _id: cardId });
     console.log(result);
+
     if (result.deletedCount > 0) {
-      await individualUserCollection.updateOne(
-        { _id: userId },
-        { $inc: { cardNo: -1 } }
-      );
+      // Handle individual user card deletion logic
+      if (isIndividualUser) {
+        await individualUserCollection.updateOne(
+          { _id: userId },
+          { $inc: { cardNo: -1 } }
+        );
+      } 
+      
+      // Handle enterprise user card deletion logic
+      else if (isEnterpriseUser) {
+        await enterpriseUserCollection.updateOne(
+          { _id: userId },
+          { $inc: { cardNo: -1 } }
+        );
+      } 
+
       return res.status(200).json({ message: "Card deleted successfully" });
     } else {
+      // If no card is found to delete
       return res.status(404).json({ message: "Card not found" });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to delete card", error });
+    return res.status(500).json({ message: "Failed to delete card", error });
   }
 };
+
 
 
 async function isValidUserId(userId) {

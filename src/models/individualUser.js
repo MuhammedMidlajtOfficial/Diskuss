@@ -83,12 +83,14 @@ const IndividualUserSchema = new mongoose.Schema({
     }
   },
     coins: { type: Number, default: 0 },
+
     invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
+
   
     meetings: [
       {
         type: String,
-        ref: "Meeting", // Reference to Meeting model
+        ref: "EnterpriseMeeting", // Reference to Meeting model
         required: false,
       },
     ],

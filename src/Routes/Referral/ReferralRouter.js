@@ -13,6 +13,7 @@ router.get('/code-check/:referralCode', ReferralController.checkReferralCode);
 router.get('/admin', ReferralController.getAllReferrals);
 router.get('/admin/monthly', ReferralController.getMonthlyReferralsCounts);
 
+
 // Old Referral Routes
 // router.post('/', ReferralController.createReferral);
 // router.get('/', ReferralController.getAllReferrals);

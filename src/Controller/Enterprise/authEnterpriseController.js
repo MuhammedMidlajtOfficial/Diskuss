@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const { otpCollection, individualUserCollection } = require('../../DBConfig');
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
-const Contact  = require('../../models/contact.individul.model');
+const Contact  = require('../../models/contact.individual.model');
 const enterpriseUser = require('../../models/enterpriseUser');
 
 module.exports.postEnterpriseLogin = async (req, res) => {
@@ -102,11 +102,16 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
     console.log(newUser);
     
     if (newUser) {
-      const existingContact = await Contact.find({ phnNumber: newUser.phnNumber });
+      const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });
       if (existingContact) {
         const contact = await Contact.updateOne(
-          { phnNumber: newUser.phnNumber },
-          { $set: { isDiskussUser: true, userId: newUser._id } }
+          { 'contacts.phnNumber': newUser.phnNumber },
+          {
+            $set: { 
+              'contacts.$.isDiskussUser': true,  // Update the contact's `isDiskussUser` field
+              'contacts.$.userId': newUser._id // Update the `userId` field for the contact
+            }
+          }
         );
         if (contact.modifiedCount > 0) {
           console.log("Contact updated successfully, Profile updated successfully");
@@ -397,11 +402,16 @@ module.exports.updateProfile = async (req, res) => {
 
     if (user.modifiedCount > 0) {
       const forNumber = await enterpriseUser.findOne({ _id: userId }).select('phnNumber').exec();
-      const existingContact = await Contact.find({ phnNumber: forNumber.phnNumber });
+      const existingContact = await Contact.find({ 'contacts.phnNumber': forNumber.phnNumber });
       if (existingContact) {
         const contact = await Contact.updateOne(
-          { phnNumber: forNumber.phnNumber },
-          { $set: { isDiskussUser: true, userId: forNumber._id } }
+          { 'contacts.phnNumber': forNumber.phnNumber },
+          {
+            $set: { 
+              'contacts.$.isDiskussUser': true,  // Update the contact's `isDiskussUser` field
+              'contacts.$.userId': forNumber._id // Update the `userId` field for the contact
+            }
+          }
         );
         if (contact.modifiedCount > 0) {
           console.log("Contact updated successfully, Profile updated successfully");

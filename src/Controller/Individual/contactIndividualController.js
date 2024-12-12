@@ -1,5 +1,5 @@
 const { individualUserCollection } = require('../../DBConfig');
-const Contact = require('../../models/contact.individul.model');
+const Contact = require('../../models/contact.individual.model');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const enterpriseUser = require('../../models/enterpriseUser');
 const ContactService = require('../../services/contact.Individual.service');
@@ -83,6 +83,8 @@ const createContact = async (req, res) => {
             userId = existEnterpriseEmploye._id;
             isDiskussUser = true;
         }
+
+        console.log('userId-',userId);
 
         let newContact;
 

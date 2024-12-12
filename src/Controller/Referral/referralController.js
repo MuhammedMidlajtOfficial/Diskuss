@@ -76,6 +76,7 @@ const getMonthlyReferralsCounts = async (req, res) => {
     }
 };
 
+
 module.exports = {
     sendInvite,
     registerInvitee,
@@ -84,6 +85,7 @@ module.exports = {
     checkReferralCode,
     getAllReferrals,
     getMonthlyReferralsCounts
+
 }
 
 // // controllers/referralController.js

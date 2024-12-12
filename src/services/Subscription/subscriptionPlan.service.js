@@ -81,6 +81,7 @@ throw error; // Re-throw the error for higher-level handling if needed
         name: planData.name,
         price: planData.price,
         features: planData.features || {},
+        type:planData.type,
         duration: planData.duration
       });
   

@@ -3,7 +3,7 @@ const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployeCardModel = require('../../models/enterpriseEmployeCard.model');
 const mailSender = require('../../util/mailSender');
-const Contact  = require('../../models/contact.individul.model');
+const Contact  = require('../../models/contact.individual.model');
 const { deleteImageFromS3, uploadImageToS3 } = require('../../services/AWS/s3Bucket');
 const { individualUserCollection } = require('../../DBConfig');
 
