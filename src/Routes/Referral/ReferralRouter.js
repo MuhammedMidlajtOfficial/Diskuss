@@ -11,6 +11,8 @@ router.get('/code-check/:referralCode', ReferralController.checkReferralCode);
 
 // Dashboard Routes
 router.get('/admin', ReferralController.getAllReferrals);
+router.get('/admin/monthly', ReferralController.getMonthlyReferralsCounts);
+
 
 // Old Referral Routes
 // router.post('/', ReferralController.createReferral);
