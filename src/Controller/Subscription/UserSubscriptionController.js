@@ -29,8 +29,6 @@ const getUserSubscriptionByUserId = async (req, res) => {
   }
 }
 
-
-
 /**
  * Create a new UserSubscription
  * @param {Request} req
@@ -114,6 +112,21 @@ const verifyPayment = async (req, res) => {
 
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
+    // Create an instance of Razorpay with your API credentials
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_API_KEY, // Your Razorpay key ID
+      key_secret: process.env.RAZORPAY_API_SECRET, // Your Razorpay key secret
+    });
+
+    // Fetch the order details using razorpay_order_id
+    const orderDetails = await razorpay.orders.fetch(razorpay_order_id);
+
+    // Extract the necessary fields from the order details
+    const amount = orderDetails.amount; // Amount in the smallest unit (e.g., paise for INR)
+    const currency = orderDetails.currency; // Currency code (e.g., INR)
+    const email = orderDetails.notes.email; // Email from notes (if available)
+    const contact = orderDetails.notes.contact; // Contact from notes (if available)
+
     // Generate the signature to verify the payment authenticity
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_API_SECRET) // Use your Razorpay key secret
@@ -126,9 +139,46 @@ const verifyPayment = async (req, res) => {
       return res.status(400).json({ message: "Payment verification failed." });
     }
 
+    // Payment data to be updated
+    const paymentData = {
+      id: razorpay_payment_id,
+      entity: 'payment',
+      amount: amount, // Amount retrieved from the order
+      currency: currency, // Currency retrieved from the order
+      status: 'captured', // Example status, update with the actual payment status
+      order_id: razorpay_order_id,
+      invoice_id: null, // Add the invoice id if available
+      international: false, // Adjust this as necessary
+      method: 'razorpay', // Assuming Razorpay as the method
+      amount_refunded: 0, // Assuming no refund
+      refund_status: null,
+      captured: true,
+      description: 'Payment for subscription', // Optional description
+      card_id: null, // Optional: Add card id if available
+      bank: null, // Optional: Add bank info if available
+      wallet: null, // Optional: Add wallet info if available
+      vpa: null, // Optional: Add VPA info if available
+      email: email, // Email from the order
+      contact: contact, // Contact from the order
+      notes: null, // Optional notes
+      created_at: Date.now(),
+      fee: 0, // Example: Add fee if available
+      tax: 0, // Example: Add tax if available
+      error_code: null, // Optional error code
+      error_description: null, // Optional error description
+      error_source: null, // Optional error source
+      error_step: null, // Optional error step
+      error_reason: null, // Optional error reason
+      error_metadata: null, // Optional error metadata
+      payment_link_id: null // Optional payment link id
+    };
+
+    // Update the payment details in the subscription
+    await UserSubscriptionService.updateSubscriptionPayment(razorpay_order_id, paymentData);
+
     // Update the subscription status to active on successful payment verification
     await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, {
-      status: "active",
+      status: 'active',
       payment: razorpay_payment_id,
     });
 

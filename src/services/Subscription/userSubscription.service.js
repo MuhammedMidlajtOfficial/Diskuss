@@ -135,6 +135,27 @@ const findAll = async () => {
     }
   };
   
+  const updateSubscriptionPayment = async (razorpay_order_id, paymentData) => {
+    try {
+      // Find the user subscription by razorpayOrderId
+      const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
+  
+      if (!userSubscription) {
+        throw new Error("User Subscription not found");
+      }
+  
+      // Update the payment details in the subscription
+      userSubscription.payment = paymentData;
+  
+      // Save the updated subscription
+      const updatedSubscription = await userSubscription.save();
+  
+      return updatedSubscription;
+    } catch (error) {
+      console.error("Error updating subscription payment:", error);
+      throw error; // Re-throw the error for higher-level handling
+    }
+  };
 
   const updateSubscriptionStatusInUsers = async (razorpay_order_id, updateData) => {
     try {
@@ -211,7 +232,6 @@ const findAll = async () => {
     }
   };
   
-  
 /**
  * Delete a UserSubscription plan by plan_id.
  * @param {String} plan_id - The unique identifier of the UserSubscription plan to delete.
@@ -232,7 +252,6 @@ const findAll = async () => {
       throw error; // Re-throw the error for higher-level handling
     }
   };
-  
   
 // // Import your deactivateExpiredSubscriptions function
 // const deactivateExpiredSubscriptions = async () => {
@@ -263,7 +282,6 @@ const findAll = async () => {
 //     throw error;
 //   }
 // };
-
 
 const deactivateExpiredSubscriptions = async () => {
   try {
@@ -386,9 +404,6 @@ const updateUserStatus = async (userId) => {
   }
 };
 
-
-
-
 module.exports = {
     findAll,
     findOneById,
@@ -399,4 +414,5 @@ module.exports = {
     updateSubscriptionStatusInUsers,
     deactivateOldSubscriptions,
     deactivateExpiredSubscriptions,
+    updateSubscriptionPayment
 };
