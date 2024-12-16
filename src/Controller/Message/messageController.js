@@ -82,7 +82,7 @@ exports.sendMessage = async (req, res) => {
     // Notify the receiver using the admin backend
     try {
       await axios.post(
-        "https://diskuss-admin.onrender.com/api/v1/fcm/sendMessageNotification",
+        "13.203.24.247:9000/api/v1/fcm/sendMessageNotification",
         {
           receiverId,
           senderName: sender.username || sender.name || "Unknown Sender",

@@ -104,7 +104,7 @@ const CreateMeeting = async (req, res) => {
     
      if (invitedPeople.length != 0) {
             // Send notification to admin backend
-     const repose =     await axios.post("https://diskuss-admin.onrender.com/api/v1/fcm/sendMeetingNotification", {
+     const repose =     await axios.post("13.203.24.247:9000/api/v1/fcm/sendMeetingNotification", {
       userIds: invitedPeople,
       notification: {
       title: "Meeting Invitation",
@@ -250,7 +250,7 @@ const updateMeetingStatus = async (req, res) => {
       // Send notification to admin backend
       try {
           await axios.post(
-              "https://diskuss-admin.onrender.com/api/v1/fcm/send-meeting-acceptance", // Ensure this URL is correct
+              "13.203.24.247:9000/api/v1/fcm/send-meeting-acceptance", // Ensure this URL is correct
               notificationPayload,
               {
                   headers: {
@@ -487,7 +487,7 @@ const deleteMeeting = async (req, res) => {
       // Send notification to admin backend
     if (invitedPeople.length != 0) {
 
-      const repose =     await axios.post("https://diskuss-admin.onrender.com/api/v1/fcm/sendMeetingNotification", {
+      const repose =     await axios.post("13.203.24.247:9000/api/v1/fcm/sendMeetingNotification", {
         userIds: invitedPeople,
         notification: {
           title: "Meeting Invitation",
@@ -619,7 +619,7 @@ const UpdateMeeting = async (req, res) => {
     if (newInvitedPeople.length != 0) {
     const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${updatedData.selectedDate} , created by ${Ownername}.`;
      
-    const repose =     await axios.post("https://diskuss-admin.onrender.com/api/v1/fcm/sendMeetingNotification", {
+    const repose =     await axios.post("13.203.24.247:9000/api/v1/fcm/sendMeetingNotification", {
       userIds: newInvitedPeople,
       notification: {
         title: "Meeting Invitation",
@@ -637,7 +637,7 @@ const UpdateMeeting = async (req, res) => {
       const notificationContentRemove = `You have been removed from the meeting titled "${updatedData.meetingTitle}" scheduled on ${updatedData.selectedDate}, created by ${Ownername}.`;
 
 
-    const reposed =     await axios.post("https://diskuss-admin.onrender.com/api/v1/fcm/sendMeetingNotification", {
+    const reposed =     await axios.post("13.203.24.247:9000/api/v1/fcm/sendMeetingNotification", {
       userIds: removedPeople,
       notification: {
         title: "Meeting Invitation",
