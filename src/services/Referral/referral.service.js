@@ -3,6 +3,9 @@ const EnterpriseUser = require('../../models/enterpriseUser');
 const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
 const { ObjectId } = require('mongodb');
 const { individualUserCollection: IndividualUser } = require('../../DBConfig');
+const {convertToMonthlyCounts} = require('../../util/HelperFunctions');
+
+
 const checkUserType = async (userId) => {
     const individualUser = await IndividualUser.findById(userId).exec();
     const enterpriseUser = await EnterpriseUser.findById(userId).exec();
@@ -192,14 +195,90 @@ const checkReferralCode = async (referralCode) => {
     return { valid: true };
 };
 
+const findAllReferrals = async (page, limit) => {
+    try {
+        const referrals = await Referral.find()
+        .populate('referrer', 'username email image')
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean()
+        .exec();
+
+        const totalReferrals = await Referral.countDocuments().exec();
+        const totalPages = Math.ceil(totalReferrals / limit);
+        const response = {
+            page,
+            limit,
+            totalPages,
+            totalReferrals,
+            referrals
+        };
+
+        return response;
+    } catch (error) {
+        console.error("Error fetching referrals:", error);
+        throw error; // Re-throw the error for higher-level handling if needed
+    }
+};
+
+const findMonthlyReferralsCounts = async (year) => {
+    try {
+        console.log("year : ", year);
+        const monthlyReferrals = await Referral.aggregate([
+            // Step 1: Match documents for the specified year
+            {
+                $match: {
+                    registeredAt: {
+                        $gte: new Date(`${year}-01-01`),
+                        $lt: new Date(`${parseInt(year) + 1}-01-01`)
+                        // $gte: new Date(`2023-01-01`),
+                        // $lt: new Date(`2024-01-01`)
+                    }
+                }
+            },
+            // Step 2: Group by year and month
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$registeredAt" },
+                        month: { $month: "$registeredAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            // Step 3: Project the results
+            {
+                $project: {
+                    _id: 0,
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    count: "$count"
+                }
+            },
+        ]);
+
+        console.log("monthlyReferrals : ", monthlyReferrals);
+        // Convert the data to an array of 12 months
+        const monthlyCounts = convertToMonthlyCounts( year, monthlyReferrals);
+
+        return monthlyCounts;
+    } catch (error) {
+        console.error("Error fetching monthly referrals:", error);
+        throw error; // Re-throw the error for higher-level handling if needed
+    }
+}
+    
+
 module.exports = {
     sendInvite,
     registerInvitee,
     createCardByInvitee,
     getReferralDetails,
     checkReferralCode,
-    registerInviteeByReferralCode
-
+    registerInviteeByReferralCode,
+    findAllReferrals,
+    findMonthlyReferralsCounts
 }
 
 // const {Referral} = require('../../models/referral.model');

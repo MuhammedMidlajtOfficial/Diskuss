@@ -10,10 +10,14 @@ const { individualUserCollection } = require('../../DBConfig');
 
 module.exports.getCardForUser = async (req, res) => {
     try {
-        const { id: userId } = req.params;
-        const user = await enterpriseEmployeCardModel.findOne({ userId });
+        const userId = req.params.id
+        const user = await enterpriseEmployeModel.findOne({_id: userId });
         if (!user) {
           return res.status(404).json({ message: 'User not found' });
+        }
+        const card = await enterpriseEmployeCardModel.findOne({ userId });
+        if (!card) {
+          return res.status(404).json({ message: 'Card not found' });
         }
         return res.status(200).json({ user })
     } catch (error) {

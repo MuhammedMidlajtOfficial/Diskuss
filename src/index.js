@@ -40,8 +40,6 @@ const io = socketIo(server, {
 
 });
 
-
-
 notificationSocketController.setSocketIO(io);
 socketController.setSocketIO(io);
 messageController.setSocketIO(io);

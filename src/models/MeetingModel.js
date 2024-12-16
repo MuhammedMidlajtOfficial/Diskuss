@@ -33,7 +33,8 @@ const meetingSchema = new mongoose.Schema({
     {
       user: { type: String , required: true },
       status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
-      reason: { type: String, required: function() { return this.status === 'rejected'; } }
+      // reason: { type: String, required: function() { return this.status === 'rejected'; } }
+      reason: { type: String, default: '' }
     }
   ],
 

@@ -55,12 +55,37 @@ const checkReferralCode = async (req, res) => {
     }
 };
 
+const getAllReferrals = async (req, res) => {
+    page = parseInt(req.query.page) || 1;
+    limit = parseInt(req.query.limit) || 10;
+    try {
+        const referrals = await referralService.findAllReferrals(page, limit);
+        return res.status(200).json({ referrals });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+};
+
+const getMonthlyReferralsCounts = async (req, res) => {
+    const year = req.query.year || new Date().getFullYear();
+    try {
+        const referrals = await referralService.findMonthlyReferralsCounts(year);
+        return res.status(200).json({ referrals });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+};
+
+
 module.exports = {
     sendInvite,
     registerInvitee,
     createCardByInvitee,
     getReferralDetails,
-    checkReferralCode
+    checkReferralCode,
+    getAllReferrals,
+    getMonthlyReferralsCounts
+
 }
 
 // // controllers/referralController.js
