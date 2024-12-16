@@ -100,7 +100,7 @@ const CreateMeeting = async (req, res) => {
    
 
 
-    console.log(invitedPeople);
+    console.log('invitedPeople-',invitedPeople);
     
      if (invitedPeople.length != 0) {
             // Send notification to admin backend
