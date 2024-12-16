@@ -76,7 +76,7 @@ exports.sendMessage = async (req, res) => {
     io.to(chatId).emit("receiveMessage", {
       ...message.toObject(),
       senderName: sender.username || sender.name || "Unknown Sender", // Use appropriate field for sender name
-      receiverName: receiver.username|| receiver.companyName || receiver.name || "Unknown Receiver", // Use appropriate field for receiver name
+      receiverName: receiver.username || receiver.name || "Unknown Receiver", // Use appropriate field for receiver name
     });
 
     // Notify the receiver using the admin backend
@@ -98,7 +98,7 @@ exports.sendMessage = async (req, res) => {
     res.status(201).json({
       ...message.toObject(),
       senderName: sender.username || sender.name || "Unknown Sender",
-      receiverName: receiver.username || receiver.companyName || receiver.name || "Unknown Receiver",
+      receiverName: receiver.username || receiver.name || "Unknown Receiver",
     });
   } catch (error) {
     console.error("Error sending message:", error.message || error);
