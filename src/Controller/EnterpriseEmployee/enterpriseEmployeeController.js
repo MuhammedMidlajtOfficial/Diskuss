@@ -116,6 +116,7 @@ module.exports.createCard = async (req, res) => {
             username,
             email,
             phnNumber,
+            companyName:businessName,
             password: hashedPassword,
             cardNo: 0,
         });

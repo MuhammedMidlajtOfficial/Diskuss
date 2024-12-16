@@ -115,6 +115,7 @@ module.exports.createCard = async (req, res) => {
         const newUser = await enterpriseEmployeModel.create({
           username:yourName,
           email,
+          companyName:businessName,
           phnNumber:mobile,
           password: hashedPassword,
           cardNo: 0,
@@ -235,7 +236,7 @@ module.exports.updateCard = async (req, res) => {
           email, 
           location, 
           services, 
-          image, // Use the S3 URL for the image
+          image :imageUrl, // Use the S3 URL for the image
           position, 
           color, 
           cardType,
