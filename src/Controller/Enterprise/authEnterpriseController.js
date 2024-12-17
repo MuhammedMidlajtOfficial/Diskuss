@@ -347,12 +347,24 @@ module.exports.updateProfile = async (req, res) => {
     let isEnterpriseExist;
     let isEnterpriseEmployeeExist;
 
-    if(phnNumber){
-      // Check if phone number exists in any of the collections
-      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
-      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
-      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+    if (phnNumber) {
+      // Check if phone number exists in any of the collections, excluding the current user
+      isIndividualExist = await individualUserCollection.findOne({
+        phnNumber,
+        _id: { $ne: userId }, // Exclude the current user by _id
+      }).exec();
+    
+      isEnterpriseExist = await enterpriseUser.findOne({
+        phnNumber,
+        _id: { $ne: userId }, // Exclude the current user by _id
+      }).exec();
+    
+      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({
+        phnNumber,
+        _id: { $ne: userId }, // Exclude the current user by _id
+      }).exec();
     }
+    
 
     if (isIndividualExist) {
       return res.status(409).json({ message: "This phone number is already associated with an individual user" });
