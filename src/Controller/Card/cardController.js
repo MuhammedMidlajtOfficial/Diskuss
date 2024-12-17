@@ -2,6 +2,7 @@ const { individualUserCollection } = require("../../DBConfig");
 const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
 const enterpriseUser = require("../../models/enterpriseUser");
+const enterpriseEmployee = require("../../models/enterpriseEmploye.model");
 const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
 const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
 const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
@@ -212,8 +213,8 @@ module.exports.deleteCard = async (req, res) => {
 
   // Check if the user exists in any of the collections
   const isIndividualUser = await individualUserCollection.findOne({ _id: userId });
-  const isEnterpriseUser = await enterpriseUserCollection.findOne({ _id: userId });
-  const isEnterpriseEmployee = await enterpriseEmployeeCollection.findOne({ _id: userId });
+  const isEnterpriseUser = await enterpriseUser.findOne({ _id: userId });
+  const isEnterpriseEmployee = await enterpriseEmployee.findOne({ _id: userId });
 
   // If the user doesn't exist in any collection, return error
   if (!isIndividualUser && !isEnterpriseUser && !isEnterpriseEmployee) {
