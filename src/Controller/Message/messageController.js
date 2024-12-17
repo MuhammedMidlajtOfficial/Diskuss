@@ -127,8 +127,10 @@ exports.markMessagesAsRead = async (req, res) => {
 
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
-  const { chatId, userId } = req.query;
-
+  const { chatId, userId } = req.body;
+	
+console.log("getMessages chatId - ",chatId)
+console.log("getMessages userId - ",userId)
   try {
     if (chatId) {
       const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
