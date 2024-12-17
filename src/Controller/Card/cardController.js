@@ -1,6 +1,7 @@
 const { individualUserCollection } = require("../../DBConfig");
 const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
+const Contact = require ('../../models/contact.individual.model')
 const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployee = require("../../models/enterpriseEmploye.model");
 const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
@@ -253,8 +254,8 @@ module.exports.deleteCard = async (req, res) => {
         { $pull: { empId: userId, empCards: getCard?._id } }
       );
 
-      // Optionally, delete the employee from the enterpriseEmployeeCollection
-      await enterpriseEmployeeCollection.deleteOne({ _id: userId });
+      // Optionally, delete the employee from the enterpriseEmployee
+      await enterpriseEmployee.deleteOne({ _id: userId });
 
       return res.status(200).json({ message: "Employee and card deleted successfully" });
     }
@@ -274,7 +275,7 @@ module.exports.deleteCard = async (req, res) => {
       
       // Handle enterprise user card deletion logic
       else if (isEnterpriseUser) {
-        await enterpriseUserCollection.updateOne(
+        await enterpriseUser.updateOne(
           { _id: userId },
           { $inc: { cardNo: -1 } }
         );
