@@ -25,6 +25,7 @@ const individualcount = require('./Count/individualCount.js')
 const Preferences = require('./Permission/PermissionModel.js')
 const analyticRouter = require("./Analytic/analyticRouter.js")
 // const contactRouter = require("./contactRouter.js")
+const uploadVCard = require("./VCard/VCardRoute.js")
 
 
 const router = express.Router();
@@ -125,6 +126,10 @@ const defaultRoutes = [
   {
     path: '/Preferences',
     route: Preferences
+  },
+  {
+    path: '/vcard',
+    route: uploadVCard,
   },
 ];
 
