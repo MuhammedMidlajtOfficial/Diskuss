@@ -127,8 +127,9 @@ exports.markMessagesAsRead = async (req, res) => {
 
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
-  const { chatId, userId } = req.query;
+  const { chatId, userId } = req.body;
 
+  console.log("Get last message:",chatId,userId);
   try {
     if (chatId) {
       const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
@@ -189,7 +190,7 @@ exports.getMessages = async (req, res) => {
         },
         {
           $lookup: {
-            from: "contact",
+            from: "contacts",
             let: { receiverId: "$lastMessage.receiverId" },
             pipeline: [
               { $unwind: "$contacts" },
