@@ -261,6 +261,7 @@ module.exports.deleteCard = async (req, res) => {
             $set: {
               "contacts.$.isDiskussUser": false, // Update the matched contact's isDiskussUser flag
               "contacts.$.userId": null,         // Remove the userId from the matched contact
+              "contacts.$.name": "User Deleted"
             },
           }
         );
