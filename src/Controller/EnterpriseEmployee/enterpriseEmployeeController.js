@@ -19,7 +19,7 @@ module.exports.getCardForUser = async (req, res) => {
         if (!card) {
           return res.status(404).json({ message: 'Card not found' });
         }
-        return res.status(200).json({ user })
+        return res.status(200).json({ card })
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Failed to get card", error });
