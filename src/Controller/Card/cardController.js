@@ -67,7 +67,7 @@ module.exports.createCard = async (req, res) => {
   // Upload image to S3 if a new image is provided
   if (image) {
     const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-    const fileName = `${userId}-businessCard.jpg`; // Unique file name based on user ID and card purpose
+    const fileName = `${userId}-${Date.now()}-businessCard.jpg`; // Unique file name based on user ID and card purpose
     try {
       const uploadResult = await uploadImageToS3(imageBuffer, fileName);
       imageUrl = uploadResult.Location; // S3 URL of the uploaded image
@@ -164,7 +164,7 @@ module.exports.updateCard = async (req, res) => {
         await deleteImageFromS3(existingCard.image); // Delete the old image from S3
       }
       const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-      const fileName = `${userId}-businessCard-${cardId}.jpg`; // Unique file name based on user ID and card ID
+      const fileName = `${userId}-${Date.now()}-businessCard.jpg`; // Unique file name based on user ID and card ID
       try {
         const uploadResult = await uploadImageToS3(imageBuffer, fileName);
         imageUrl = uploadResult.Location; // URL of the uploaded image
