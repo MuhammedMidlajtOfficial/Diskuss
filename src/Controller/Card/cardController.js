@@ -243,28 +243,43 @@ module.exports.deleteCard = async (req, res) => {
 
     // Step 3: Handle employee card-specific logic
     if (isEnterpriseEmployee) {
-      // Update the isDiskussUser flag in the Contact collection
+      console.log("phone:", isEnterpriseEmployee.phnNumber);
+      console.log("just message");
+    
+      // Find the contact containing the matching phone number in the nested contacts array
       const existingContact = await Contact.findOne({
         "contacts.phnNumber": isEnterpriseEmployee.phnNumber,
       });
+    
       if (existingContact) {
+        console.log("contact", existingContact);
+    
+        // Update the specific contact inside the contacts array using the positional $ operator
         await Contact.updateOne(
-          { phnNumber: isEnterpriseEmployee.phnNumber },
-          { $set: { isDiskussUser: false, userId: null } }
+          { "contacts.phnNumber": isEnterpriseEmployee.phnNumber },
+          {
+            $set: {
+              "contacts.$.isDiskussUser": false, // Update the matched contact's isDiskussUser flag
+              "contacts.$.userId": null,         // Remove the userId from the matched contact
+            },
+          }
         );
+    
+        console.log("Contact updated successfully.");
       }
-
+    
       // Remove the employee card from the EnterpriseEmployeeCard collection
       await EnterpriseEmployeeCard.deleteOne({ _id: cardId });
-
+    
       // Remove the card reference from the enterprise user
       await enterpriseUser.updateOne(
         { _id: enterpriseId },
         { $pull: { empCards: cardId } }
       );
-
+    
       return res.status(200).json({ message: "Employee card deleted successfully" });
     }
+    
 
     // Step 4: For individual or enterprise users, delete the card and decrement card count
     if (card) {
