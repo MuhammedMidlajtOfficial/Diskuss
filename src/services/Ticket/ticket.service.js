@@ -33,7 +33,7 @@ exports.getAll = async (page = 1, limit = 10, noPagination = false, filters = {}
         skip: (page - 1) * limit,
         limit: noPagination ? undefined : parseInt(limit),
     };
-    const tickets = await Ticket.find(query, null, options);
+    const tickets = await Ticket.find(query, null, options).sort({createdAt : -1});;
 
      // Populate user data for each ticket
      const populatedTicketsPromises = tickets.map(async ticket => {
