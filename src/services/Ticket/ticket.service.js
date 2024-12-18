@@ -18,7 +18,7 @@ exports.create = async (data) => {
 };
 
 exports.getAll = async (page =1,  ) => {
-    const tickets = await Ticket.find();
+    const tickets = await Ticket.find().sort({"createdAt": -1});
     let populatedTickets = [];
     for (let ticket of tickets) {
         let user = (await checkUserType(ticket.createdBy));
