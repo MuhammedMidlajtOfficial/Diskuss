@@ -24,6 +24,9 @@ const count = require('./Count/Count.js')
 const individualcount = require('./Count/individualCount.js')
 const Preferences = require('./Permission/PermissionModel.js')
 const analyticRouter = require("./Analytic/analyticRouter.js")
+const ticketRouter = require('./Ticket/ticketRouter.js')
+const ticketCategoryRouter = require('./Ticket/ticketCategoryRouter.js')
+const ticketReplyRouter = require('./Ticket/ticketReplyRouter.js')
 // const contactRouter = require("./contactRouter.js")
 const uploadVCard = require("./VCard/VCardRoute.js")
 
@@ -126,6 +129,18 @@ const defaultRoutes = [
   {
     path: '/Preferences',
     route: Preferences
+  },
+  {
+    path: '/ticket',
+    route: ticketRouter,
+  },
+  {
+    path: '/ticket-category',
+    route: ticketCategoryRouter,
+  },
+  {
+    path: '/ticket-reply',
+    route: ticketReplyRouter,
   },
   {
     path: '/vcard',
