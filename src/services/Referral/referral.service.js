@@ -1,19 +1,12 @@
 const {Referral} = require('../../models/referral.model');
 const EnterpriseUser = require('../../models/enterpriseUser');
-const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
-const { ObjectId } = require('mongodb');
 const { individualUserCollection: IndividualUser } = require('../../DBConfig');
+const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
 const {convertToMonthlyCounts} = require('../../util/HelperFunctions');
+const { ObjectId } = require('mongodb');
+const { checkUserType } = require('../../util/HelperFunctions');
 
 
-const checkUserType = async (userId) => {
-    const individualUser = await IndividualUser.findById(userId).exec();
-    const enterpriseUser = await EnterpriseUser.findById(userId).exec();
-    if (!individualUser && !enterpriseUser) {
-        throw new Error('Invalid user');
-    }
-    return individualUser ? 'individual' : 'enterprise';
-}
 
 // Send Invite
 const sendInvite = async (referrerId, inviteePhoneNo) => {
@@ -45,7 +38,7 @@ const registerInvitee = async (referralId, inviteePhoneNo) => {
         { $match: { referrer: referral.referrer } }, 
         { $group: { total: { $sum: '$rewardsEarned' } } } ]).lean().exec();
     
-    const userType = await checkUserType(referral.referrer);
+    const userType = await checkUserType(referral.referrer).userType;
     // Update referrerId's coin balance
     if (userType === 'individual') {
         await IndividualUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
@@ -105,7 +98,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo) => {
         { $match: { referrer: referral.referrer } }, 
         { $group: { _id : null ,total: { $sum: '$rewardsEarned' } } } ]).exec();
     
-    const userType = await checkUserType(referral.referrer);
+    const userType = (await checkUserType(referral.referrer)).userType;
     // Update referrerId's coin balance
     if (userType === 'individual') {
         await IndividualUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
@@ -131,7 +124,7 @@ const createCardByInvitee = async (referralId) => {
         { $match: { referrer: referral.referrer } }, 
         { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).lean().exec();
     
-    const userType = await checkUserType(referral.referrer);
+    const userType = await checkUserType(referral.referrer).userType;
     // Update referrerId's coin balance
     if (userType === 'individual') {
         await IndividualUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
@@ -163,7 +156,7 @@ const getReferralDetails = async (userId) => {
     // const userData = await User.findById(userId).select('coins referralCode').lean().exec();
     // const coins = userData ? userData.coins : 0; // Default to 0 if no user found
     // console.log("coins : ", coins);
-    const userType = await checkUserType(userId);
+    const userType = (await checkUserType(userId)).userType;
     let userData = {};
     if (userType === 'individual') {
         userData = await IndividualUser.findById(userId).select('referralCode').lean().exec();

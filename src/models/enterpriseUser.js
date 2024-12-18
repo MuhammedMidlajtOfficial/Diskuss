@@ -91,11 +91,6 @@ const enterpriseUserSchema = new mongoose.Schema({
         required: false,
       },
     ],
-    theme:{
-      type:String,
-      default:'01',
-      required:true
-    }
 },{ timestamps:true })
 
 
