@@ -6,9 +6,9 @@ const Service = require('../models/service.model');
  */
 const findAll = async () => {
   try {
-    const Services = await Service.find().exec();
+    const services = await Service.find().exec();
     // console.log(Services);
-    return Services;
+    return services;
   } catch (error) {
     console.error("Error fetching Services plan:", error);
     throw error; // Re-throw the error for higher-level handling if needed
@@ -27,7 +27,7 @@ const findAll = async () => {
  */
   const createService = async (planData) => {
     try {
-      // Prepare the Service data with unique plan_id
+      // Prepare the Service data with unique id
       const newPlan = new Service({
         name: planData.name,
         price: planData.price,
@@ -45,8 +45,8 @@ const findAll = async () => {
 
 
 /**
- * Update a Service plan by plan_id.
- * @param {String} plan_id - The unique identifier of the Service plan to update.
+ * Update a Service plan by id.
+ * @param {String} id - The unique identifier of the Service plan to update.
  * @param {Object} updateData - The data to update the Service plan.
  * @param {String} [updateData.name] - New name of the plan (optional).
  * @param {Decimal128} [updateData.price] - New price of the plan (optional).
@@ -54,24 +54,22 @@ const findAll = async () => {
  * @returns {Promise<Object>} - Returns the updated Service plan.
  * @throws {Error} - Throws an error if the Service plan is not found or if there's an issue with the update.
  */
-  const updateServiceById = async (plan_id, updateData) => {
+  const updateServiceById = async (id, updateData) => {
     try {
-      console.log(plan_id);
+      console.log(id);
       
-      const Service = await Service.findOne({plan_id:plan_id}).exec();
+      const service = await Service.findOne({id:id}).exec();
        
-      console.log(Service);
+      console.log(service);
       
-      if (!Service) {
+      if (!service) {
         throw new Error("Service plan not found");
       }
       const updatedService = await Service.findOneAndUpdate(
-        { plan_id },
+        { id },
         { $set: updateData },
         { new: true }
       ).exec(); // Find and update the Service plan
-
-      updatedService.save(); // Save the updated Service plan
 
   
       return updatedService; // Return the updated Service
@@ -83,14 +81,14 @@ const findAll = async () => {
 
   
 /**
- * Delete a Service plan by plan_id.
- * @param {String} plan_id - The unique identifier of the Service plan to delete.
+ * Delete a Service plan by id.
+ * @param {String} id - The unique identifier of the Service plan to delete.
  * @returns {Promise<Object>} - Returns the deleted Service plan for confirmation.
  * @throws {Error} - Throws an error if the Service plan is not found or if there's an issue with the deletion.
  */
-  const deleteServiceById = async (plan_id) => {
+  const deleteServiceById = async (id) => {
     try {
-      const deletedService = await Service.findOneAndDelete({ plan_id }).exec();
+      const deletedService = await Service.findOneAndDelete({ id }).exec();
   
       if (!deletedService) {
         throw new Error("Service plan not found");

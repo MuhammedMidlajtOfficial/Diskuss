@@ -11,4 +11,4 @@ router.patch('/plan/:plan_id', controller.updateSubscriptionPlan);
 router.delete('/plan/:plan_id',controller.deleteSubscriptionPlan)
 router.get('/plan/:plan_id', controller.getSubscriptionPlanByPlanId);
 
-module.exports = router;
+module.exports = router; 
