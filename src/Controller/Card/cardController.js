@@ -1,7 +1,9 @@
 const { individualUserCollection } = require("../../DBConfig");
 const Card = require("../../models/card");
 const { ObjectId } = require('mongodb');
+const Contact = require ('../../models/contact.individual.model')
 const enterpriseUser = require("../../models/enterpriseUser");
+const enterpriseEmployee = require("../../models/enterpriseEmploye.model");
 const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
 const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
 const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
@@ -65,7 +67,7 @@ module.exports.createCard = async (req, res) => {
   // Upload image to S3 if a new image is provided
   if (image) {
     const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-    const fileName = `${userId}-businessCard.jpg`; // Unique file name based on user ID and card purpose
+    const fileName = `${userId}-${Date.now()}-businessCard.jpg`; // Unique file name based on user ID and card purpose
     try {
       const uploadResult = await uploadImageToS3(imageBuffer, fileName);
       imageUrl = uploadResult.Location; // S3 URL of the uploaded image
@@ -162,7 +164,7 @@ module.exports.updateCard = async (req, res) => {
         await deleteImageFromS3(existingCard.image); // Delete the old image from S3
       }
       const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-      const fileName = `${userId}-businessCard-${cardId}.jpg`; // Unique file name based on user ID and card ID
+      const fileName = `${userId}-${Date.now()}-businessCard.jpg`; // Unique file name based on user ID and card ID
       try {
         const uploadResult = await uploadImageToS3(imageBuffer, fileName);
         imageUrl = uploadResult.Location; // URL of the uploaded image
@@ -208,87 +210,108 @@ module.exports.updateCard = async (req, res) => {
 };
 
 module.exports.deleteCard = async (req, res) => {
-  const { userId, cardId } = req.body;
-
-  // Check if the user exists in any of the collections
-  const isIndividualUser = await individualUserCollection.findOne({ _id: userId });
-  const isEnterpriseUser = await enterpriseUserCollection.findOne({ _id: userId });
-  const isEnterpriseEmployee = await enterpriseEmployeeCollection.findOne({ _id: userId });
-
-  // If the user doesn't exist in any collection, return error
-  if (!isIndividualUser && !isEnterpriseUser && !isEnterpriseEmployee) {
-    return res.status(400).json({ message: 'Invalid user ID' });
-  }
+  const { cardId } = req.body;
 
   try {
-    // Handle enterprise employee card and employee deletion
-    if (isEnterpriseEmployee) {
-      // Find and delete the employee's card from enterpriseEmployeeCardModel
-      const getCard = await enterpriseEmployeCardModel.findOne({ userId });
-      if (getCard) {
-        await enterpriseEmployeCardModel.deleteOne({ userId });
-      }
+    // Step 1: Search for the card in the two collections
+    const card = await Card.findOne({ _id: cardId });
+    const employeeCard = await EnterpriseEmployeeCard.findOne({ _id: cardId });
 
-      // Check if the employee's phnNumber is used in any contact
-      const existingContact = await Contact.findOne({ phnNumber: isEnterpriseEmployee.phnNumber });
-      if (existingContact) {
-        // Update the contact details if phnNumber is used by the employee
-        const contactUpdate = await Contact.updateOne(
-          { phnNumber: isEnterpriseEmployee.phnNumber },
-          { $set: { isDiskussUser: false, userId: null } } // Removing the userId and marking as not a Diskuss user
-        );
-
-        if (contactUpdate.modifiedCount > 0) {
-          console.log("Contact updated successfully.");
-        } else {
-          console.log("Contact not updated.");
-        }
-      }
-
-      // Remove the employee from the enterprise
-      const enterpriseId = isEnterpriseEmployee.enterpriseId; // Assuming this field exists
-      await enterpriseUser.updateOne(
-        { _id: enterpriseId },
-        { $pull: { empId: userId, empCards: getCard?._id } }
-      );
-
-      // Optionally, delete the employee from the enterpriseEmployeeCollection
-      await enterpriseEmployeeCollection.deleteOne({ _id: userId });
-
-      return res.status(200).json({ message: "Employee and card deleted successfully" });
+    if (!card && !employeeCard) {
+      return res.status(404).json({ message: "Card not found" });
     }
 
-    // Delete the card from the Card collection
-    const result = await Card.deleteOne({ userId, _id: cardId });
-    console.log(result);
+    // Extract userId and handle employee-specific logic
+    let userId;
+    let enterpriseId;
 
-    if (result.deletedCount > 0) {
-      // Handle individual user card deletion logic
+    if (employeeCard) {
+      userId = employeeCard.userId;
+      enterpriseId = employeeCard.enterpriseId;
+    } else {
+      userId = card.userId;
+    }
+
+    // Step 2: Check if the user exists in any of the collections
+    const isIndividualUser = await individualUserCollection.findOne({ _id: userId });
+    const isEnterpriseUser = await enterpriseUser.findOne({ _id: userId });
+    const isEnterpriseEmployee = await enterpriseEmployee.findOne({ _id: userId });
+
+    if (!isIndividualUser && !isEnterpriseUser && !isEnterpriseEmployee) {
+      return res.status(400).json({ message: "Invalid user ID associated with the card" });
+    }
+
+    // Step 3: Handle employee card-specific logic
+    if (isEnterpriseEmployee) {
+      console.log("phone:", isEnterpriseEmployee.phnNumber);
+      console.log("just message");
+    
+      // Find the contact containing the matching phone number in the nested contacts array
+      const existingContact = await Contact.findOne({
+        "contacts.phnNumber": isEnterpriseEmployee.phnNumber,
+      });
+    
+      if (existingContact) {
+        console.log("contact", existingContact);
+    
+        // Update the specific contact inside the contacts array using the positional $ operator
+        await Contact.updateOne(
+          { "contacts.phnNumber": isEnterpriseEmployee.phnNumber },
+          {
+            $set: {
+              "contacts.$.isDiskussUser": false, // Update the matched contact's isDiskussUser flag
+              "contacts.$.userId": null,         // Remove the userId from the matched contact
+              "contacts.$.name": "User Deleted"
+            },
+          }
+        );
+    
+        console.log("Contact updated successfully.");
+      }
+    
+      // Remove the employee card from the EnterpriseEmployeeCard collection
+      await EnterpriseEmployeeCard.deleteOne({ _id: cardId });
+    
+      // Remove the card reference from the enterprise user
+      await enterpriseUser.updateOne(
+        { _id: enterpriseId },
+        { $pull: { empCards: cardId } }
+      );
+    
+      return res.status(200).json({ message: "Employee card deleted successfully" });
+    }
+    
+
+    // Step 4: For individual or enterprise users, delete the card and decrement card count
+    if (card) {
+      await Card.deleteOne({ _id: cardId });
+
+      // Update card count for the individual user
       if (isIndividualUser) {
         await individualUserCollection.updateOne(
           { _id: userId },
           { $inc: { cardNo: -1 } }
         );
-      } 
-      
-      // Handle enterprise user card deletion logic
-      else if (isEnterpriseUser) {
-        await enterpriseUserCollection.updateOne(
+      }
+
+      // Update card count for the enterprise user
+      if (isEnterpriseUser) {
+        await enterpriseUser.updateOne(
           { _id: userId },
           { $inc: { cardNo: -1 } }
         );
-      } 
+      }
 
       return res.status(200).json({ message: "Card deleted successfully" });
-    } else {
-      // If no card is found to delete
-      return res.status(404).json({ message: "Card not found" });
     }
+
+    return res.status(404).json({ message: "Card deletion failed" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Failed to delete card", error });
   }
 };
+
 
 
 

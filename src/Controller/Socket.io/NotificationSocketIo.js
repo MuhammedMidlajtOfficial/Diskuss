@@ -13,6 +13,8 @@ const setSocketIO = (socketIoInstance) => {
       console.log(`User ${userId} connected with socket ID ${socket.id}`);
     } else {
       console.warn(`A socket connected without userId. Socket ID: ${socket.id}`);
+     
+      
     }
 
     // Handle disconnection
@@ -22,6 +24,7 @@ const setSocketIO = (socketIoInstance) => {
         delete userSockets[userId];
       } else {
         console.warn(`Disconnected socket ID ${socket.id} was not mapped to any user.`);
+
       }
     });
   });
@@ -39,6 +42,7 @@ const emitNotification = (userId, notification) => {
     console.log(`Notification sent to user ${userId}:`, notification);
   } else {
     console.warn(`User ${userId} is not connected. Cannot send notification.`);
+    console.log(notification);
   }
 };
 

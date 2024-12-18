@@ -1,4 +1,4 @@
-  const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { otpCollection } = require('../../DBConfig');
 const enterpriseUser = require('../../models/enterpriseUser');
