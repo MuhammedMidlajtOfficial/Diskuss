@@ -120,7 +120,6 @@ module.exports.postIndividualSignup = async (req, res) => {
   }
 }
 
-
 module.exports.postforgotPassword = async (req, res ) => {
   try {
     console.log(req.body);

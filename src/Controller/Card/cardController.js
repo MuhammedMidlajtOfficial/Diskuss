@@ -262,6 +262,7 @@ module.exports.deleteCard = async (req, res) => {
               "contacts.$.isDiskussUser": false, // Update the matched contact's isDiskussUser flag
               "contacts.$.userId": null,         // Remove the userId from the matched contact
               "contacts.$.name": "Deleted User"
+
             },
           }
         );

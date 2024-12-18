@@ -1,6 +1,7 @@
 const { individualUserCollection } = require("../../DBConfig");
 const Contact = require("../../models/contact.individual.model");
 
+
 exports.getCounts = async (req, res) => {
 
   try {
@@ -15,6 +16,7 @@ exports.getCounts = async (req, res) => {
           contactOwnerId: userId,
         });
         console.log("Contacts Count:", contactsCount);
+
 
     const CardCount = user.cardNo || 0
     const coins = user.coins || 0;
