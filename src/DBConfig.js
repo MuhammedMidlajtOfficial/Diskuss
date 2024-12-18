@@ -1,23 +1,44 @@
 require('dotenv').config();
+const crypto = require('crypto');
 
 const mongoose = require('mongoose');
 const mailSender = require('./util/mailSender');
+console.log(process.env.MongoDBURL);
 
 if (!process.env.MongoDBURL) {
   console.error("MongoDBURL environment variable is not defined.");
   process.exit(1);
 }
 
-mongoose.connect(process.env.MongoDBURL,{
+
+mongoose.connect( process.env.MongoDBURL,{
   connectTimeoutMS: 20000, 
   socketTimeoutMS: 45000,
 })
+
   .then(() => {
     console.log('DB Connected');
   })
   .catch((err) => {
     console.error('DB Connection Failed:', err);
   });
+
+
+// } else{
+//   mongoose.connect( process.env.MongoDBURL,{
+//     connectTimeoutMS: 20000, 
+//     socketTimeoutMS: 45000,
+//   })
+//     .then(() => {
+//       console.log('DB Connected');
+//     })
+//     .catch((err) => {
+//       console.error('DB Connection Failed:', err);
+//     });
+// }
+
+
+
 
   const individualUserSchema = new mongoose.Schema({
     username: {
@@ -32,7 +53,79 @@ mongoose.connect(process.env.MongoDBURL,{
       type: String,
       required: true,
     },
-  });
+    isSubscribed: {
+      type: Boolean,
+      default: false,
+    },
+    cardNo: {
+      type: Number,
+      required: true,
+      default : 0
+    },
+    image: {
+      type:String,
+      default : ''
+    },
+    role: {
+      type:String,
+      default : ''
+    },
+    name: {
+      type:String,
+      default : ''
+    },
+    website: {
+      type:String,
+      default : ''
+    },
+    phnNumber: {
+      type: String,
+      default: '',
+    },
+    address: {
+      type:String,
+      default : ''
+    },
+    contacts : {
+      type : Array,
+      default : []
+    },
+    meetings : [{
+      type: String,
+      ref: "Meeting", // Reference to Meeting model
+      required: false,
+    }],
+    status:{
+      type:String,
+      default : 'active'
+    },
+    socialMedia: {
+      whatsappNo: {
+        type:String,
+        default : ''
+      },
+      facebookLink: {
+        type:String,
+        default : ''
+      },
+      instagramLink: {
+        type:String,
+        default : ''
+      },
+      twitterLink: {
+        type:String,
+        default : ''
+      },
+    },
+    referralCode: {
+      type: String,
+      unique: true,
+    }, // Ensure referral codes are unique
+    referralCodeUsed: {
+      type: String,
+      default: null,
+    }, // Referral code used by the user
+  } ,{ timestamps: true });
 
   const otpSchema = new mongoose.Schema({
     email: {
@@ -81,5 +174,33 @@ mongoose.connect(process.env.MongoDBURL,{
     next();
   });
   
+// Set referral code as unique
+// Generate a unique referral code using crypto or any other method
+individualUserSchema.pre('save', async function(next) {
+  if (!this.referralCode) {
+    const generateReferralCode = () => {
+      return crypto.randomBytes(4).toString('hex').toUpperCase(); // Generate 12 character long referral code
+    };
+
+    let referralCode = generateReferralCode();
+    
+    // Ensure the referral code is unique
+    let isUnique = false;
+    while (!isUnique) {
+      const existingUser = await mongoose.model('User').findOne({ 'referralCode': referralCode });
+      if (!existingUser) {
+        isUnique = true;
+      } else {
+        referralCode = generateReferralCode(); // Generate a new code if it's not unique
+      }
+    }
+
+    this.referralCode = referralCode;
+  }
+
+  next();
+});
+
+
 module.exports.individualUserCollection = mongoose.model('user', individualUserSchema);
 module.exports.otpCollection = mongoose.model('otp', otpSchema);

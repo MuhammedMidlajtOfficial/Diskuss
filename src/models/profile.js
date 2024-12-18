@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const profileSchema = new mongoose.Schema({
+const ProfileSchema = new mongoose.Schema({
   businessName: String,
   yourName: String,
   designation: String,
@@ -11,6 +11,11 @@ const profileSchema = new mongoose.Schema({
   image: String,       
   position: String,
   color: String,
+  referralCode: String,
+  referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+  incentives : [{ type : mongoose.Schema.Types.ObjectId, ref: 'Incentive', required: false }],
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  cards : [{ type : mongoose.Schema.Types.ObjectId, ref: 'Card', required: false }],
 });
 
-module.exports = mongoose.model("Profile", profileSchema);
+module.exports = mongoose.model("Profile", ProfileSchema);
