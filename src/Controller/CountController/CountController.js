@@ -1,5 +1,5 @@
 const Team = require("../../models/team.model");
-const Contact = require("../../models/contact.enterprise.model");
+const Contact = require("../../models/contact.individual.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const Card = require("../../models/card");
 
