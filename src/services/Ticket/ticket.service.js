@@ -17,27 +17,63 @@ exports.create = async (data) => {
     return await newTicket.save();
 };
 
-exports.getAll = async (page =1,  ) => {
-    const tickets = await Ticket.find().sort({"createdAt": -1});
-    let populatedTickets = [];
-    for (let ticket of tickets) {
-        let user = (await checkUserType(ticket.createdBy));
-        const userType = user.userType;
+exports.getAll = async (page = 1, limit = 10, noPagination = false, filters = {}) => {
+    const query = {};
+
+    // Apply filters if provided
+    if (filters.status) {
+        query.status = filters.status;
+    }
+    if (filters.priority) {
+        query.priority = filters.priority;
+    }
+
+    // Pagination logic
+    const options = {
+        skip: (page - 1) * limit,
+        limit: noPagination ? undefined : parseInt(limit),
+    };
+    const tickets = await Ticket.find(query, null, options);
+
+     // Populate user data for each ticket
+     const populatedTicketsPromises = tickets.map(async ticket => {
+        let user = await checkUserType(ticket.createdBy);
         const userData = user.data;
-        let populatedUser = {
-            username: userData.username,
-            email: userData.email
-        };
-        if (userType === 'individual') {
-            // populatedUser =  await IndividualUser.findOne(ticket.createdBy).select('username email');
+        let populatedUser;
+
+        if (user.userType === 'individual') {
+            populatedUser = await IndividualUser.findById(ticket.createdBy).select('username email');
         } else {
-            populatedUser = await EnterpriseUser.findOne(ticket.createdBy).select('username email');
+            populatedUser = await EnterpriseUser.findById(ticket.createdBy).select('username email');
         }
+
         const ticketData = ticket.toObject();
         ticketData.createdBy = populatedUser;
-        populatedTickets.push(ticketData);
-    }
-    return populatedTickets;
+        return ticketData;
+    });
+
+    return Promise.all(populatedTicketsPromises);
+
+    // const tickets = await Ticket.find();
+    // let populatedTickets = [];
+    // for (let ticket of tickets) {
+    //     let user = (await checkUserType(ticket.createdBy));
+    //     const userType = user.userType;
+    //     const userData = user.data;
+    //     let populatedUser = {
+    //         username: userData.username,
+    //         email: userData.email
+    //     };
+    //     if (userType === 'individual') {
+    //         // populatedUser =  await IndividualUser.findOne(ticket.createdBy).select('username email');
+    //     } else {
+    //         populatedUser = await EnterpriseUser.findOne(ticket.createdBy).select('username email');
+    //     }
+    //     const ticketData = ticket.toObject();
+    //     ticketData.createdBy = populatedUser;
+    //     populatedTickets.push(ticketData);
+    // }
+    // return populatedTickets;
 };
 
 exports.getById = async (id) => {
