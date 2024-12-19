@@ -1,4 +1,6 @@
 const { individualUserCollection } = require("../../DBConfig");
+const Contact = require("../../models/contact.individual.model");
+
 
 exports.getCounts = async (req, res) => {
 
@@ -10,7 +12,12 @@ exports.getCounts = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const contactsCount = user.contacts ? user.contacts.length : 0;
+    const contactsCount = await Contact.countDocuments({
+          contactOwnerId: userId,
+        });
+        console.log("Contacts Count:", contactsCount);
+
+
     const CardCount = user.cardNo || 0
     const coins = user.coins || 0;
 

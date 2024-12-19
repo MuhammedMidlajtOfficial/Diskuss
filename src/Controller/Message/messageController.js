@@ -2,7 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-// const Contact = require("../../models/contact.individual.model");
+const Contact = require("../../models/contact.individual.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
 const axios = require("axios");
@@ -193,10 +193,10 @@ console.log("getMessages userId - ",userId)
             from: "contacts",
             let: { receiverId: "$lastMessage.receiverId" },
             pipeline: [
-              { $unwind: "$contacts" },
+              { $unwind: "$contacts" }, // Unwind the contacts array
               {
                 $match: {
-                  $expr: { $eq: ["$contacts.userId", "$$receiverId"] },
+                  $expr: { $eq: ["$contacts.userId", "$$receiverId"] }, // Match receiverId with contacts.userId
                 },
               },
               {
@@ -258,7 +258,7 @@ console.log("getMessages userId - ",userId)
                     "Unknown Receiver",
                   ],
                 },
-              ],
+            ],
             },
             "lastMessage.receiverNumber": {
               $ifNull: [
@@ -278,7 +278,9 @@ console.log("getMessages userId - ",userId)
             },
             "lastMessage.receiverProfilePic": {
               $ifNull: [
-                { $arrayElemAt: ["$receiverContactInfo.image", 0] },
+                { $arrayElemAt: ["$receiverUserInfo.image", 0] },
+                { $arrayElemAt: ["$receiverEnterpriseInfo.image", 0] },
+                { $arrayElemAt: ["$receiverEmployeeInfo.image", 0] },
                 "",
               ],
             },
@@ -325,8 +327,7 @@ console.log("getMessages userId - ",userId)
             receiverContactInfo: 0,
           },
         },
-      ]);
-
+      ]);    
       return res.status(200).json(lastMessages);
     } else {
       return res
