@@ -161,6 +161,7 @@ console.log("getMessages userId - ",userId)
         {
           $group: {
             _id: "$chatId",
+            messages: { $push: "$$ROOT" }, 
             lastMessage: { $first: "$$ROOT" }, // Capture only the latest message
           },
         },
@@ -297,12 +298,12 @@ console.log("getMessages userId - ",userId)
                       as: "message",
                       cond: {
                         $and: [
-                          { $eq: ["$$message.isRead", false] },
+                          { $eq: ["$$message.isRead", false] }, // Message is unread
                           {
                             $eq: [
                               "$$message.receiverId",
                               new mongoose.Types.ObjectId(userId),
-                            ],
+                            ], // Receiver is the current user
                           },
                         ],
                       },
@@ -313,7 +314,7 @@ console.log("getMessages userId - ",userId)
               },
             },
           },
-        },
+        },        
         {
           $replaceRoot: { newRoot: "$lastMessage" },
         },
@@ -325,6 +326,7 @@ console.log("getMessages userId - ",userId)
             senderEnterpriseInfo: 0,
             senderEmployeeInfo: 0,
             receiverContactInfo: 0,
+            messages: 0,
           },
         },
       ]);    
