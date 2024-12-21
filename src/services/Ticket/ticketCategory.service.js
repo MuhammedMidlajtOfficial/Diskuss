@@ -6,7 +6,21 @@ exports.create = async (data) => {
 };
 
 exports.getAll = async () => {
-    return await TicketCategory.find();
+    const categories =  await TicketCategory.find();
+    const stats = []
+
+    for (const category of categories) {
+        const activeCount = await Ticket.countDocuments({ status: 'Open', category });
+        const solvedCount = await Ticket.countDocuments({ status: 'Resolved', category });
+
+        stats.push({
+            category,
+            activeTickets: activeCount,
+            solvedTickets: solvedCount
+        });
+    }
+
+    return stats;
 };
 
 exports.getById = async (id) => {
