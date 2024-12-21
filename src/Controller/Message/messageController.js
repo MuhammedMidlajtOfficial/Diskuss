@@ -160,6 +160,7 @@ exports.getMessages = async (req, res) => {
         {
           $group: {
             _id: "$chatId",
+            messages: { $push: "$$ROOT" }, 
             lastMessage: { $first: "$$ROOT" }, // Capture only the latest message
           },
         },
@@ -296,12 +297,12 @@ exports.getMessages = async (req, res) => {
                       as: "message",
                       cond: {
                         $and: [
-                          { $eq: ["$$message.isRead", false] },
+                          { $eq: ["$$message.isRead", false] }, // Message is unread
                           {
                             $eq: [
                               "$$message.receiverId",
                               new mongoose.Types.ObjectId(userId),
-                            ],
+                            ], // Receiver is the current user
                           },
                         ],
                       },
@@ -312,7 +313,7 @@ exports.getMessages = async (req, res) => {
               },
             },
           },
-        },
+        },        
         {
           $replaceRoot: { newRoot: "$lastMessage" },
         },
@@ -324,6 +325,7 @@ exports.getMessages = async (req, res) => {
             senderEnterpriseInfo: 0,
             senderEmployeeInfo: 0,
             receiverContactInfo: 0,
+            messages: 0,
           },
         },
       ]);    
