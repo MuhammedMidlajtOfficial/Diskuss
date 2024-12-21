@@ -64,10 +64,10 @@ module.exports.postEnterpriseLogin = async (req, res) => {
 
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
-    const { companyName, industryType, phnNumber, email, otp, referralCode } = req.body
+    const {username, companyName, industryType, phnNumber, email, otp, referralCode } = req.body
     const passwordRaw = req.body.password
 
-    if (!companyName || !email || !industryType || !passwordRaw || !otp || !phnNumber) {
+    if (!username || !companyName || !email || !industryType || !passwordRaw || !otp || !phnNumber) {
       return res.status(400).json({message:"All fields are required"}); // Correct response handling
     }
     // Check if email exists
@@ -92,6 +92,7 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
 
     const newUser = await enterpriseUser.create({
+      username,
       companyName,
       industryType,
       email,
@@ -325,6 +326,7 @@ module.exports.updateProfile = async (req, res) => {
   try {
     const {
       userId,
+      username,
       companyName,
       industryType,
       image,
@@ -397,6 +399,7 @@ module.exports.updateProfile = async (req, res) => {
       { _id: userId },
       {
         $set: {
+          username,
           companyName,
           industryType,
           image: imageUrl,

@@ -6,35 +6,51 @@ const enterpriseUser = require("../../models/enterpriseUser");
 const enterpriseEmployee = require("../../models/enterpriseEmploye.model");
 const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
 const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
-const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
+const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 
 module.exports.getCards = async (req, res) => {
   try {
-    const userId = req.params.id
-    
-    const isIndividualUserExist = await individualUserCollection.findOne({ _id:userId }).lean()
-    const isEnterpriseUserExist = await enterpriseUser.findOne({ _id:userId }).populate('empCards').lean()
-    if(!isIndividualUserExist && ! isEnterpriseUserExist){
+    const userId = req.params.id;
+
+    // Check if the user exists in different collections
+    const isIndividualUserExist = await individualUserCollection.findOne({ _id: userId }).lean();
+    const isEnterpriseUserExist = await enterpriseUser.findOne({ _id: userId }).populate('empCards').lean();
+    const isEmployeeUserExist = await enterpriseEmployee.findOne({ _id: userId }).lean();
+console.log("employee id:",isEmployeeUserExist);
+
+    // If user doesn't exist in any of the collections
+    if (!isIndividualUserExist && !isEnterpriseUserExist && !isEmployeeUserExist) {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
 
-    let card = []
-    if(isEnterpriseUserExist){
-      const cardOfEnterprise = await Card.find({ userId })
-      card = [ ...cardOfEnterprise, ...isEnterpriseUserExist.empCards ]
-    }else{
-      card = await Card.find({ userId })
+    let card = [];
+
+    if (isEnterpriseUserExist) {
+      // If enterprise user, fetch their cards and empCards
+      const cardOfEnterprise = await Card.find({ userId });
+      card = [...cardOfEnterprise, ...isEnterpriseUserExist.empCards];
+    } else if (isIndividualUserExist) {
+      // If individual user, fetch their cards
+      card = await Card.find({ userId });
+    } else if (isEmployeeUserExist) {
+      // If employee user, fetch their employee-specific card
+      const employeeCard = await EnterpriseEmployeeCard.findOne({ userId });
+      console.log("crad:",employeeCard);
+      
+      if (!employeeCard) {
+        return res.status(404).json({ message: 'Card not found for employee' });
+      }
+      card = [employeeCard];
     }
-    // if (!card[0]) {
-    //   return res.status(200).json({ message: 'Card not found' });
-    // }
-    // console.log(card);
+
     return res.status(200).json(card);
+
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Failed to get cards", error });
   }
 };
+
 
 module.exports.createCard = async (req, res) => {
   console.log(req.body);
