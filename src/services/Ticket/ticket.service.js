@@ -131,7 +131,17 @@ exports.countSolvedTickets = async () => {
     return await Ticket.countDocuments({ status: 'Resolved' });
 };
 
+exports.getAllStats = async () => {
+    const totalTickets = await Ticket.countDocuments();
+    const openTickets = await Ticket.countDocuments({ status: 'Open' });
+    const onGoingTickets = await Ticket.countDocuments({status : 'In Progess'})
+    const closedTickets = await Ticket.countDocuments({ status: 'Resolved' });
+    const highPriorityTickets = await Ticket.countDocuments({ priority: 'High' });
+    const mediumPriorityTickets = await Ticket.countDocuments({ priority: 'Medium' });
+    const lowPriorityTickets = await Ticket.countDocuments({ priority: 'lLow' });
 
+    return { totalTickets, openTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
+}
 exports.update = async (id, data) => {
     return await Ticket.findByIdAndUpdate(id, data, { new: true });
 };
