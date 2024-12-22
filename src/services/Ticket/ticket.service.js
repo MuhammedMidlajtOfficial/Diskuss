@@ -142,6 +142,7 @@ exports.getAllStats = async () => {
 
     return { totalTickets, openTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
 }
+
 exports.update = async (id, data) => {
     return await Ticket.findByIdAndUpdate(id, data, { new: true });
 };

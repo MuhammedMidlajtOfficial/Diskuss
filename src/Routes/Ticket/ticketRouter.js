@@ -9,4 +9,5 @@ router.get('/:id', ticketController.getTicketById);
 router.put('/:id', ticketController.updateTicket);
 router.delete('/:id', ticketController.deleteTicket);
 router.get('/stats', ticketController.getAllStats)
+
 module.exports = router;
