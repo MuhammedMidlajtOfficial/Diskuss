@@ -67,7 +67,23 @@ const cardSchema = new mongoose.Schema({
     type:String,
     max:5,
     required:true
-  } ]
+  } ],
+    whatsappNo: {
+      type: Number,
+      default: "",
+    },
+    facebookLink: {
+      type: String,
+      default: "",
+    },
+    instagramLink: {
+      type: String,
+      default: "",
+    },
+    twitterLink: {
+      type: String,
+      default: "",
+    },
 },{ timestamps:true });
 
 module.exports = mongoose.model("Card", cardSchema);

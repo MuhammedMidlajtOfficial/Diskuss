@@ -1,21 +1,24 @@
 const enterpriseUser = require("../../models/enterpriseUser");
 const Card = require("../../models/card");
-const { ObjectId } = require('mongodb');
+const { ObjectId } = require("mongodb");
 const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
 const mailSender = require("../../util/mailSender");
-const bcrypt = require('bcrypt');
-const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
+const bcrypt = require("bcrypt");
+const {
+  uploadImageToS3,
+  deleteImageFromS3,
+} = require("../../services/AWS/s3Bucket");
 module.exports.getCards = async (req, res) => {
   try {
-    const userId = req.params.id
-    
-    const isUserExist = enterpriseUser.find({ _id:userId })
-    if(!isUserExist){
-      return res.status(400).json({ message: 'Invalid user ID' });
+    const userId = req.params.id;
+
+    const isUserExist = enterpriseUser.find({ _id: userId });
+    if (!isUserExist) {
+      return res.status(400).json({ message: "Invalid user ID" });
     }
 
-    const card = await Card.find({ userId })
+    const card = await Card.find({ userId });
     // if (!card[0]) {
     //   console.log(Error('Error:Card not found'));
     //   return res.status(404).json({ message: 'Card not found' });
@@ -48,39 +51,55 @@ module.exports.createCard = async (req, res) => {
       color,
       website,
       theme,
-      topServices
+      topServices,
+      whatsappNo,
+      facebookLink,
+      instagramLink,
+      twitterLink,
     } = req.body;
-    const passwordRaw = '123'
+    const passwordRaw = "123";
     // console.log('create enterprise card- image',image);
     // Check if user email exists
     const isEmailExist = await enterpriseEmployeModel.findOne({ email }).exec();
-    const isEmailExistInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
+    const isEmailExistInEnterpriseUser = await enterpriseUser
+      .findOne({ email })
+      .exec();
     // console.log('isEmailExist || isEmailExistInEnterpriseUser--',isEmailExist );
     if (isEmailExist) {
-      return res.status(409).json({ message: "A user with this email address already exists. Please use another email" });
+      return res.status(409).json({
+        message:
+          "A user with this email address already exists. Please use another email",
+      });
     }
 
     // console.log('isEmailExistInEnterpriseUser--',isEmailExistInEnterpriseUser);
     // Check if Enterprise ID exists
-    const isEnterpriseIDExist = await enterpriseUser.findOne({ _id: userId }).exec();
+    const isEnterpriseIDExist = await enterpriseUser
+      .findOne({ _id: userId })
+      .exec();
     if (!isEnterpriseIDExist) {
       return res.status(409).json({ message: "Enterprise user not found" });
     }
     let imageUrl = image; // Default to provided image URL if no new image upload is needed
     // Upload image to S3 if a new image is provided
     if (image) {
-      const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+      const imageBuffer = Buffer.from(
+        image.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      );
       const fileName = `${userId}-${Date.now()}-businessCard.jpg`; // Unique file name based on user ID and card purpose
       try {
         const uploadResult = await uploadImageToS3(imageBuffer, fileName);
         imageUrl = uploadResult.Location; // S3 URL of the uploaded image
       } catch (uploadError) {
         console.log("Error uploading image to S3:", uploadError);
-        return res.status(500).json({ message: "Failed to upload image", error: uploadError });
+        return res
+          .status(500)
+          .json({ message: "Failed to upload image", error: uploadError });
       }
     }
     // CREATE CARD FOR ENTERPRISE
-    if(isEmailExistInEnterpriseUser){
+    if (isEmailExistInEnterpriseUser) {
       const newCard = new Card({
         userId,
         businessName,
@@ -97,39 +116,46 @@ module.exports.createCard = async (req, res) => {
         color,
         website,
         theme,
-        topServices
+        topServices,
+        whatsappNo,
+        facebookLink,
+        instagramLink,
+        twitterLink,
       });
       const result = await newCard.save();
       if (result) {
         await enterpriseUser.updateOne(
           { _id: userId },
-          { $inc: { cardNo: 1 } }  // Increment cardNo by 1
+          { $inc: { cardNo: 1 } } // Increment cardNo by 1
         );
       }
-      return res.status(201).json({ message: "Card added for enterprise successfully", entryId: result._id });
-    }else{
-    // CREATE CARD FOR ENTERPRISE EMPLOYEE
-    // Hash password
-    const hashedPassword = await bcrypt.hash(passwordRaw, 10);
-        // Create a new user
-        const newUser = await enterpriseEmployeModel.create({
-          username:yourName,
-          email,
-          companyName:businessName,
-          phnNumber:mobile,
-          password: hashedPassword,
-          cardNo: 0,
+      return res.status(201).json({
+        message: "Card added for enterprise successfully",
+        entryId: result._id,
+      });
+    } else {
+      // CREATE CARD FOR ENTERPRISE EMPLOYEE
+      // Hash password
+      const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+      // Create a new user
+      const newUser = await enterpriseEmployeModel.create({
+        username: yourName,
+        email,
+        companyName: businessName,
+        phnNumber: mobile,
+        password: hashedPassword,
+        cardNo: 0,
       });
       if (!newUser) {
         return res.status(404).json({ message: "User creation failed" });
       }
       // Create new card for Enterprise Employee
       const newCard = new enterpriseEmployeCardModel({
-        userId : newUser._id,
+        userId: newUser._id,
         businessName,
         businessType,
         email,
-        yourName : yourName,
+        yourName: yourName,
         designation,
         mobile,
         location,
@@ -138,30 +164,39 @@ module.exports.createCard = async (req, res) => {
         position,
         color,
         website,
-        enterpriseId : userId,
+        enterpriseId: userId,
         theme,
-        topServices
+        topServices,
+        whatsappNo,
+        facebookLink,
+        instagramLink,
+        twitterLink,
       });
       const result = await newCard.save();
       if (result) {
         await enterpriseUser.updateOne(
           { _id: userId },
-          { 
-            $push: { 
-                empCards: result._id,
-                empId: newUser._id,
+          {
+            $push: {
+              empCards: result._id,
+              empId: newUser._id,
             },
           }
         );
         await enterpriseEmployeModel.updateOne(
-            { _id : newUser._id },
-            { $inc : { cardNo : 1 } }
-        )
-        
-        res.status(201).json({ message: "Enterprise employee Card added successfully", entryId: result._id });
-        sendVerificationEmail(email,newUser.email,passwordRaw)
+          { _id: newUser._id },
+          { $inc: { cardNo: 1 } }
+        );
+
+        res.status(201).json({
+          message: "Enterprise employee Card added successfully",
+          entryId: result._id,
+        });
+        sendVerificationEmail(email, newUser.email, passwordRaw);
       } else {
-          return res.status(500).json({ message: "Failed to save enterprise employee card" });
+        return res
+          .status(500)
+          .json({ message: "Failed to save enterprise employee card" });
       }
     }
   } catch (error) {
@@ -189,19 +224,23 @@ module.exports.updateCard = async (req, res) => {
       cardType,
       website,
       theme,
-      topServices
+      topServices,
+      whatsappNo,
+      facebookLink,
+      instagramLink,
+      twitterLink,
     } = req.body;
 
-    const isUserExist = enterpriseUser.findOne({ _id:userId })
-    if(!isUserExist){
-      return res.status(400).json({ message: 'Invalid user ID' });
+    const isUserExist = enterpriseUser.findOne({ _id: userId });
+    if (!isUserExist) {
+      return res.status(400).json({ message: "Invalid user ID" });
     }
-    console.log('updateCard _ cardId--',cardId);
-    console.log('Update enterprise card- image',image);
+    console.log("updateCard _ cardId--", cardId);
+    console.log("Update enterprise card- image", image);
     // Find existing card to retrieve the current image URL if no new image is provided
     const existingCard = await Card.findById(cardId);
     if (!existingCard) {
-      return res.status(404).json({ message: 'Card not found' });
+      return res.status(404).json({ message: "Card not found" });
     }
 
     let imageUrl = existingCard.image; // Default to existing image if no new image is provided
@@ -212,68 +251,79 @@ module.exports.updateCard = async (req, res) => {
       if (existingCard?.image) {
         await deleteImageFromS3(existingCard.image); // Delete the old image from S3
       }
-      const imageBuffer = Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+      const imageBuffer = Buffer.from(
+        image.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      );
       const fileName = `${userId}-${Date.now()}-businessCard.jpg`; // Unique file name based on user ID and card ID
       try {
         const uploadResult = await uploadImageToS3(imageBuffer, fileName);
         imageUrl = uploadResult.Location; // URL of the uploaded image
       } catch (uploadError) {
         console.log("Error uploading image to S3:", uploadError);
-        return res.status(500).json({ message: "Failed to upload image", error: uploadError });
+        return res
+          .status(500)
+          .json({ message: "Failed to upload image", error: uploadError });
       }
     }
 
     // Update card with new data, including the S3 image URL if it was updated
     const result = await Card.updateOne(
       { _id: cardId },
-      { 
-        $set: { 
-          businessName, 
+      {
+        $set: {
+          businessName,
           businessType,
-          yourName, 
-          designation, 
-          mobile, 
-          email, 
-          location, 
-          services, 
-          image :imageUrl, // Use the S3 URL for the image
-          position, 
-          color, 
+          yourName,
+          designation,
+          mobile,
+          email,
+          location,
+          services,
+          image: imageUrl, // Use the S3 URL for the image
+          position,
+          color,
           cardType,
           website,
           theme,
-          topServices
-        } 
+          topServices,
+          whatsappNo,
+          facebookLink,
+          instagramLink,
+          twitterLink,
+        },
       }
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: 'Card not found or no changes detected' });
+      return res
+        .status(404)
+        .json({ message: "Card not found or no changes detected" });
     }
 
-    res.status(200).json({ message: 'Card updated successfully' });
+    res.status(200).json({ message: "Card updated successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to update card . Please try again later.', error });
+    res.status(500).json({
+      message: "Failed to update card . Please try again later.",
+      error,
+    });
   }
 };
 
 module.exports.deleteCard = async (req, res) => {
   const { userId, cardId } = req.body;
 
-  const isUserExist = enterpriseUser.findOne({ _id:userId })
-  if(!isUserExist){
-    return res.status(400).json({ message: 'Invalid user ID' });
+  const isUserExist = enterpriseUser.findOne({ _id: userId });
+  if (!isUserExist) {
+    return res.status(400).json({ message: "Invalid user ID" });
   }
 
   try {
     const result = await Card.deleteOne({ userId, _id: cardId });
     console.log(result);
     if (result.deletedCount > 0) {
-      await enterpriseUser.updateOne(
-        { _id: userId },
-        { $inc: { cardNo: -1 } }
-      );
+      await enterpriseUser.updateOne({ _id: userId }, { $inc: { cardNo: -1 } });
       return res.status(200).json({ message: "Card deleted successfully" });
     } else {
       return res.status(404).json({ message: "Card not found" });
@@ -284,23 +334,20 @@ module.exports.deleteCard = async (req, res) => {
   }
 };
 
-
 async function isValidUserId(userId) {
   try {
-      const objectId = ObjectId.isValid(userId) ? new ObjectId(userId) : null;
-      if (!objectId) return false; // If userId is not a valid ObjectId, return false
+    const objectId = ObjectId.isValid(userId) ? new ObjectId(userId) : null;
+    if (!objectId) return false; // If userId is not a valid ObjectId, return false
 
-      const user = await enterpriseUser.findOne({ _id: objectId });
-      return user !== null;
+    const user = await enterpriseUser.findOne({ _id: objectId });
+    return user !== null;
   } catch (error) {
-      console.error('Error checking user ID:', error);
-      return false;
+    console.error("Error checking user ID:", error);
+    return false;
   }
 }
 
-
-
-async function sendVerificationEmail(email,newEmail,newPassword) {
+async function sendVerificationEmail(email, newEmail, newPassword) {
   try {
     const mailResponse = await mailSender(
       email,
