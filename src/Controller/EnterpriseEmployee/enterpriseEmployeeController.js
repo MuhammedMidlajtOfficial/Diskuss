@@ -287,6 +287,7 @@ module.exports.updateProfile = async (req, res) => {
       role,
       name,
       website,
+      phnNumber,
       address,
       whatsappNo,
       facebookLink,
