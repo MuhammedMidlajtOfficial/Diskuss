@@ -8,15 +8,15 @@ const getNotification = async (req, res) => {
       // Find only notifications for the specified user that have a status of 'unread'
       const notify = await Notification.find({
         receiver: userId,
-        status: "unread",
+        // status: "unread",
       });
   
       // Calculate the unread count
-      const unreadCount = notify.length;
+      const unreadNotifications = notify.filter(notification => notification.status === "unread");
   
       // Return the response with notifications and unread count
       return res.status(200).json({
-        unreadCount,
+        unreadCount: unreadNotifications.length,
         notifications: notify.reverse(),
       });
     } catch (error) {

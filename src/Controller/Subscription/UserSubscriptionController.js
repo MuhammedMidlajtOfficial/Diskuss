@@ -3,6 +3,8 @@ const { findOneByPlanId } = require('../../services/Subscription/subscriptionPla
 const { razorpay } = require('../../services/Razorpay/razorpay');
 const crypto = require('crypto');
 require('dotenv')
+const Notification = require("../../models/NotificationModel");
+const {emitNotification,} = require("../../Controller/Socket.io/NotificationSocketIo");
 
 /**
  * Get all UserSubscription
@@ -86,6 +88,21 @@ const createUserSubscription = async (req, res) => {
 
     console.log("razorpayOrder--",razorpayOrder);
 
+    const notification = new Notification({
+      receiver:userId,
+      orderId: razorpayOrder.id,
+      amount,
+      Plan_name :subscriptionPlan.name,
+      currency: 'INR',
+      type: "subscription",
+      content: "Your plan has been successfully activated! Enjoy the premium features.",
+      status: "unread",
+    });
+    await notification.save();
+
+    // Emit notification
+    emitNotification(userId, notification);
+
     // Respond with order details for frontend to process payment
     return res.status(201).json({
       message: "User subscription initiated, complete payment to activate.",
@@ -94,6 +111,7 @@ const createUserSubscription = async (req, res) => {
       Plan_name :subscriptionPlan.name,
       currency: 'INR'
     });
+    
 
   } catch (error) {
     console.error("Error in createUserSubscription:", error);
