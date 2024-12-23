@@ -61,31 +61,25 @@ const CreateMeeting = async (req, res) => {
     // Validate and add online/offline-specific fields
     if (type === "online") {
       if (!meetingPlatform || !meetingLink) {
-        return res
-          .status(400)
-          .json({
-            message: "Platform and link are required for online meetings.",
-          });
+        return res.status(400).json({
+          message: "Platform and link are required for online meetings.",
+        });
       }
       newMeetingData.meetingPlatform = meetingPlatform;
       newMeetingData.meetingLink = meetingLink;
     } else if (type === "offline") {
       if (!meetingPlace || !roomNo) {
-        return res
-          .status(400)
-          .json({
-            message: "Place and room number are required for offline meetings.",
-          });
+        return res.status(400).json({
+          message: "Place and room number are required for offline meetings.",
+        });
       }
       newMeetingData.meetingPlace = meetingPlace;
       newMeetingData.roomNo = roomNo;
       newMeetingData.cabinNo = cabinNo || null; // Optional field
     } else {
-      return res
-        .status(400)
-        .json({
-          message: "Invalid meeting type. Must be 'online' or 'offline'.",
-        });
+      return res.status(400).json({
+        message: "Invalid meeting type. Must be 'online' or 'offline'.",
+      });
     }
 
     // Save the meeting
@@ -118,7 +112,7 @@ const CreateMeeting = async (req, res) => {
       ownerProfile.username || ownerProfile.companyName || "Unknown";
     const notificationContent = `You have been invited to a meeting titled "${meetingTitle}" on ${formattedDate} Sheduled on ${startTime}, created by ${ownerName}.`;
 
-    console.log('invitedPeople-',invitedPeople);
+    console.log("invitedPeople-", invitedPeople);
 
     if (invitedPeople.length != 0) {
       // Send notification to admin backend
@@ -176,12 +170,10 @@ const CreateMeeting = async (req, res) => {
       })
     );
 
-    res
-      .status(201)
-      .json({
-        message: "Meeting created successfully.",
-        meeting: savedMeeting,
-      });
+    res.status(201).json({
+      message: "Meeting created successfully.",
+      meeting: savedMeeting,
+    });
   } catch (error) {
     console.error("Error creating meeting:", error);
     res.status(500).json({ message: "Internal server error." });
@@ -200,12 +192,10 @@ const updateMeetingStatus = async (req, res) => {
     }
 
     if (!["pending", "accepted", "rejected"].includes(status)) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Invalid status. Valid options are 'pending', 'accepted', or 'rejected'.",
-        });
+      return res.status(400).json({
+        message:
+          "Invalid status. Valid options are 'pending', 'accepted', or 'rejected'.",
+      });
     }
 
     // if (status === 'rejected' && !reason) {
@@ -246,6 +236,22 @@ const updateMeetingStatus = async (req, res) => {
     const decision = status === "accepted" ? "accepted" : "rejected";
     const notificationContent = `${username} has ${decision} your meeting titled "${meetingTitle}".`;
 
+    if (meetingOwner.length != 0) {
+      // Send notification to admin backend
+      const repose = await axios.post(
+        "http://13.203.24.247:9000/api/v1/fcm/acceptanceNotification",
+        {
+          userId: meetingOwner,
+          notification: {
+            title: "Meeting Status",
+            body: notificationContent,
+          },
+        }
+      );
+
+      console.log(repose.data);
+    }
+
     const notification = new Notification({
       sender: userId,
       receiver: meetingOwner,
@@ -260,32 +266,32 @@ const updateMeetingStatus = async (req, res) => {
     // Emit notification
     emitNotification(meetingOwner, notification);
 
-    const notificationPayload = {
-      userId: meetingOwner,
-      notification: {
-        title: "Meeting Update",
-        body: `User has ${decision} your meeting titled "${meetingTitle}".`,
-      },
-    };
+    // const notificationPayload = {
+    //   userId: meetingOwner,
+    //   notification: {
+    //     title: "Meeting Update",
+    //     body: `User has ${decision} your meeting titled "${meetingTitle}".`,
+    //   },
+    // };
 
-    // Send notification to admin backend
-    try {
-      await axios.post(
-        "http://13.203.24.247:9000/api/v1/fcm/send-meeting-acceptance", // Ensure this URL is correct
-        notificationPayload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("Meeting acceptance notification sent successfully.");
-    } catch (notificationError) {
-      console.error(
-        "Error sending meeting acceptance notification:",
-        notificationError.response?.data || notificationError.message
-      );
-    }
+    // // Send notification to admin backend
+    // try {
+    //   await axios.post(
+    //     "http://13.203.24.247:9000/api/v1/fcm/send-meeting-acceptance", // Ensure this URL is correct
+    //     notificationPayload,
+    //     {
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //     }
+    //   );
+    //   console.log("Meeting acceptance notification sent successfully.");
+    // } catch (notificationError) {
+    //   console.error(
+    //     "Error sending meeting acceptance notification:",
+    //     notificationError.response?.data || notificationError.message
+    //   );
+    // }
 
     res.status(200).json({
       message: `Meeting status updated to '${status}' successfully.`,
@@ -495,22 +501,6 @@ const deleteMeeting = async (req, res) => {
 
     // console.log(invitedPeople);
 
-    // Send notification to admin backend
-    if (invitedPeople.length != 0) {
-      const repose = await axios.post(
-        "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
-        {
-          userIds: invitedPeople,
-          notification: {
-            title: "Meeting Invitation",
-            body: notificationContent,
-          },
-        }
-      );
-
-      console.log(repose.data);
-    }
-
     // Remove the meeting ID from each invited user's Profile, Enterprise, or individualUserCollection
     await Promise.all(
       invitedPeople.map(async ({ user }) => {
@@ -541,6 +531,23 @@ const deleteMeeting = async (req, res) => {
           } else {
             // Create notification content for the invited user
 
+            const userIds = invitedPeople.map((person) => person.user.toString());
+            // Send notification to admin backend
+            if (invitedPeople.length != 0) {
+              const repose = await axios.post(
+                "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
+                {
+                  userIds,
+                  notification: {
+                    title: "Meeting has been cancelled",
+                    body: notificationContent,
+                  },
+                }
+              );
+              console.log("Received userIds:", userIds);
+              console.log("Meeting deleted successfully", repose.data);
+            }
+
             // Create and save a notification
             const notification = new Notification({
               sender: meetingOwner,
@@ -565,12 +572,10 @@ const deleteMeeting = async (req, res) => {
     console.log("Meeting deleted and references removed successfully.");
 
     // Return success response
-    return res
-      .status(200)
-      .json({
-        message: "Meeting deleted successfully.",
-        meeting: meetingToDelete,
-      });
+    return res.status(200).json({
+      message: "Meeting deleted successfully.",
+      meeting: meetingToDelete,
+    });
   } catch (error) {
     console.error("Error deleting meeting:", error);
     return res.status(500).json({ message: "Internal server error." });
@@ -763,13 +768,11 @@ const UpdateMeeting = async (req, res) => {
     );
 
     // Return the updated meeting information
-    return res
-      .status(200)
-      .json({
-        data: updatedMeeting,
-        success: true,
-        message: "Successfully updated",
-      });
+    return res.status(200).json({
+      data: updatedMeeting,
+      success: true,
+      message: "Successfully updated",
+    });
   } catch (error) {
     console.error(error);
     return res
