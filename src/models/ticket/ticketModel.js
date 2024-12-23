@@ -31,6 +31,10 @@ const ticketSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    category: {
+        type:  mongoose.Schema.Types.ObjectId,
+        ref: "TicketCategory"
+    },
     status: {
         type: String,
         enum: ['Open', 'In Progress', 'Resolved'],

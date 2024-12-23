@@ -252,6 +252,7 @@ const updateMeetingStatus = async (req, res) => {
     //   console.log(repose.data);
     // }
 
+
     const notification = new Notification({
       sender: userId,
       receiver: meetingOwner,
@@ -292,6 +293,7 @@ const updateMeetingStatus = async (req, res) => {
         notificationError.response?.data || notificationError.message
       );
     }
+
 
     res.status(200).json({
       message: `Meeting status updated to '${status}' successfully.`,

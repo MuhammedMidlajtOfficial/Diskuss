@@ -43,6 +43,9 @@ exports.getNewTickets = async (req, res) => {
     }
 };
 
+exports.getAllStats = async (req, res) => {
+
+};
 
 exports.updateTicket = async (req, res) => {
     try {

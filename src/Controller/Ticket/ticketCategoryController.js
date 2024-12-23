@@ -10,8 +10,10 @@ exports.createCategory = async (req, res) => {
 };
 
 exports.getAllCategories = async (req, res) => {
+
     try {
         const categories = await TicketCategoryService.getAll();
+    
         res.status(200).json(categories);
     } catch (error) {
         res.status(500).json({ message: error.message });

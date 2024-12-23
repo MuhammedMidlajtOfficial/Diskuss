@@ -2,6 +2,7 @@ const Ticket = require('../../models/ticket/ticketModel');
 const { checkUserType } = require('../../util/HelperFunctions'); 
 const EnterpriseUser = require('../../models/enterpriseUser');
 const { individualUserCollection: IndividualUser } = require('../../DBConfig');
+const { query } = require('express');
 
 const generateTicketNumber = async () => {
     const lastTicket = await Ticket.findOne().sort({ createdAt: -1 });
@@ -108,6 +109,39 @@ exports.getById = async (id) => {
         return null;
     }
 };
+
+exports.countActiveTickets = async (filters = {}) => {
+    const query = {};
+     // Apply filters if provided
+    if (filters.status) {
+        query.status = filters.status;
+    }
+    if (filters.priority) {
+        query.priority = filters.priority;
+    }
+    if(filters.category){
+        query.category = filters.category
+    }
+
+
+    return await Ticket.countDocuments(query);
+};
+
+exports.countSolvedTickets = async () => {
+    return await Ticket.countDocuments({ status: 'Resolved' });
+};
+
+exports.getAllStats = async () => {
+    const totalTickets = await Ticket.countDocuments();
+    const openTickets = await Ticket.countDocuments({ status: 'Open' });
+    const onGoingTickets = await Ticket.countDocuments({status : 'In Progess'})
+    const closedTickets = await Ticket.countDocuments({ status: 'Resolved' });
+    const highPriorityTickets = await Ticket.countDocuments({ priority: 'High' });
+    const mediumPriorityTickets = await Ticket.countDocuments({ priority: 'Medium' });
+    const lowPriorityTickets = await Ticket.countDocuments({ priority: 'lLow' });
+
+    return { totalTickets, openTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
+}
 
 exports.update = async (id, data) => {
     return await Ticket.findByIdAndUpdate(id, data, { new: true });
