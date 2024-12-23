@@ -338,7 +338,10 @@ module.exports.deleteCard = async (req, res) => {
 
       // Remove the employee card from the EnterpriseEmployeeCard collection
       await EnterpriseEmployeeCard.deleteOne({ _id: cardId });
-
+      const employeeExists = await enterpriseEmployeModel.deleteOne({_id: userId })
+      if (!employeeExists) {
+        return res.status(404).json({ message: "Employee not found in enterpriseEmployeModel" });
+    }
       // Remove the card reference from the enterprise user
       await enterpriseUser.updateOne(
         { _id: enterpriseId },
