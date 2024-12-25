@@ -2,23 +2,31 @@ const mongoose = require('mongoose');
 
 const NotificationSchema = new mongoose.Schema({
     sender: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        type: String,
     },
     receiver: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        type: String,
     },
     type: {
         type: String,
-        enum: ['message', 'meeting', 'alert', 'system'],
+        enum: ['message', 'meeting', 'alert', 'system','subscription'],
         required: true
     },
     content: {
         type: String,
         required: true
+    },
+    Plan_name : {
+        type: String,
+    },
+    orderId : {
+        type: String,
+    },
+    amount : {
+        type: String,
+    },
+    currency : {
+        type: String,
     },
     status: {
         type: String,
