@@ -148,190 +148,99 @@ console.log("getMessages userId - ",userId)
         unreadCount,
       });
     } else if (userId) {
-      const lastMessages = await Message.aggregate([
-        {
-          $match: {
+      const messages = await Message.find({
+        $or: [
+          { senderId: new mongoose.Types.ObjectId(userId) },
+          { receiverId: new mongoose.Types.ObjectId(userId) },
+        ],
+      }).sort({ timestamp: -1 });
+  
+      // Group messages by chatId and pick the latest message
+      const lastMessagesMap = new Map();
+      for (const message of messages) {
+        if (!lastMessagesMap.has(message.chatId)) {
+          lastMessagesMap.set(message.chatId, message);
+        }
+      }
+      const lastMessages = Array.from(lastMessagesMap.values());
+  
+      // Enrich each last message with additional information
+      const enrichedMessages = await Promise.all(
+        lastMessages.map(async (lastMessage) => {
+          // Fetch sender info
+          const senderUserInfo = await User.findById(lastMessage.senderId);
+          const senderEnterpriseInfo = await EnterpriseUser.findById(lastMessage.senderId);
+          const senderEmployeeInfo = await EnterpriseEmployee.findById(lastMessage.senderId);
+  
+          // Fetch receiver info
+          const receiverUserInfo = await User.findById(lastMessage.receiverId);
+          const receiverEnterpriseInfo = await EnterpriseUser.findById(lastMessage.receiverId);
+          const receiverEmployeeInfo = await EnterpriseEmployee.findById(lastMessage.receiverId);
+  
+          // Fetch mutual connection info
+          const contacts = await Contact.find({
             $or: [
-              { senderId: new mongoose.Types.ObjectId(userId) },
-              { receiverId: new mongoose.Types.ObjectId(userId) },
-            ],
-          },
-        },
-        { $sort: { timestamp: -1 } },
-        {
-          $group: {
-            _id: "$chatId",
-            messages: { $push: "$$ROOT" }, 
-            lastMessage: { $first: "$$ROOT" }, // Capture only the latest message
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "lastMessage.senderId",
-            foreignField: "_id",
-            as: "senderUserInfo",
-          },
-        },
-        {
-          $lookup: {
-            from: "enterpriseusers",
-            localField: "lastMessage.senderId",
-            foreignField: "_id",
-            as: "senderEnterpriseInfo",
-          },
-        },
-        {
-          $lookup: {
-            from: "enterpriseemployees",
-            localField: "lastMessage.senderId",
-            foreignField: "_id",
-            as: "senderEmployeeInfo",
-          },
-        },
-        {
-          $lookup: {
-            from: "contacts",
-            let: { receiverId: "$lastMessage.receiverId" },
-            pipeline: [
-              { $unwind: "$contacts" }, // Unwind the contacts array
               {
-                $match: {
-                  $expr: { $eq: ["$contacts.userId", "$$receiverId"] }, // Match receiverId with contacts.userId
-                },
+                contactOwnerId: lastMessage.senderId,
+                "contacts.userId": lastMessage.receiverId,
               },
               {
-                $addFields: {
-                  name: "$contacts.name",
-                  username: "$contacts.username",
-                  companyName: "$contacts.companyName",
-                },
+                contactOwnerId: lastMessage.receiverId,
+                "contacts.userId": lastMessage.senderId,
               },
             ],
-            as: "receiverContactInfo",
-          },
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "lastMessage.receiverId",
-            foreignField: "_id",
-            as: "receiverUserInfo",
-          },
-        },
-        {
-          $lookup: {
-            from: "enterpriseusers",
-            localField: "lastMessage.receiverId",
-            foreignField: "_id",
-            as: "receiverEnterpriseInfo",
-          },
-        },
-        {
-          $lookup: {
-            from: "enterpriseemployees",
-            localField: "lastMessage.receiverId",
-            foreignField: "_id",
-            as: "receiverEmployeeInfo",
-          },
-        },
-        {
-          $addFields: {
-            "lastMessage.senderName": {
-              $ifNull: [
-                { $arrayElemAt: ["$senderUserInfo.username", 0] },
-                { $arrayElemAt: ["$senderEnterpriseInfo.companyName", 0] },
-                { $arrayElemAt: ["$senderEmployeeInfo.username", 0] },
-                "Unknown Sender",
-              ],
-            },
-            "lastMessage.receiverName": {
-              $ifNull: [
-                { $arrayElemAt: ["$receiverContactInfo.name", 0] },
-                { $arrayElemAt: ["$receiverContactInfo.username", 0] },
-                { $arrayElemAt: ["$receiverContactInfo.companyName", 0] },
-                {
-                  $ifNull: [
-                    // Fallback to receiver number if name is not found
-                    { $arrayElemAt: ["$receiverUserInfo.phnNumber", 0] },
-                    { $arrayElemAt: ["$receiverEnterpriseInfo.phnNumber", 0] },
-                    { $arrayElemAt: ["$receiverEmployeeInfo.phnNumber", 0] },
-                    "Unknown Receiver",
-                  ],
-                },
-            ],
-            },
-            "lastMessage.receiverNumber": {
-              $ifNull: [
-                { $arrayElemAt: ["$receiverUserInfo.phnNumber", 0] },
-                { $arrayElemAt: ["$receiverEnterpriseInfo.phnNumber", 0] },
-                { $arrayElemAt: ["$receiverEmployeeInfo.phnNumber", 0] },
-                "Receiver is not a diskuss user",
-              ],
-            },
-            "lastMessage.senderProfilePic": {
-              $ifNull: [
-                { $arrayElemAt: ["$senderUserInfo.image", 0] },
-                { $arrayElemAt: ["$senderEnterpriseInfo.image", 0] },
-                { $arrayElemAt: ["$senderEmployeeInfo.image", 0] },
-                "",
-              ],
-            },
-            "lastMessage.receiverProfilePic": {
-              $ifNull: [
-                { $arrayElemAt: ["$receiverUserInfo.image", 0] },
-                { $arrayElemAt: ["$receiverEnterpriseInfo.image", 0] },
-                { $arrayElemAt: ["$receiverEmployeeInfo.image", 0] },
-                "",
-              ],
-            },
-          },
-        },
-        {
-          $addFields: {
-            "lastMessage.unreadCount": {
-              $size: {
-                $ifNull: [
-                  {
-                    $filter: {
-                      input: "$messages",
-                      as: "message",
-                      cond: {
-                        $and: [
-                          { $eq: ["$$message.isRead", false] }, // Message is unread
-                          {
-                            $eq: [
-                              "$$message.receiverId",
-                              new mongoose.Types.ObjectId(userId),
-                            ], // Receiver is the current user
-                          },
-                        ],
-                      },
-                    },
-                  },
-                  [],
-                ],
-              },
-            },
-          },
-        },        
-        {
-          $replaceRoot: { newRoot: "$lastMessage" },
-        },
-
-        {
-          $project: {
-            _id: 0,
-            senderUserInfo: 0,
-            senderEnterpriseInfo: 0,
-            senderEmployeeInfo: 0,
-            receiverContactInfo: 0,
-            messages: 0,
-          },
-        },
-      ]);    
-      return res.status(200).json(lastMessages);
-    } else {
+          });
+          
+          let senderName = null;
+          let receiverName = null;
+          
+          // Iterate through the contacts to determine sender and receiver names
+          if (contacts && contacts.length > 0) {
+            contacts.forEach((contact) => {
+              contact.contacts.forEach((c) => {
+                // Check for sender name
+                if (
+                  c.userId.toString() === lastMessage.senderId.toString() &&
+                  contact.contactOwnerId.toString() === lastMessage.receiverId.toString()
+                ) {
+                  senderName = c.name;
+                }
+          
+                // Check for receiver name
+                if (
+                  c.userId.toString() === lastMessage.receiverId.toString() &&
+                  contact.contactOwnerId.toString() === lastMessage.senderId.toString()
+                ) {
+                  receiverName = c.name;
+                }
+              });
+            });
+          }
+          
+          console.log("Sender Name:", senderName);
+          console.log("Receiver Name:", receiverName);       
+  
+          // Add all enriched fields
+          return {
+            ...lastMessage.toObject(),
+            senderName: senderName || senderUserInfo?.username || senderEnterpriseInfo?.companyName || senderEmployeeInfo?.username || "Unknown Sender",
+            receiverName: receiverName || receiverUserInfo?.username || receiverEnterpriseInfo?.companyName || receiverEmployeeInfo?.username || "Unknown Receiver",
+            receiverNumber: receiverUserInfo?.phnNumber || receiverEnterpriseInfo?.phnNumber || receiverEmployeeInfo?.phnNumber || "Receiver is not a diskuss user",
+            senderProfilePic: senderUserInfo?.image || senderEnterpriseInfo?.image || senderEmployeeInfo?.image || "",
+            receiverProfilePic: receiverUserInfo?.image || receiverEnterpriseInfo?.image || receiverEmployeeInfo?.image || "",
+            unreadCount: messages.filter(
+              (msg) =>
+                !msg.isRead &&
+                msg.receiverId.toString() === userId.toString() &&
+                msg.chatId.toString() === lastMessage.chatId.toString()
+            ).length,
+            
+          };
+        })
+      );
+  
+      return res.status(200).json(enrichedMessages);
+    }  else {
       return res
         .status(400)
         .json({ error: "Either chatId or userId must be provided." });
