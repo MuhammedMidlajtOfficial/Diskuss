@@ -5,6 +5,7 @@ const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
 const {convertToMonthlyCounts} = require('../../util/HelperFunctions');
 const { ObjectId } = require('mongodb');
 const { checkUserType } = require('../../util/HelperFunctions');
+const Settings = require('../../models/settingModel');
 
 
 
@@ -27,10 +28,12 @@ const registerInvitee = async (referralId, inviteePhoneNo) => {
     if (!referral) throw new Error('Referral not found');
     if (referral.status !== 'Invited') throw new Error('Invitee already registered or card created');
     
+    const settings = await Settings.findOne({});
+
     referral.invitee = inviteePhoneNo;
     referral.status = 'Registered';
     referral.registeredAt = new Date();
-    referral.rewardsEarned += 50; // Award 50 coins for registration
+    referral.rewardsEarned += settings.registrationReward; // Award 50 coins for registration
     await referral.save();
 
     // Update invitee's coin balance
@@ -87,9 +90,11 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo) => {
     if (!referral) throw new Error('Referral not found');
     if (referral.status !== 'Invited') throw new Error('Invitee already registered or card created');
 
+    const settings = await Settings.findOne({});
+
     referral.invitee = inviteePhoneNo;
     referral.status = 'Registered';
-    referral.rewardsEarned += 50; // Award 50 coins for registration
+    referral.rewardsEarned += settings.registrationReward; // Award 50 coins for registration
     referral.registeredAt = new Date();
     await referral.save();
 
@@ -114,9 +119,11 @@ const createCardByInvitee = async (referralId) => {
     if (!referral) throw new Error('Referral not found');
     if (referral.status !== 'Registered') throw new Error('Invitee must be registered before creating a card');
     
+    const settings = await Settings.findOne({});
+
     referral.status = 'Card Created';
     referral.cardCreatedAt = new Date();
-    referral.rewardsEarned += 50; // Award 50 coins for card creation
+    referral.rewardsEarned += settings.cardCreationReward; // Award 50 coins for card creation
     await referral.save();
 
     // Update invitee's coin balance

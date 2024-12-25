@@ -44,8 +44,24 @@ exports.getNewTickets = async (req, res) => {
 };
 
 exports.getAllStats = async (req, res) => {
-
+    try {
+        const stats = await TicketService.getAllStats();
+        if (!stats) return res.status(404).json({ message: 'Stats not found' });
+        res.status(200).json(stats);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
+
+exports.getAllTicketsByCategory = async (req, res) => {
+    try {
+        const tickets = await TicketService.getAllByCategory(req.params.categoryId);
+        res.status(200).json(tickets);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 
 exports.updateTicket = async (req, res) => {
     try {

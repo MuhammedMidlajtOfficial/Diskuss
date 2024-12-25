@@ -122,8 +122,6 @@ exports.countActiveTickets = async (filters = {}) => {
     if(filters.category){
         query.category = filters.category
     }
-
-
     return await Ticket.countDocuments(query);
 };
 

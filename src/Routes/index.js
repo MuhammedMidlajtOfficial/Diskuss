@@ -29,7 +29,7 @@ const ticketCategoryRouter = require('./Ticket/ticketCategoryRouter.js')
 const ticketReplyRouter = require('./Ticket/ticketReplyRouter.js')
 // const contactRouter = require("./contactRouter.js")
 const uploadVCard = require("./VCard/VCardRoute.js")
-
+const settingsRouter = require('./settingsRoutes.js') 
 
 const router = express.Router();
 
@@ -145,6 +145,10 @@ const defaultRoutes = [
   {
     path: '/vcard',
     route: uploadVCard,
+  },
+  {
+    path : '/settings',
+    route : settingsRouter
   },
 ];
 
