@@ -149,6 +149,21 @@ exports.update = async (id, data) => {
     return await Ticket.findByIdAndUpdate(id, data, { new: true });
 };
 
+// exports.addUserToAssigned= async (ticketId, employeeId) => {
+//     const ticket = await Ticket.findById(ticketId);
+//     if (!ticket) {
+//         throw new Error('Ticket not found');
+//     }
+
+//     if (!ticket.assignedTo.includes(employeeId)) {
+//         ticket.assignedTo.push(employeeId);
+//         await ticket.save();
+//     }
+
+//     return ticket;
+// }
+
 exports.delete = async (id) => {
     return await Ticket.findByIdAndDelete(id);
 };
+

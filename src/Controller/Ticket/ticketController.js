@@ -72,6 +72,27 @@ exports.updateTicket = async (req, res) => {
     }
 };
 
+// exports.assignUser = async (req, res) => {
+//     const { id } = req.params;
+//     const { emmployeeId } = req.body;
+
+//     if (!emmployeeId) {
+//         return res.status(400).json({ message: 'User ID is required' });
+//     }
+
+//     try {
+//         const updatedTicket = await TicketService.addUserToAssigned(id, emmployeeId);
+//         return res.status(200).json(updatedTicket);
+//     } catch (error) {
+//         if (error.message === 'Ticket not found') {
+//             return res.status(404).json({ message: error.message });
+//         }
+//         console.error(error);
+//         return res.status(500).json({ message: 'Server error' });
+//     }
+// };
+
+
 exports.deleteTicket = async (req, res) => {
     try {
         const deletedTicket = await TicketService.delete(req.params.id);
