@@ -62,6 +62,7 @@ exports.getAllTicketsByCategory = async (req, res) => {
     }
 }
 
+
 exports.updateTicket = async (req, res) => {
     try {
         const updatedTicket = await TicketService.update(req.params.id, req.body);
