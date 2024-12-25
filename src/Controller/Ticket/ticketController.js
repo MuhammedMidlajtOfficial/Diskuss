@@ -11,12 +11,12 @@ exports.createTicket = async (req, res) => {
 };
 
 exports.getAllTickets = async (req, res) => {
-    const { page, limit, noPagination, status, priority } = req.query;
+    const { page, limit, noPagination, status, priority, category } = req.query;
     // const { page, limit, noPagination } = req.query;
     
     try {
         // const tickets = await TicketService.getAll(page, limit, noPagination);
-        const tickets = await TicketService.getAll(page, limit, noPagination === 'true', { status, priority });
+        const tickets = await TicketService.getAll(page, limit, noPagination === 'true', { status, priority, category });
         res.status(200).json(tickets);
     } catch (error) {
         res.status(500).json({ message: error.message });

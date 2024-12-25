@@ -21,12 +21,16 @@ exports.create = async (data) => {
 exports.getAll = async (page = 1, limit = 10, noPagination = false, filters = {}) => {
     const query = {};
 
+    // console.log("filters : ",filters);
     // Apply filters if provided
     if (filters.status) {
         query.status = filters.status;
     }
     if (filters.priority) {
         query.priority = filters.priority;
+    }
+    if(filters.category){
+        query.category = filters.category;
     }
 
     // Pagination logic
@@ -120,7 +124,7 @@ exports.countActiveTickets = async (filters = {}) => {
         query.priority = filters.priority;
     }
     if(filters.category){
-        query.category = filters.category
+        query.category = filters.categoryx
     }
     return await Ticket.countDocuments(query);
 };
@@ -138,7 +142,7 @@ exports.getAllStats = async () => {
     const mediumPriorityTickets = await Ticket.countDocuments({ priority: 'Medium' });
     const lowPriorityTickets = await Ticket.countDocuments({ priority: 'lLow' });
 
-    return { totalTickets, openTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
+    return { totalTickets, openTickets, onGoingTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
 }
 
 exports.update = async (id, data) => {
