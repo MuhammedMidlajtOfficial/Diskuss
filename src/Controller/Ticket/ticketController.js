@@ -11,12 +11,12 @@ exports.createTicket = async (req, res) => {
 };
 
 exports.getAllTickets = async (req, res) => {
-    const { page, limit, noPagination, status, priority } = req.query;
+    const { page, limit, noPagination, status, priority, category } = req.query;
     // const { page, limit, noPagination } = req.query;
     
     try {
         // const tickets = await TicketService.getAll(page, limit, noPagination);
-        const tickets = await TicketService.getAll(page, limit, noPagination === 'true', { status, priority });
+        const tickets = await TicketService.getAll(page, limit, noPagination === 'true', { status, priority, category });
         res.status(200).json(tickets);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -72,6 +72,27 @@ exports.updateTicket = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+// exports.assignUser = async (req, res) => {
+//     const { id } = req.params;
+//     const { emmployeeId } = req.body;
+
+//     if (!emmployeeId) {
+//         return res.status(400).json({ message: 'User ID is required' });
+//     }
+
+//     try {
+//         const updatedTicket = await TicketService.addUserToAssigned(id, emmployeeId);
+//         return res.status(200).json(updatedTicket);
+//     } catch (error) {
+//         if (error.message === 'Ticket not found') {
+//             return res.status(404).json({ message: error.message });
+//         }
+//         console.error(error);
+//         return res.status(500).json({ message: 'Server error' });
+//     }
+// };
+
 
 exports.deleteTicket = async (req, res) => {
     try {
