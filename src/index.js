@@ -10,7 +10,7 @@ const socketIo = require('socket.io');
 const server = http.createServer(app);
 const socketController = require('./Controller/Socketio/socketController.js');
 const messageController = require('./Controller/Message/messageController');
-const groupmessageController = require('./Controller/Message/groupmessageController.js');
+// const groupmessageController = require('./Controller/Message/groupmessageController.js');
 // const enterpriseMessageController = require('./Controller/EnterpriseMessage/enterpriseMessageController.js');
 const socketControllers = require('./Controller/Socket.io/NotificationSocketIo.js');
 const notificationSocketController = require('./Controller/Socket.io/NotificationSocketIo');
@@ -43,7 +43,7 @@ const io = socketIo(server, {
 notificationSocketController.setSocketIO(io);
 socketController.setSocketIO(io);
 messageController.setSocketIO(io);
-groupmessageController.setSocketIO(io);
+// groupmessageController.setSocketIO(io);
 // enterpriseMessageController.setSocketIO(io);
 // Initialize SocketController with Socket.io instance
 socketControllers.setSocketIO(io);

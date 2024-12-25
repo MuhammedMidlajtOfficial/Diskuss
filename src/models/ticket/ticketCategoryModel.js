@@ -6,7 +6,7 @@ const ticketCategorySchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    clientDescription: {
+    categoryDescription: {
         type: String,
         required: true
     },

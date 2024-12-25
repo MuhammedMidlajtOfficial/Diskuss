@@ -90,10 +90,10 @@ const defaultRoutes = [
     path: '/message',
     route: messageRoute,
   },
-  {
-    path: '/groupMessage',
-    route: groupMessage,
-  },
+  // {
+  //   path: '/groupMessage',
+  //   route: groupMessage,
+  // },
   {
     path: '/enterpriseEmployee',
     route: enterpriseEmployee,

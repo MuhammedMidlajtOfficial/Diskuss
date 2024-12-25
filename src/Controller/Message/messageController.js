@@ -2,7 +2,7 @@ let io;
 const mongoose = require("mongoose");
 const Message = require("../../models/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-// const Contact = require("../../models/contact.individual.model");
+const Contact = require("../../models/contact.individual.model");
 const EnterpriseUser = require("../../models/enterpriseUser");
 const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
 const axios = require("axios");
@@ -127,9 +127,8 @@ exports.markMessagesAsRead = async (req, res) => {
 
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
-  const { chatId, userId } = req.body;
+  const { chatId, userId } = req.query;
 
-  console.log("Get last message:",chatId,userId);
   try {
     if (chatId) {
       const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
@@ -161,6 +160,7 @@ exports.getMessages = async (req, res) => {
         {
           $group: {
             _id: "$chatId",
+            messages: { $push: "$$ROOT" }, 
             lastMessage: { $first: "$$ROOT" }, // Capture only the latest message
           },
         },
@@ -193,10 +193,10 @@ exports.getMessages = async (req, res) => {
             from: "contacts",
             let: { receiverId: "$lastMessage.receiverId" },
             pipeline: [
-              { $unwind: "$contacts" },
+              { $unwind: "$contacts" }, // Unwind the contacts array
               {
                 $match: {
-                  $expr: { $eq: ["$contacts.userId", "$$receiverId"] },
+                  $expr: { $eq: ["$contacts.userId", "$$receiverId"] }, // Match receiverId with contacts.userId
                 },
               },
               {
@@ -258,7 +258,7 @@ exports.getMessages = async (req, res) => {
                     "Unknown Receiver",
                   ],
                 },
-              ],
+            ],
             },
             "lastMessage.receiverNumber": {
               $ifNull: [
@@ -278,7 +278,9 @@ exports.getMessages = async (req, res) => {
             },
             "lastMessage.receiverProfilePic": {
               $ifNull: [
-                { $arrayElemAt: ["$receiverContactInfo.image", 0] },
+                { $arrayElemAt: ["$receiverUserInfo.image", 0] },
+                { $arrayElemAt: ["$receiverEnterpriseInfo.image", 0] },
+                { $arrayElemAt: ["$receiverEmployeeInfo.image", 0] },
                 "",
               ],
             },
@@ -295,12 +297,12 @@ exports.getMessages = async (req, res) => {
                       as: "message",
                       cond: {
                         $and: [
-                          { $eq: ["$$message.isRead", false] },
+                          { $eq: ["$$message.isRead", false] }, // Message is unread
                           {
                             $eq: [
                               "$$message.receiverId",
                               new mongoose.Types.ObjectId(userId),
-                            ],
+                            ], // Receiver is the current user
                           },
                         ],
                       },
@@ -311,7 +313,7 @@ exports.getMessages = async (req, res) => {
               },
             },
           },
-        },
+        },        
         {
           $replaceRoot: { newRoot: "$lastMessage" },
         },
@@ -323,10 +325,10 @@ exports.getMessages = async (req, res) => {
             senderEnterpriseInfo: 0,
             senderEmployeeInfo: 0,
             receiverContactInfo: 0,
+            messages: 0,
           },
         },
-      ]);
-
+      ]);    
       return res.status(200).json(lastMessages);
     } else {
       return res

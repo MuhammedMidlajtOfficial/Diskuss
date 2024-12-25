@@ -2,6 +2,7 @@ const Ticket = require('../../models/ticket/ticketModel');
 const { checkUserType } = require('../../util/HelperFunctions'); 
 const EnterpriseUser = require('../../models/enterpriseUser');
 const { individualUserCollection: IndividualUser } = require('../../DBConfig');
+const { query } = require('express');
 
 const generateTicketNumber = async () => {
     const lastTicket = await Ticket.findOne().sort({ createdAt: -1 });
@@ -17,27 +18,63 @@ exports.create = async (data) => {
     return await newTicket.save();
 };
 
-exports.getAll = async (page =1,  ) => {
-    const tickets = await Ticket.find();
-    let populatedTickets = [];
-    for (let ticket of tickets) {
-        let user = (await checkUserType(ticket.createdBy));
-        const userType = user.userType;
+exports.getAll = async (page = 1, limit = 10, noPagination = false, filters = {}) => {
+    const query = {};
+
+    // Apply filters if provided
+    if (filters.status) {
+        query.status = filters.status;
+    }
+    if (filters.priority) {
+        query.priority = filters.priority;
+    }
+
+    // Pagination logic
+    const options = {
+        skip: (page - 1) * limit,
+        limit: noPagination ? undefined : parseInt(limit),
+    };
+    const tickets = await Ticket.find(query, null, options).sort({createdAt : -1});;
+
+     // Populate user data for each ticket
+     const populatedTicketsPromises = tickets.map(async ticket => {
+        let user = await checkUserType(ticket.createdBy);
         const userData = user.data;
-        let populatedUser = {
-            username: userData.username,
-            email: userData.email
-        };
-        if (userType === 'individual') {
-            // populatedUser =  await IndividualUser.findOne(ticket.createdBy).select('username email');
+        let populatedUser;
+
+        if (user.userType === 'individual') {
+            populatedUser = await IndividualUser.findById(ticket.createdBy).select('username email');
         } else {
-            populatedUser = await EnterpriseUser.findOne(ticket.createdBy).select('username email');
+            populatedUser = await EnterpriseUser.findById(ticket.createdBy).select('username email');
         }
+
         const ticketData = ticket.toObject();
         ticketData.createdBy = populatedUser;
-        populatedTickets.push(ticketData);
-    }
-    return populatedTickets;
+        return ticketData;
+    });
+
+    return Promise.all(populatedTicketsPromises);
+
+    // const tickets = await Ticket.find();
+    // let populatedTickets = [];
+    // for (let ticket of tickets) {
+    //     let user = (await checkUserType(ticket.createdBy));
+    //     const userType = user.userType;
+    //     const userData = user.data;
+    //     let populatedUser = {
+    //         username: userData.username,
+    //         email: userData.email
+    //     };
+    //     if (userType === 'individual') {
+    //         // populatedUser =  await IndividualUser.findOne(ticket.createdBy).select('username email');
+    //     } else {
+    //         populatedUser = await EnterpriseUser.findOne(ticket.createdBy).select('username email');
+    //     }
+    //     const ticketData = ticket.toObject();
+    //     ticketData.createdBy = populatedUser;
+    //     populatedTickets.push(ticketData);
+    // }
+    // return populatedTickets;
 };
 
 exports.getById = async (id) => {
@@ -73,6 +110,27 @@ exports.getById = async (id) => {
     }
 };
 
+exports.countActiveTickets = async (filters = {}) => {
+    const query = {};
+     // Apply filters if provided
+    if (filters.status) {
+        query.status = filters.status;
+    }
+    if (filters.priority) {
+        query.priority = filters.priority;
+    }
+    if(filters.category){
+        query.category = filters.category
+    }
+
+
+    return await Ticket.countDocuments(query);
+};
+
+exports.countSolvedTickets = async () => {
+    return await Ticket.countDocuments({ status: 'Resolved' });
+};
+
 exports.getAllStats = async () => {
     const totalTickets = await Ticket.countDocuments();
     const openTickets = await Ticket.countDocuments({ status: 'Open' });
@@ -84,10 +142,6 @@ exports.getAllStats = async () => {
 
     return { totalTickets, openTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
 }
-
-exports.getAllByCategory = async (categoryId) => {
-    return await Ticket.find({ categoryId });
-};
 
 exports.update = async (id, data) => {
     return await Ticket.findByIdAndUpdate(id, data, { new: true });
