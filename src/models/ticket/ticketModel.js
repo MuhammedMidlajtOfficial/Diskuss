@@ -19,6 +19,10 @@ const ticketSchema = new mongoose.Schema({
         enum: ['Low', 'Medium', 'High'],
         default: 'Medium'
     },
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employee'
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         required: true // You may want to use a user reference here

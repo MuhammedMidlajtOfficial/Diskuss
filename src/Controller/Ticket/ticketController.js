@@ -11,10 +11,12 @@ exports.createTicket = async (req, res) => {
 };
 
 exports.getAllTickets = async (req, res) => {
-    const { page, limit, noPagination } = req.query;
+    const { page, limit, noPagination, status, priority } = req.query;
+    // const { page, limit, noPagination } = req.query;
     
     try {
-        const tickets = await TicketService.getAll(page, limit, noPagination);
+        // const tickets = await TicketService.getAll(page, limit, noPagination);
+        const tickets = await TicketService.getAll(page, limit, noPagination === 'true', { status, priority });
         res.status(200).json(tickets);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -30,6 +32,35 @@ exports.getTicketById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.getNewTickets = async (req, res) => {
+    try {
+        const ticket = await TicketService.getById(req.params.id);
+        if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+        res.status(200).json(ticket);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getAllStats = async (req, res) => {
+    try {
+        const stats = await TicketService.getAllStats();
+        if (!stats) return res.status(404).json({ message: 'Stats not found' });
+        res.status(200).json(stats);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getAllTicketsByCategory = async (req, res) => {
+    try {
+        const tickets = await TicketService.getAllByCategory(req.params.categoryId);
+        res.status(200).json(tickets);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
 
 exports.updateTicket = async (req, res) => {
     try {
