@@ -11,6 +11,7 @@ exports.getAll = async () => {
     // Map through categories to get stats
     const stats = await Promise.all(categories.map(async (category) => {
         const activeCount = await Ticket.countDocuments({ status: 'Open', category: category._id });
+        const inprogressCount = await Ticket.countDocuments({ status: 'In Progress', category: category._id });
         const solvedCount = await Ticket.countDocuments({ status: 'Resolved', category: category._id });
 
         return {
@@ -18,7 +19,7 @@ exports.getAll = async () => {
             categoryName: category.categoryName,
             categoryDescription: category.categoryDescription,
             categoryPriority: category.categoryPriority,
-            activeTickets: activeCount,
+            activeTickets: activeCount+inprogressCount,
             resolveTickets: solvedCount,
             sla:"90% on-time",
             __v: category.__v // Include version key if needed
