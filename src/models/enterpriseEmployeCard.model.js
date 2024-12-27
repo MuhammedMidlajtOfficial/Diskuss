@@ -74,7 +74,6 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
       max:5,
       required:true
     } ],
-    socialMedia: {
       whatsappNo: {
         type: String,
         default: "",
@@ -91,7 +90,6 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
         type: String,
         default: "",
       },
-    },
 });
 
 module.exports = mongoose.model("EnterpriseEmployeeCard",EnterpriseEmployeeCardSchema );
