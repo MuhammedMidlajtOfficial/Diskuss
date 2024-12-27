@@ -154,7 +154,7 @@ const getReferralDetails = async (userId) => {
     const totalCoinsData = await Referral.aggregate([ 
         { $match: { referrer : new  ObjectId("6731e31c1637d690957d8e69")} }, 
         { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]);
-    
+
     // console.log("totalCoins : ", totalCoinsData);
 
     // Update referrerId's coin balance
@@ -166,12 +166,18 @@ const getReferralDetails = async (userId) => {
     const userType = (await checkUserType(userId)).userType;
     let userData = {};
     if (userType === 'individual') {
-        userData = await IndividualUser.findById(userId).select('referralCode').lean().exec();
+        userData = await IndividualUser.findById(userId).select('referralCode coinsWithdrawn').lean().exec();
     } else {
-        userData = await EnterpriseUser.findById(userId).select('referralCode').lean().exec();
+        userData = await EnterpriseUser.findById(userId).select('referralCode coinsWithdrawn').lean().exec();
     }
     const referralCode = userData ? userData.referralCode : ''; // Default to empty string if no user found
-    console.log("referralCode : ", referralCode);
+    const coinsWithdrawn = userData ? userData.coinsWithdrawn : 0; // Default to 0 if no user found
+    const totalCoins = totalCoinsData[0].total; // Default to 0 if no user found
+    const remainingCoins = totalCoins - coinsWithdrawn; // Default to 0 if no user found
+    // console.log("referralCode : ", referralCode);
+    // console.log("coinsWithdrawn : ", coinsWithdrawn);
+    // console.log("totalCoinsData : ", totalCoins);
+    // console.log("remainingCoins : ", remainingCoins);
     
 
     const response = {
@@ -180,7 +186,9 @@ const getReferralDetails = async (userId) => {
         registered,
         invited,
         referralCode,
-        totalCoins : totalCoinsData[0].total,
+        totalCoins,
+        remainingCoins,
+        coinsWithdrawn,
         invitedUsers: referrals
     }
     return response;
