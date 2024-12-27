@@ -21,6 +21,7 @@ exports.create = async (data) => {
 exports.getAll = async (page = 1, limit = 10, noPagination = false, filters = {}) => {
     const query = {};
 
+    // console.log("filters : ",filters);
     // Apply filters if provided
     if (filters.status) {
         query.status = filters.status;
@@ -28,13 +29,16 @@ exports.getAll = async (page = 1, limit = 10, noPagination = false, filters = {}
     if (filters.priority) {
         query.priority = filters.priority;
     }
+    if(filters.category){
+        query.category = filters.category;
+    }
 
     // Pagination logic
     const options = {
         skip: (page - 1) * limit,
         limit: noPagination ? undefined : parseInt(limit),
     };
-    const tickets = await Ticket.find(query, null, options).sort({createdAt : -1});;
+    const tickets = await Ticket.find(query, null, options).populate('category').sort({createdAt : -1});;
 
      // Populate user data for each ticket
      const populatedTicketsPromises = tickets.map(async ticket => {
@@ -120,10 +124,8 @@ exports.countActiveTickets = async (filters = {}) => {
         query.priority = filters.priority;
     }
     if(filters.category){
-        query.category = filters.category
+        query.category = filters.categoryx
     }
-
-
     return await Ticket.countDocuments(query);
 };
 
@@ -140,13 +142,28 @@ exports.getAllStats = async () => {
     const mediumPriorityTickets = await Ticket.countDocuments({ priority: 'Medium' });
     const lowPriorityTickets = await Ticket.countDocuments({ priority: 'lLow' });
 
-    return { totalTickets, openTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
+    return { totalTickets, openTickets, onGoingTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
 }
 
 exports.update = async (id, data) => {
     return await Ticket.findByIdAndUpdate(id, data, { new: true });
 };
 
+// exports.addUserToAssigned= async (ticketId, employeeId) => {
+//     const ticket = await Ticket.findById(ticketId);
+//     if (!ticket) {
+//         throw new Error('Ticket not found');
+//     }
+
+//     if (!ticket.assignedTo.includes(employeeId)) {
+//         ticket.assignedTo.push(employeeId);
+//         await ticket.save();
+//     }
+
+//     return ticket;
+// }
+
 exports.delete = async (id) => {
     return await Ticket.findByIdAndDelete(id);
 };
+
