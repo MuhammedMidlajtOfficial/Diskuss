@@ -81,7 +81,7 @@ const createWithdrawal = async (req, res) => {
         // console.log("req.body : ", req.body)
         const { userId, amount } = req.body;
         // const withdrawal = await referralService.createWithdrawal(userId, amount);
-        const withdrawalData = await referralService.tester(userId, amount);
+        const withdrawalData = await referralService.createWithdrawal(userId, amount);
         // console.log("withdrawal : ", withdrawalData)
         return res.status(201).json({ message: "Withdrawal request created", withdrawal });
     } catch (e) {
