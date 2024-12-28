@@ -47,9 +47,9 @@ exports.getAll = async (page = 1, limit = 10, noPagination = false, filters = {}
         let populatedUser;
 
         if (user.userType === 'individual') {
-            populatedUser = await IndividualUser.findById(ticket.createdBy).select('username email');
+            populatedUser = await IndividualUser.findById(ticket.createdBy).select('username email image');
         } else {
-            populatedUser = await EnterpriseUser.findById(ticket.createdBy).select('username email');
+            populatedUser = await EnterpriseUser.findById(ticket.createdBy).select('username email image');
         }
 
         const ticketData = ticket.toObject();
@@ -149,19 +149,19 @@ exports.update = async (id, data) => {
     return await Ticket.findByIdAndUpdate(id, data, { new: true });
 };
 
-// exports.addUserToAssigned= async (ticketId, employeeId) => {
-//     const ticket = await Ticket.findById(ticketId);
-//     if (!ticket) {
-//         throw new Error('Ticket not found');
-//     }
+exports.addUserToAssigned= async (ticketId, employeeId) => {
+    const ticket = await Ticket.findById(ticketId);
+    if (!ticket) {
+        throw new Error('Ticket not found');
+    }
 
-//     if (!ticket.assignedTo.includes(employeeId)) {
-//         ticket.assignedTo.push(employeeId);
-//         await ticket.save();
-//     }
+    if (!ticket.assignedTo.includes(employeeId)) {
+        ticket.assignedTo.push(employeeId);
+        await ticket.save();
+    }
 
-//     return ticket;
-// }
+    return ticket;
+}
 
 exports.delete = async (id) => {
     return await Ticket.findByIdAndDelete(id);

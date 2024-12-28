@@ -11,8 +11,8 @@ router.put('/:id', ticketController.updateTicket);
 router.patch('/:id', ticketController.updateTicket);
 router.delete('/:id', ticketController.deleteTicket);
 router.get('/stats', ticketController.getAllStats)
-// // PUT route to add a user ID to assignedTo
-// router.put('/:id/assign', ticketController.assignUser);
+// // PATCH route to add a user ID to assignedTo
+router.patch('/assignUser', ticketController.assignUser);
 
 
 module.exports = router;
