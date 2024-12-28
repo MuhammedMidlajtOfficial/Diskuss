@@ -9,6 +9,9 @@ router.post('/card', ReferralController.createCardByInvitee);
 router.get('/details/:userId', ReferralController.getReferralDetails);
 router.get('/code-check/:referralCode', ReferralController.checkReferralCode);
 
+// Incentive Routes
+router.post('/withdraw', ReferralController.createWithdrawal);
+
 // Dashboard Routes
 router.get('/admin', ReferralController.getAllReferrals);
 router.get('/admin/monthly', ReferralController.getMonthlyReferralsCounts);

@@ -154,7 +154,7 @@ const getReferralDetails = async (userId) => {
     const totalCoinsData = await Referral.aggregate([ 
         { $match: { referrer : new  ObjectId("6731e31c1637d690957d8e69")} }, 
         { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]);
-    
+
     // console.log("totalCoins : ", totalCoinsData);
 
     // Update referrerId's coin balance
@@ -166,12 +166,18 @@ const getReferralDetails = async (userId) => {
     const userType = (await checkUserType(userId)).userType;
     let userData = {};
     if (userType === 'individual') {
-        userData = await IndividualUser.findById(userId).select('referralCode').lean().exec();
+        userData = await IndividualUser.findById(userId).select('referralCode coinsWithdrawn').lean().exec();
     } else {
-        userData = await EnterpriseUser.findById(userId).select('referralCode').lean().exec();
+        userData = await EnterpriseUser.findById(userId).select('referralCode coinsWithdrawn').lean().exec();
     }
     const referralCode = userData ? userData.referralCode : ''; // Default to empty string if no user found
-    console.log("referralCode : ", referralCode);
+    const coinsWithdrawn = userData ? userData.coinsWithdrawn : 0; // Default to 0 if no user found
+    const totalCoins = totalCoinsData[0].total; // Default to 0 if no user found
+    const remainingCoins = totalCoins - coinsWithdrawn; // Default to 0 if no user found
+    // console.log("referralCode : ", referralCode);
+    // console.log("coinsWithdrawn : ", coinsWithdrawn);
+    // console.log("totalCoinsData : ", totalCoins);
+    // console.log("remainingCoins : ", remainingCoins);
     
 
     const response = {
@@ -180,7 +186,9 @@ const getReferralDetails = async (userId) => {
         registered,
         invited,
         referralCode,
-        totalCoins : totalCoinsData[0].total,
+        totalCoins,
+        remainingCoins,
+        coinsWithdrawn,
         invitedUsers: referrals
     }
     return response;
@@ -268,7 +276,36 @@ const findMonthlyReferralsCounts = async (year) => {
         throw error; // Re-throw the error for higher-level handling if needed
     }
 }
-    
+
+const createWithdrawal = async (userId, amount) => {
+    // console.log("userId : ", userId);
+    const userType = (await checkUserType(userId)).userType;
+    const settings = await Settings.findOne({});
+    if (amount < settings.minWithdrawalAmount) {
+        throw new Error('Minimum withdrawal amount is ' + settings.minWithdrawalAmount);
+    }
+    let userData = {};
+    if (userType === 'individual') {
+        userData = await IndividualUser.findById(userId).select('coins coinsWithdrawn').lean().exec();
+    } else {
+        userData = await EnterpriseUser.findById(userId).select('coins coinsWithdrawn').lean().exec();
+    }
+    const totalCoins = userData ? userData.coins : 0; // Default to 0 if no user found
+    const coinsWithdrawn = userData ? userData.coinsWithdrawn : 0; // Default to 0 if no user found
+    const remainingCoins = totalCoins - coinsWithdrawn; // Default to 0 if no user found
+    if (amount > remainingCoins) {
+        throw new Error('Insufficient coins for withdrawal');
+    }
+    if (amount <= 0) {
+        throw new Error('Invalid withdrawal amount');
+    }
+    if (userType === 'individual') {
+        await IndividualUser.findByIdAndUpdate(userId, { coinsWithdrawn: coinsWithdrawn + amount });
+    } else {
+        await EnterpriseUser.findByIdAndUpdate(userId, { coinsWithdrawn: coinsWithdrawn + amount });
+    }
+    return { coinsWithdrawn: coinsWithdrawn + amount };
+};
 
 module.exports = {
     sendInvite,
@@ -278,7 +315,8 @@ module.exports = {
     checkReferralCode,
     registerInviteeByReferralCode,
     findAllReferrals,
-    findMonthlyReferralsCounts
+    findMonthlyReferralsCounts,
+    createWithdrawal
 }
 
 // const {Referral} = require('../../models/referral.model');

@@ -38,8 +38,10 @@ const rewardSchema = new mongoose.Schema({
 
 const IncentiveSchema = new mongoose.Schema({
     amount: { type: mongoose.Types.Decimal128, required: true }, // Amount of incentive earned
+    userId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Reference to the user who earned the incentive
     type: { type: String, required: true },                      // Type of incentive (e.g., cash, discount)
     status: { type: String, enum: ['pending', 'paid'], default: 'pending' }, // Status of the incentive
+    transactionId: { type: String },                              // Transaction ID of the incentive
     createdAt: { type: Date, default: Date.now }                // Timestamp of when the incentive was created
   });
 
