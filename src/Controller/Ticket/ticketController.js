@@ -4,8 +4,10 @@ const TicketService = require('../../services/Ticket/ticket.service');
 exports.createTicket = async (req, res) => {
     try {
         const newTicket = await TicketService.create(req.body);
-        res.status(201).json(newTicket);
+        console.log(newTicket);
+        res.status(201).json({message:"Ticket Created Successfully" ,newTicket});
     } catch (error) {
+        console.log(error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -19,6 +21,7 @@ exports.getAllTickets = async (req, res) => {
         const tickets = await TicketService.getAll(page, limit, noPagination === 'true', { status, priority, category });
         res.status(200).json(tickets);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -29,6 +32,7 @@ exports.getTicketById = async (req, res) => {
         if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
         res.status(200).json(ticket);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -39,6 +43,7 @@ exports.getNewTickets = async (req, res) => {
         if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
         res.status(200).json(ticket);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -49,6 +54,7 @@ exports.getAllStats = async (req, res) => {
         if (!stats) return res.status(404).json({ message: 'Stats not found' });
         res.status(200).json(stats);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -58,6 +64,7 @@ exports.getAllTicketsByCategory = async (req, res) => {
         const tickets = await TicketService.getAllByCategory(req.params.categoryId);
         res.status(200).json(tickets);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -69,29 +76,29 @@ exports.updateTicket = async (req, res) => {
         if (!updatedTicket) return res.status(404).json({ message: 'Ticket not found' });
         res.status(200).json(updatedTicket);
     } catch (error) {
+        console.log(error);
         res.status(400).json({ message: error.message });
     }
 };
 
-// exports.assignUser = async (req, res) => {
-//     const { id } = req.params;
-//     const { emmployeeId } = req.body;
+exports.assignUser = async (req, res) => {
+    const { ticketId, employeeId } = req.query;
 
-//     if (!emmployeeId) {
-//         return res.status(400).json({ message: 'User ID is required' });
-//     }
+    if (!employeeId) {
+        return res.status(400).json({ message: 'User ID is required' });
+    }
 
-//     try {
-//         const updatedTicket = await TicketService.addUserToAssigned(id, emmployeeId);
-//         return res.status(200).json(updatedTicket);
-//     } catch (error) {
-//         if (error.message === 'Ticket not found') {
-//             return res.status(404).json({ message: error.message });
-//         }
-//         console.error(error);
-//         return res.status(500).json({ message: 'Server error' });
-//     }
-// };
+    try {
+        const updatedTicket = await TicketService.addUserToAssigned(ticketId, employeeId);
+        return res.status(200).json({ message:"Ticket Assigned", updatedTicket});
+    } catch (error) {
+        if (error.message === 'Ticket not found') {
+            return res.status(404).json({ message: error.message });
+        }
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
 
 
 exports.deleteTicket = async (req, res) => {
@@ -100,6 +107,7 @@ exports.deleteTicket = async (req, res) => {
         if (!deletedTicket) return res.status(404).json({ message: 'Ticket not found' });
         res.status(204).send();
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };

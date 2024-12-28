@@ -46,7 +46,7 @@ const ticketSchema = new mongoose.Schema({
     category: {
         type:  mongoose.Schema.Types.ObjectId,
         ref: "TicketCategory",
-        default: ""
+        default: null
     },
     status: {
         type: String,
