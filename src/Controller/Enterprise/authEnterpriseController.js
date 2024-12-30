@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const otpGenerator = require("otp-generator")
 const mongoose = require('mongoose');
-
-const { otpCollection, individualUserCollection } = require('../../DBConfig');
+const  otpCollection = require('../../models/otpModule');
+const {individualUserCollection } = require('../../DBConfig');
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const Contact  = require('../../models/contact.individual.model');
@@ -196,7 +196,7 @@ module.exports.OtpValidate = async (req, res ) => {
 
 module.exports.sendForgotPasswordOTP = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email,phnNumber } = req.body;
     const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
     if(!isEmailExist){
       return res.status(401).json({ message: "Email not exist" })
@@ -213,7 +213,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
-    const otpPayload = { email, otp };
+    const otpPayload = { email, otp,phnNumber };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
@@ -272,7 +272,7 @@ module.exports.sendOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
-    const otpPayload = { email, otp };
+    const otpPayload = { email,phnNumber, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
