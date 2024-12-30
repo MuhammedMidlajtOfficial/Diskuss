@@ -52,6 +52,16 @@ const ticketSchema = new mongoose.Schema({
         type: String,
         enum: ['Open', 'In Progress', 'Resolved'],
         default: 'Open'
+    },
+    replayBy:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employee'
+    },
+    replayDescription: {
+        type: String
+    },
+    replayedTime :{
+        type: Date,
     }
 });
 
