@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { otpCollection } = require('../../DBConfig');
+const  otpCollection  = require('../../models/otpModule');
 const enterpriseUser = require('../../models/enterpriseUser');
 const { individualUserCollection } = require('../../DBConfig');
 const EnterpriseEmployee = require('../../models/enterpriseEmploye.model');
@@ -161,7 +161,7 @@ module.exports.OtpValidate = async (req, res ) => {
   try {
     const { email, otp } = req.body
 
-    if (!email || !password) {
+    if (!email || !otp) {
       return res.status(400).json({ message: "Both email and new password are required" });
     }
 
@@ -183,13 +183,13 @@ module.exports.OtpValidate = async (req, res ) => {
 
 module.exports.sendForgotPasswordOTP = async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+    const {email, phnNumber } = req.body;
+    if (!phnNumber || !email) {
+      return res.status(400).json({ message: "Phone Number and email is required" });
     }
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
-    if(!isEmailExist){
-      return res.status(401).json({ message: "No account found with the provided email address" })
+    const isphnNumberExist = await individualUserCollection.findOne({ phnNumber: phnNumber }).exec();
+    if(!isphnNumberExist){
+      return res.status(401).json({ message: "No account found with the provided phnNumber address" })
     }
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
@@ -203,7 +203,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
-    const otpPayload = { email, otp };
+    const otpPayload = { phnNumber,email, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
@@ -274,7 +274,7 @@ module.exports.sendOTP = async (req, res) => {
       result = await otpCollection.findOne({ otp: otp });
     }
 
-    const otpPayload = { email, otp };
+    const otpPayload = { email,phnNumber, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
