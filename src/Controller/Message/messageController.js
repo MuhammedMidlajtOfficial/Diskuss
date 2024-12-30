@@ -224,7 +224,7 @@ console.log("getMessages userId - ",userId)
           return {
             ...lastMessage.toObject(),
             senderName: senderName || senderUserInfo?.username || senderEnterpriseInfo?.companyName || senderEmployeeInfo?.username || "Unknown Sender",
-            receiverName: receiverName || receiverUserInfo?.username || receiverEnterpriseInfo?.companyName || receiverEmployeeInfo?.username || "Unknown Receiver",
+            receiverName: receiverName || receiverUserInfo?.phnNumber || receiverEnterpriseInfo?.phnNumber || receiverEmployeeInfo?.phnNumber || "User Deleted",
             receiverNumber: receiverUserInfo?.phnNumber || receiverEnterpriseInfo?.phnNumber || receiverEmployeeInfo?.phnNumber || "Receiver is not a diskuss user",
             senderProfilePic: senderUserInfo?.image || senderEnterpriseInfo?.image || senderEmployeeInfo?.image || "",
             receiverProfilePic: receiverUserInfo?.image || receiverEnterpriseInfo?.image || receiverEmployeeInfo?.image || "",
