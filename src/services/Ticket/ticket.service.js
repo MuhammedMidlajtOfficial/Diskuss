@@ -1,8 +1,10 @@
 const Ticket = require('../../models/ticket/ticketModel');
 const { checkUserType } = require('../../util/HelperFunctions'); 
 const EnterpriseUser = require('../../models/enterpriseUser');
-const { individualUserCollection: IndividualUser } = require('../../DBConfig');
+const { individualUserCollection: IndividualUser, individualUserCollection } = require('../../DBConfig');
 const { query } = require('express');
+const enterpriseUser = require('../../models/enterpriseUser');
+const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 
 const generateTicketNumber = async () => {
     const lastTicket = await Ticket.findOne().sort({ createdAt: -1 });
@@ -81,39 +83,89 @@ exports.create = async (data) => {
 //     // return populatedTickets;
 // };
 
+// exports.getAll = async (page = 1, limit = 10, noPagination = false, userId, status) => {
+//     const options = {
+//         skip: (page - 1) * limit,
+//         limit: noPagination ? undefined : parseInt(limit),
+//     };
+
+//     // Ensure `status` is a string, not an object
+//     const statusValue = typeof status === 'string' ? status : status?.status;
+
+//     let query = {};
+//     // console.log('status', statusValue);
+
+//     if (statusValue) {
+//         query.status = statusValue; // Use the corrected status value
+//     }
+
+//     if (userId) {
+//         query = { ...query, assignedTo: userId }; // Merge userId into the query
+//     }
+
+//     // console.log('query-', query);
+
+//     try {
+//         const tickets = await Ticket.find(query, null, options)
+//             .populate('category')
+//             .sort({ createdAt: -1 });
+
+//         // console.log('tickets-', tickets);
+//         return tickets;
+//     } catch (error) {
+//         console.error('Error fetching tickets:', error);
+//         throw error; // Re-throw error to be handled by the calling function
+//     }
+// };
+
 exports.getAll = async (page = 1, limit = 10, noPagination = false, userId, status) => {
     const options = {
         skip: (page - 1) * limit,
         limit: noPagination ? undefined : parseInt(limit),
     };
 
-    // Ensure `status` is a string, not an object
     const statusValue = typeof status === 'string' ? status : status?.status;
 
     let query = {};
-    // console.log('status', statusValue);
 
     if (statusValue) {
-        query.status = statusValue; // Use the corrected status value
+        query.status = statusValue;
     }
 
     if (userId) {
-        query = { ...query, assignedTo: userId }; // Merge userId into the query
+        query = { ...query, assignedTo: userId };
     }
 
-    // console.log('query-', query);
-
     try {
+        // Fetch tickets without populating `createdBy`
         const tickets = await Ticket.find(query, null, options)
             .populate('category')
             .sort({ createdAt: -1 });
 
-        // console.log('tickets-', tickets);
-        return tickets;
+        // Manually populate `createdBy` field
+        const populatedTickets = await Promise.all(
+            tickets.map(async (ticket) => {
+                const populatedUser = await populateCreatedBy(ticket.createdBy);
+                return { ...ticket.toObject(), createdBy: populatedUser };
+            })
+        );
+
+        return populatedTickets;
     } catch (error) {
         console.error('Error fetching tickets:', error);
-        throw error; // Re-throw error to be handled by the calling function
+        throw error;
     }
+};
+
+// Helper function to populate `createdBy`
+const populateCreatedBy = async (createdById) => {
+    // Try finding the user in each collection
+    const user =
+        (await individualUserCollection.findById(createdById).select('username email image')) ||
+        (await enterpriseUser.findById(createdById).select('companyName email image')) ||
+        (await enterpriseEmployeModel.findById(createdById).select('username email image'));
+
+    return user || null; // Return the user or null if not found
 };
 
 
