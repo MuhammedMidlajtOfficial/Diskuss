@@ -9,4 +9,7 @@ router.get('/:id', ticketCategoryController.getCategoryById);
 router.post('/', ticketCategoryController.createCategory);
 router.patch('/', ticketCategoryController.updateCategory);
 
+router.delete('/:id', ticketCategoryController.deleteCategory);
+
+
 module.exports = router;
