@@ -34,7 +34,14 @@ exports.update = async (data) => {
     }
 };
 
-
+exports.delete = async (id) => {
+    const result = await TicketCategory.deleteOne({ _id: id });
+    console.log(result);
+    if (result.deletedCount === 0) {
+        throw new Error('Category not found');
+    }
+    return 'Category deleted successfully';
+};
 
 exports.getAll = async () => {
     const categories =  await TicketCategory.find();

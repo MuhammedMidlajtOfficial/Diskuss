@@ -12,14 +12,29 @@ exports.createCategory = async (req, res) => {
 
 exports.updateCategory = async (req, res) => {
     try {
-        const message = await TicketCategoryService.update(req.body);
-        res.status(200).json({ message }); // Use 200 for success
+        await TicketCategoryService.update(req.body);
+        res.status(200); // Use 200 for success
     } catch (error) {
         res.status(400).json({ message: error.message });
         console.log(error);
     }
 };
 
+exports.deleteCategory = async (req, res) => {
+    try {
+        console.log('hererererer');
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ message: 'ID is required' });
+        }
+        
+        const message = await TicketCategoryService.delete(id);
+        res.status(200).json({ message }); // Success response
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+        console.log(error);
+    }
+};
 
 exports.getAllCategories = async (req, res) => {
 
