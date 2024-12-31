@@ -7,8 +7,16 @@ exports.create = async (data) => {
 };
 
 exports.update = async (data) => {
+    const category = await TicketCategory.findOne({ _id: data.id });
+
+    // Check if category exists
+    if (!category) {
+        throw new Error("Category not found.");
+    }
+
+    // Perform the update
     const updateResult = await TicketCategory.updateOne(
-        { _id: data.categoryId }, 
+        { _id: data.id },
         {
             categoryName: data.categoryName,
             categoryDescription: data.categoryDescription,
@@ -16,6 +24,7 @@ exports.update = async (data) => {
         }
     );
 
+    // Return response based on update result
     if (updateResult.modifiedCount > 0) {
         return "Category updated successfully.";
     } else if (updateResult.matchedCount > 0) {
@@ -24,6 +33,7 @@ exports.update = async (data) => {
         throw new Error("Category not found.");
     }
 };
+
 
 
 exports.getAll = async () => {

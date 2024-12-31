@@ -13,12 +13,13 @@ exports.createCategory = async (req, res) => {
 exports.updateCategory = async (req, res) => {
     try {
         const message = await TicketCategoryService.update(req.body);
-        res.status(201).json({message});
+        res.status(200).json({ message }); // Use 200 for success
     } catch (error) {
         res.status(400).json({ message: error.message });
         console.log(error);
     }
 };
+
 
 exports.getAllCategories = async (req, res) => {
 
