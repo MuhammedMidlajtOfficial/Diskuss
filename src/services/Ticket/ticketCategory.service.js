@@ -6,6 +6,26 @@ exports.create = async (data) => {
     return await newCategory.save();
 };
 
+exports.update = async (data) => {
+    const updateResult = await TicketCategory.updateOne(
+        { _id: data.categoryId }, 
+        {
+            categoryName: data.categoryName,
+            categoryDescription: data.categoryDescription,
+            categoryPriority: data.categoryPriority
+        }
+    );
+
+    if (updateResult.modifiedCount > 0) {
+        return "Category updated successfully.";
+    } else if (updateResult.matchedCount > 0) {
+        return "No changes made to the category.";
+    } else {
+        throw new Error("Category not found.");
+    }
+};
+
+
 exports.getAll = async () => {
     const categories =  await TicketCategory.find();
     // Map through categories to get stats
