@@ -291,7 +291,7 @@ module.exports.deleteCard = async (cardId) => {
 
       await enterpriseUser.updateOne(
         { _id: enterpriseId },
-        { $pull: { empCards: cardId } }
+        { $pull: { empCards: cardId, empId : userId } }
       );
 
       return { message: "Employee card deleted successfully" };
