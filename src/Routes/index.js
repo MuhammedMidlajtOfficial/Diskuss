@@ -47,7 +47,7 @@ router.use((req, res, next) => {
   if (req.originalUrl.startsWith("/api/v1/card")) {
     return validateJwtToken()(req, res, next); // Apply validation for /card route
   }
-
+  return next()
   // validateJwtToken()(req, res, next); // Apply validation for other routes
 });
 
