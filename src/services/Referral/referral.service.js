@@ -273,16 +273,6 @@ const findMonthlyReferralsCounts = async (year) => {
         console.error("Error fetching monthly referrals:", error);
         throw error; // Re-throw the error for higher-level handling if needed
     }
-}
-
-const createWithdrawalRequest = async (userId, amount) => {
-    const withdrawalRequest = new WithdrawalRequest({
-        userId,
-        amount,
-        status: 'pending'
-    });
-    await withdrawalRequest.save();
-    return withdrawalRequest;
 };
 
 const createWithdrawal = async (userId, amount) => {
@@ -315,9 +305,6 @@ const createWithdrawal = async (userId, amount) => {
     return { coinsWithdrawn: coinsWithdrawn + amount };
 };
 
-// const getWithdrawalDetailsById = async (userId) => {
-//     const 
-
 module.exports = {
     sendInvite,
     registerInvitee,
@@ -329,6 +316,7 @@ module.exports = {
     findMonthlyReferralsCounts,
     createWithdrawalRequest,
     createWithdrawal,
+
 }
 
 // const {Referral} = require('../../models/referral.model');
