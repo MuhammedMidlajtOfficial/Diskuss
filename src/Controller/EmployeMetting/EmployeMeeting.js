@@ -686,14 +686,14 @@ const UpdateMeeting = async (req, res) => {
       );
 
       console.log(reposed.data);
-      const notification = new Notification({
-        sender: ownerId,
-        receiver: userIds,
-        type: "meeting",
-        content: notificationContentRemove,
-        status: "unread",
-      });
-      await notification.save();
+      // const notification = new Notification({
+      //   sender: ownerId,
+      //   receiver: userIds,
+      //   type: "meeting",
+      //   content: notificationContentRemove,
+      //   status: "unread",
+      // });
+      // await notification.save();
     
     }
 
