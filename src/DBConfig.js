@@ -3,7 +3,7 @@ const crypto = require('crypto');
 
 const mongoose = require('mongoose');
 const mailSender = require('./util/mailSender');
-console.log(process.env.MongoDBURL);
+// console.log(process.env.MongoDBURL);
 
 if (!process.env.MongoDBURL) {
   console.error("MongoDBURL environment variable is not defined.");
