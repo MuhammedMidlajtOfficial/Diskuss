@@ -698,7 +698,7 @@ const UpdateMeeting = async (req, res) => {
 
       const notification = new Notification({
         sender: ownerId,
-        receiver: userId,
+        receiver: userIds,
         type: "meeting",
         content: notificationContentRemove,
         status: "unread",
