@@ -4,11 +4,9 @@ const watiSender = require("../util/watiSender");
 const otpSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: true,
   },
   phnNumber: {
     type: String,
-    required: true,
   },
   otp: {
     type: String,

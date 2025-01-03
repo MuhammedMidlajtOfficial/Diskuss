@@ -186,9 +186,9 @@ module.exports.OtpValidate = async (req, res ) => {
 
 module.exports.sendForgotPasswordOTP = async (req, res) => {
   try {
-    const {email, phnNumber } = req.body;
-    if (!phnNumber || !email) {
-      return res.status(400).json({ message: "Phone Number and email is required" });
+    const {phnNumber } = req.body;
+    if (!phnNumber) {
+      return res.status(400).json({ message: "Phone Number is required" });
     }
     const isphnNumberExist = await individualUserCollection.findOne({ phnNumber: phnNumber }).exec();
     if(!isphnNumberExist){
@@ -206,7 +206,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
-    const otpPayload = { phnNumber,email, otp };
+    const otpPayload = { phnNumber, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
