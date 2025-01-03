@@ -12,6 +12,7 @@ const {
   emitNotification,
 } = require("../../Controller/Socket.io/NotificationSocketIo");
 const { required } = require("joi");
+const { response } = require("express");
 
 const CreateMeeting = async (req, res) => {
   try {
@@ -704,7 +705,11 @@ const UpdateMeeting = async (req, res) => {
       });
       await notification.save();
     }
-
+    console.log("notification:",Notification);
+    res.json({message:"Notification",
+      response
+    })
+    
     // Remove meeting ID from removed users
     await Promise.all(
       removedPeople.map(async (userId) => {
@@ -773,7 +778,14 @@ const UpdateMeeting = async (req, res) => {
             );
           }
 
-          const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${updatedData.selectedDate} , created by ${Ownername}.`;
+          const selectedDateObj = new Date(updatedMeeting.selectedDate);
+          const day = String(selectedDateObj.getDate()).padStart(2, "0");
+          const month = String(selectedDateObj.getMonth() + 1).padStart(2, "0");
+          const year = selectedDateObj.getFullYear();
+      
+          const formattedDate = `${day}/${month}/${year}`;
+
+          const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime} , created by ${Ownername}.`;
 
           const notification = new Notification({
             sender: ownerId,
