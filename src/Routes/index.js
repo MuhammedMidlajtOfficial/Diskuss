@@ -35,8 +35,8 @@ const { validateJwtToken } = require('../Middleware/validateJwtToken.js');
 const router = express.Router();
 
 // Apply validateJwtToken to all routes except login routes
-router.use((req, res, next) => {
-  console.log("originalUrl from validateJwtToken - ",req.originalUrl);
+// router.use((req, res, next) => {
+//   console.log("originalUrl from validateJwtToken - ",req.originalUrl);
   // if (
   //   req.originalUrl.startsWith("/api/v1/individual") ||
   //   req.originalUrl.startsWith("/api/v1/enterprise") 
@@ -44,12 +44,12 @@ router.use((req, res, next) => {
   //   return next(); // Skip validation for /individual and /enterprise
   // }
 
-  if (req.originalUrl.startsWith("/api/v1/card")) {
-    return validateJwtToken()(req, res, next); // Apply validation for /card route
-  }
-  return next()
-  // validateJwtToken()(req, res, next); // Apply validation for other routes
-});
+//   if (req.originalUrl.startsWith("/api/v1/card")) {
+//     return validateJwtToken()(req, res, next); // Apply validation for /card route
+//   }
+//   return next()
+//   // validateJwtToken()(req, res, next); // Apply validation for other routes
+// });
 
 const defaultRoutes = [
   {
