@@ -196,10 +196,9 @@ module.exports.OtpValidate = async (req, res ) => {
 
 module.exports.sendForgotPasswordOTP = async (req, res) => {
   try {
-    const { email,phnNumber } = req.body;
-    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
-    if(!isEmailExist){
-      return res.status(401).json({ message: "Email not exist" })
+    const {phnNumber } = req.body;
+    if(!phnNumber){
+      return res.status(401).json({ message: "Phone nNumber not exist" })
     }
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
@@ -213,7 +212,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
-    const otpPayload = { email, otp,phnNumber };
+    const otpPayload = {otp,phnNumber };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
