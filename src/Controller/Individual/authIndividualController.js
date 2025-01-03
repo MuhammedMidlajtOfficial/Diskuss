@@ -31,9 +31,8 @@ module.exports.postIndividualLogin = async (req, res) => {
     }
     // Set jwt token
     const payload = { id: user._id, email: user.email };
-    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
-    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-    req.session.user = user
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
 
     return res.status(200).json({ message: 'Login successful', accessToken, refreshToken,user });
   } catch (error) {
@@ -83,10 +82,14 @@ module.exports.postIndividualSignup = async (req, res) => {
     });
     console.log(newUser);
 
+    // Set jwt token
+    const payload = { id: newUser._id, email: newUser.email };
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
+
     if (newUser) {
       await referralService.registerInviteeByReferralCode(referralCode, newUser._id);
       // console.log(referralUpdate);
-
 
       const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });
       if (existingContact) {
@@ -102,10 +105,10 @@ module.exports.postIndividualSignup = async (req, res) => {
         );
         if (contact.modifiedCount > 0) {
           console.log("Contact updated successfully, User created successfully");
-          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created successfully.", user: newUser });
+          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created successfully.", user: newUser, accessToken, refreshToken });
         } else {
           console.log("Contact not updated , User created successfully");
-          return res.status(201).json({ Contact_message: "Contact update failed.", message: "User created successfully.", user: newUser});
+          return res.status(201).json({ Contact_message: "Contact update failed.", message: "User created successfully.", user: newUser, accessToken, refreshToken});
         }
       } else {
         console.log("Error: Contact not found.");

@@ -52,7 +52,6 @@ module.exports.postEnterpriseLogin = async (req, res) => {
     const payload = { id: user._id, email: user.email };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-    req.session.user = user;
 
     return res.status(200).json({ message: 'Login successful', emp, accessToken, refreshToken, user });
     
@@ -101,6 +100,11 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
       referralCodeUsed : referralCode || ""
     });
     console.log(newUser);
+
+     // Set jwt token
+     const payload = { id: newUser._id, email: newUser.email };
+     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
     
     if (newUser) {
       const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });
@@ -116,10 +120,10 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
         );
         if (contact.modifiedCount > 0) {
           console.log("Contact updated successfully, Profile updated successfully");
-          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created", user: newUser });
+          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created", user: newUser, accessToken, refreshToken });
         } else {
           console.log(" Contact not updated , Profile updated successfully");
-          return res.status(201).json({ Contact_message: "Contact not updated ", message: "User created", user: newUser });
+          return res.status(201).json({ Contact_message: "Contact not updated ", message: "User created", user: newUser, accessToken, refreshToken });
         }
       } else {
         console.log("Error: Contact not found.");

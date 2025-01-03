@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ReferralController = require('../../Controller/Referral/referralController');
+const WithdrawalController = require('../../Controller/Referral/Withdrawal/withdrawalController');
 
 // New Referral Router
 router.post('/invite', ReferralController.sendInvite);
@@ -8,6 +9,11 @@ router.post('/register', ReferralController.registerInvitee);
 router.post('/card', ReferralController.createCardByInvitee);
 router.get('/details/:userId', ReferralController.getReferralDetails);
 router.get('/code-check/:referralCode', ReferralController.checkReferralCode);
+
+// Incentive Routes
+router.get('/withdraw', WithdrawalController.getAllWithdrawalDetails);
+router.get('/withdraw/:id', WithdrawalController.getWithdrawalRequestByUserId);
+router.post('/withdraw', WithdrawalController.createWithdrawalRequest);
 
 // Dashboard Routes
 router.get('/admin', ReferralController.getAllReferrals);

@@ -29,9 +29,27 @@ const ticketCategoryRouter = require('./Ticket/ticketCategoryRouter.js')
 const ticketReplyRouter = require('./Ticket/ticketReplyRouter.js')
 // const contactRouter = require("./contactRouter.js")
 const uploadVCard = require("./VCard/VCardRoute.js")
-
+const settingsRouter = require('./settingsRoutes.js'); 
+const { validateJwtToken } = require('../Middleware/validateJwtToken.js');
 
 const router = express.Router();
+
+// Apply validateJwtToken to all routes except login routes
+// router.use((req, res, next) => {
+//   console.log("originalUrl from validateJwtToken - ",req.originalUrl);
+  // if (
+  //   req.originalUrl.startsWith("/api/v1/individual") ||
+  //   req.originalUrl.startsWith("/api/v1/enterprise") 
+  // ) {
+  //   return next(); // Skip validation for /individual and /enterprise
+  // }
+
+//   if (req.originalUrl.startsWith("/api/v1/card")) {
+//     return validateJwtToken()(req, res, next); // Apply validation for /card route
+//   }
+//   return next()
+//   // validateJwtToken()(req, res, next); // Apply validation for other routes
+// });
 
 const defaultRoutes = [
   {
@@ -145,6 +163,10 @@ const defaultRoutes = [
   {
     path: '/vcard',
     route: uploadVCard,
+  },
+  {
+    path : '/settings',
+    route : settingsRouter
   },
 ];
 

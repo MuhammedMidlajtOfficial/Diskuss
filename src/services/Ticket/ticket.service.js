@@ -1,8 +1,10 @@
 const Ticket = require('../../models/ticket/ticketModel');
 const { checkUserType } = require('../../util/HelperFunctions'); 
 const EnterpriseUser = require('../../models/enterpriseUser');
-const { individualUserCollection: IndividualUser } = require('../../DBConfig');
+const { individualUserCollection: IndividualUser, individualUserCollection } = require('../../DBConfig');
 const { query } = require('express');
+const enterpriseUser = require('../../models/enterpriseUser');
+const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 
 const generateTicketNumber = async () => {
     const lastTicket = await Ticket.findOne().sort({ createdAt: -1 });
@@ -18,67 +20,171 @@ exports.create = async (data) => {
     return await newTicket.save();
 };
 
-exports.getAll = async (page = 1, limit = 10, noPagination = false, filters = {}) => {
-    const query = {};
+// exports.getAll = async (page = 1, limit = 10, noPagination = false, filters = {}) => {
+//     const query = {};
 
-    // Apply filters if provided
-    if (filters.status) {
-        query.status = filters.status;
-    }
-    if (filters.priority) {
-        query.priority = filters.priority;
-    }
+//     // console.log("filters : ",filters);
+//     // Apply filters if provided
+//     if (filters.status) {
+//         query.status = filters.status;
+//     }
+//     if (filters.priority) {
+//         query.priority = filters.priority;
+//     }
+//     if(filters.category){
+//         query.category = filters.category;
+//     }
 
-    // Pagination logic
+//     // Pagination logic
+//     const options = {
+//         skip: (page - 1) * limit,
+//         limit: noPagination ? undefined : parseInt(limit),
+//     };
+//     const tickets = await Ticket.find(query, null, options).populate('category').sort({createdAt : -1});;
+
+//     // Populate user data for each ticket
+//     const populatedTicketsPromises = tickets.map(async ticket => {
+//         let user = await checkUserType(ticket.createdBy);
+//         const userData = user.data;
+//         let populatedUser;
+
+//         if (user.userType === 'individual') {
+//             populatedUser = await IndividualUser.findById(ticket.createdBy).select('username email image');
+//         } else {
+//             populatedUser = await EnterpriseUser.findById(ticket.createdBy).select('username email image');
+//         }
+
+//         const ticketData = ticket.toObject();
+//         ticketData.createdBy = populatedUser;
+//         return ticketData;
+//     });
+
+//     return Promise.all(populatedTicketsPromises);
+
+//     // const tickets = await Ticket.find();
+//     // let populatedTickets = [];
+//     // for (let ticket of tickets) {
+//     //     let user = (await checkUserType(ticket.createdBy));
+//     //     const userType = user.userType;
+//     //     const userData = user.data;
+//     //     let populatedUser = {
+//     //         username: userData.username,
+//     //         email: userData.email
+//     //     };
+//     //     if (userType === 'individual') {
+//     //         // populatedUser =  await IndividualUser.findOne(ticket.createdBy).select('username email');
+//     //     } else {
+//     //         populatedUser = await EnterpriseUser.findOne(ticket.createdBy).select('username email');
+//     //     }
+//     //     const ticketData = ticket.toObject();
+//     //     ticketData.createdBy = populatedUser;
+//     //     populatedTickets.push(ticketData);
+//     // }
+//     // return populatedTickets;
+// };
+
+// exports.getAll = async (page = 1, limit = 10, noPagination = false, userId, status) => {
+//     const options = {
+//         skip: (page - 1) * limit,
+//         limit: noPagination ? undefined : parseInt(limit),
+//     };
+
+//     // Ensure `status` is a string, not an object
+//     const statusValue = typeof status === 'string' ? status : status?.status;
+
+//     let query = {};
+//     // console.log('status', statusValue);
+
+//     if (statusValue) {
+//         query.status = statusValue; // Use the corrected status value
+//     }
+
+//     if (userId) {
+//         query = { ...query, assignedTo: userId }; // Merge userId into the query
+//     }
+
+//     // console.log('query-', query);
+
+//     try {
+//         const tickets = await Ticket.find(query, null, options)
+//             .populate('category')
+//             .sort({ createdAt: -1 });
+
+//         // console.log('tickets-', tickets);
+//         return tickets;
+//     } catch (error) {
+//         console.error('Error fetching tickets:', error);
+//         throw error; // Re-throw error to be handled by the calling function
+//     }
+// };
+
+exports.getAll = async (page = 1, limit = 10, noPagination = false, userId, status) => {
     const options = {
         skip: (page - 1) * limit,
         limit: noPagination ? undefined : parseInt(limit),
     };
-    const tickets = await Ticket.find(query, null, options).sort({createdAt : -1});;
 
-     // Populate user data for each ticket
-     const populatedTicketsPromises = tickets.map(async ticket => {
-        let user = await checkUserType(ticket.createdBy);
-        const userData = user.data;
-        let populatedUser;
+    const statusValue = typeof status === 'string' ? status : status?.status;
 
-        if (user.userType === 'individual') {
-            populatedUser = await IndividualUser.findById(ticket.createdBy).select('username email');
-        } else {
-            populatedUser = await EnterpriseUser.findById(ticket.createdBy).select('username email');
-        }
+    let query = {};
 
-        const ticketData = ticket.toObject();
-        ticketData.createdBy = populatedUser;
-        return ticketData;
-    });
+    if (statusValue) {
+        query.status = statusValue;
+    }
 
-    return Promise.all(populatedTicketsPromises);
+    if (userId) {
+        query = { ...query, assignedTo: userId };
+    }
 
-    // const tickets = await Ticket.find();
-    // let populatedTickets = [];
-    // for (let ticket of tickets) {
-    //     let user = (await checkUserType(ticket.createdBy));
-    //     const userType = user.userType;
-    //     const userData = user.data;
-    //     let populatedUser = {
-    //         username: userData.username,
-    //         email: userData.email
-    //     };
-    //     if (userType === 'individual') {
-    //         // populatedUser =  await IndividualUser.findOne(ticket.createdBy).select('username email');
-    //     } else {
-    //         populatedUser = await EnterpriseUser.findOne(ticket.createdBy).select('username email');
-    //     }
-    //     const ticketData = ticket.toObject();
-    //     ticketData.createdBy = populatedUser;
-    //     populatedTickets.push(ticketData);
-    // }
-    // return populatedTickets;
+    try {
+        // Fetch tickets without populating `createdBy`
+        const tickets = await Ticket.find(query, null, options)
+            .populate('category')
+            .sort({ createdAt: -1 });
+
+        // Manually populate `createdBy` field
+        const populatedTickets = await Promise.all(
+            tickets.map(async (ticket) => {
+                const populatedUser = await populateCreatedBy(ticket.createdBy);
+                return { ...ticket.toObject(), createdBy: populatedUser };
+            })
+        );
+
+        return populatedTickets;
+    } catch (error) {
+        console.error('Error fetching tickets:', error);
+        throw error;
+    }
+};
+
+// Helper function to populate `createdBy`
+const populateCreatedBy = async (createdById) => {
+    // Try finding the user in each collection
+    const user =
+        (await individualUserCollection.findById(createdById).select('username email image')) ||
+        (await enterpriseUser.findById(createdById).select('companyName email image')) ||
+        (await enterpriseEmployeModel.findById(createdById).select('username email image'));
+
+    return user || null; // Return the user or null if not found
+};
+
+
+exports.getOpenTicket = async (page = 1, limit = 10, noPagination = false, filters = {}) => {
+    const options = {
+        skip: (page - 1) * limit,
+        limit: noPagination ? undefined : parseInt(limit),
+    };
+
+    // Merge filters with the status to only get open tickets
+    const query = { status: "Open", ...filters };
+
+    const tickets = await Ticket.find(query, null, options).populate('category').sort({ createdAt: -1 });
+    
+    return tickets;
 };
 
 exports.getById = async (id) => {
-    const ticket = await Ticket.findById(id);
+    const ticket = await Ticket.findById(id).populate('category');
     if (ticket) {
         let user = (await checkUserType(ticket.createdBy));
         const userType = user.userType;
@@ -89,16 +195,16 @@ exports.getById = async (id) => {
             username: userData.username,
             email: userData.email
         };
-        console.log("populatedUser : ",populatedUser);
+        // console.log("populatedUser : ",populatedUser);
         // Populate User's data
 
         if (userType === 'individual') {
             // console.log("individualUserCollection : ",individualUserCollection);
-            // populatedUser =  await IndividualUser.findOne(ticket.createdBy).select('username email');
+            populatedUser =  await IndividualUser.findOne(ticket.createdBy).select('username email');
         } else {
             populatedUser = await EnterpriseUser.findOne(ticket.createdBy).select('username email');
         }    
-        console.log("createdBy : ",ticket.createdBy);
+        // console.log("createdBy : ",ticket.createdBy);
         
         const ticketData = ticket.toObject();
         ticketData.createdBy = populatedUser;
@@ -120,10 +226,8 @@ exports.countActiveTickets = async (filters = {}) => {
         query.priority = filters.priority;
     }
     if(filters.category){
-        query.category = filters.category
+        query.category = filters.categoryx
     }
-
-
     return await Ticket.countDocuments(query);
 };
 
@@ -134,19 +238,58 @@ exports.countSolvedTickets = async () => {
 exports.getAllStats = async () => {
     const totalTickets = await Ticket.countDocuments();
     const openTickets = await Ticket.countDocuments({ status: 'Open' });
-    const onGoingTickets = await Ticket.countDocuments({status : 'In Progess'})
+    const onGoingTickets = await Ticket.countDocuments({status : 'In Progress'})
     const closedTickets = await Ticket.countDocuments({ status: 'Resolved' });
     const highPriorityTickets = await Ticket.countDocuments({ priority: 'High' });
     const mediumPriorityTickets = await Ticket.countDocuments({ priority: 'Medium' });
     const lowPriorityTickets = await Ticket.countDocuments({ priority: 'lLow' });
 
-    return { totalTickets, openTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
+    return { totalTickets, openTickets, onGoingTickets, closedTickets, highPriorityTickets, mediumPriorityTickets, lowPriorityTickets };
 }
 
 exports.update = async (id, data) => {
     return await Ticket.findByIdAndUpdate(id, data, { new: true });
 };
 
+exports.addUserToAssigned= async (ticketId, employeeId) => {
+    const ticket = await Ticket.findById(ticketId);
+    if (!ticket) {
+        throw new Error('Ticket not found');
+    }
+    if (!ticket.assignedTo.includes(employeeId)) {
+        ticket.assignedTo.push(employeeId);
+        ticket.status = 'In Progress'
+        await ticket.save();
+    }
+    console.log(ticket);
+    return ticket;
+}
+
+exports.replayService = async (ticketId, status, replayBy, replayDescription) => {
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        if (!ticket) {
+            throw new Error('Ticket not found');
+        }
+
+        // Update ticket fields
+        ticket.status = status;
+        ticket.replayBy = replayBy;
+        ticket.replayDescription = replayDescription;
+        ticket.replayedTime = new Date();
+
+        // Save the updated ticket
+        await ticket.save();
+
+        return ticket;
+    } catch (error) {
+        console.error('Error in replayService:', error);
+        throw error; // Re-throw the error for controller to handle
+    }
+};
+
+
 exports.delete = async (id) => {
     return await Ticket.findByIdAndDelete(id);
 };
+
