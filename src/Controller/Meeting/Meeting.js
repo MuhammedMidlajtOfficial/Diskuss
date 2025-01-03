@@ -499,7 +499,7 @@ const deleteMeeting = async (req, res) => {
 
     const ownerName =
       ownerUpdated.username || ownerUpdated.companyName || "Unknown";
-    const notificationContent = `The meeting titled '${meetingToDelete.meetingTitle}' scheduled on ${formattedDate} , created by ${ownerName}, has been cancelled.`;
+    const notificationContent = `The meeting titled '${meetingToDelete.meetingTitle}' on ${formattedDate} Sheduled on ${meetingToDelete.startTime}  , created by ${ownerName}, has been cancelled.`;
 
     // console.log(invitedPeople);
 
@@ -653,9 +653,15 @@ const UpdateMeeting = async (req, res) => {
 
     // console.log(newInvitedPeople);
     // console.log(removedPeople);
+    const selectedDateObj = new Date(updatedData.selectedDate);
+    const day = String(selectedDateObj.getDate()).padStart(2, "0");
+    const month = String(selectedDateObj.getMonth() + 1).padStart(2, "0"); // months are 0-based
+    const year = selectedDateObj.getFullYear();
+
+    const formattedDate = `${day}/${month}/${year}`;
 
     if (newInvitedPeople.length != 0) {
-      const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${updatedData.selectedDate} , created by ${Ownername}.`;
+      const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime} , created by ${Ownername}.`;
 
       const repose = await axios.post(
         "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
@@ -672,7 +678,7 @@ const UpdateMeeting = async (req, res) => {
     }
 
     if (removedPeople.length != 0) {
-      const notificationContentRemove = `You have been removed from the meeting titled "${updatedData.meetingTitle}" scheduled on ${updatedData.selectedDate}, created by ${Ownername}.`;
+      const notificationContentRemove = `You have been removed from the meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime} , created by ${Ownername}.`;
 
       const reposed = await axios.post(
         "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
@@ -708,7 +714,7 @@ const UpdateMeeting = async (req, res) => {
             );
           }
 
-          const notificationContent = `You have been removed from the meeting titled "${updatedData.meetingTitle}" scheduled on ${updatedData.selectedDate}, created by ${Ownername}.`;
+          const notificationContent = `You have been removed from the meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime} , created by ${Ownername}.`;
 
           const notification = new Notification({
             sender: ownerId,
@@ -750,7 +756,7 @@ const UpdateMeeting = async (req, res) => {
             );
           }
 
-          const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${updatedData.selectedDate} , created by ${Ownername}.`;
+          const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime}  , created by ${Ownername}.`;
 
           const notification = new Notification({
             sender: ownerId,
