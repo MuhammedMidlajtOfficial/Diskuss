@@ -253,6 +253,7 @@ const updateMeetingStatus = async (req, res) => {
       console.log(repose.data);
     }
 
+
     const notification = new Notification({
       sender: userId,
       receiver: meetingOwner,
@@ -293,6 +294,7 @@ const updateMeetingStatus = async (req, res) => {
     //     notificationError.response?.data || notificationError.message
     //   );
     // }
+
 
     res.status(200).json({
       message: `Meeting status updated to '${status}' successfully.`,
@@ -498,8 +500,7 @@ const deleteMeeting = async (req, res) => {
 
     const ownerName =
       ownerUpdated.username || ownerUpdated.companyName || "Unknown";
-    const notificationContent = `The meeting titled '${meetingToDelete.meetingTitle}' on ${formattedDate} Sheduled on ${meetingToDelete.startTime} , created by ${ownerName}, has been cancelled.`;
-    console.log("Notificaiton Content:",notificationContent);
+    const notificationContent = `The meeting titled '${meetingToDelete.meetingTitle}' scheduled on ${formattedDate} , created by ${ownerName}, has been cancelled.`;
 
     // console.log(invitedPeople);
 
@@ -533,9 +534,7 @@ const deleteMeeting = async (req, res) => {
           } else {
             // Create notification content for the invited user
 
-            const userIds = invitedPeople.map((person) =>
-              person.user.toString()
-            );
+            const userIds = invitedPeople.map((person) => person.user.toString());
             // Send notification to admin backend
             if (invitedPeople.length != 0) {
               const repose = await axios.post(
@@ -653,18 +652,11 @@ const UpdateMeeting = async (req, res) => {
       (userId) => !newInvitedPeople.includes(userId)
     );
 
-    const selectedDateObj = new Date(updatedMeeting.selectedDate);
-    const day = String(selectedDateObj.getDate()).padStart(2, "0");
-    const month = String(selectedDateObj.getMonth() + 1).padStart(2, "0"); // months are 0-based
-    const year = selectedDateObj.getFullYear();
-
-    const formattedDate = `${day}/${month}/${year}`;
     // console.log(newInvitedPeople);
     // console.log(removedPeople);
 
     if (newInvitedPeople.length != 0) {
-      const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime} , created by ${Ownername}.`;
-      console.log("Notificaiton Content:", notificationContent);
+      const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${updatedData.selectedDate} , created by ${Ownername}.`;
 
       const repose = await axios.post(
         "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
