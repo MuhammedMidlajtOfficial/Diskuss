@@ -2,7 +2,7 @@
 
 const express = require("express");
 const router = express.Router();
-const {CreateMeeting, getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting,updateMeetingStatus} = require("../../Controller/EmployeMetting/EmployeMeeting");
+const {CreateMeeting, getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting,updateMeetingStatus} = require("../../Controller/Meeting/Meeting");
 
 // Route for creating a meeting
 router.post("/Create-Meeting", CreateMeeting); // This should handle POST requests
