@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const otpGenerator = require("otp-generator")
 const mongoose = require('mongoose');
-
-const { otpCollection, individualUserCollection } = require('../../DBConfig');
+const  otpCollection = require('../../models/otpModule');
+const {individualUserCollection } = require('../../DBConfig');
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
 const Contact  = require('../../models/contact.individual.model');
@@ -52,7 +52,6 @@ module.exports.postEnterpriseLogin = async (req, res) => {
     const payload = { id: user._id, email: user.email };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-    req.session.user = user;
 
     return res.status(200).json({ message: 'Login successful', emp, accessToken, refreshToken, user });
     
@@ -64,10 +63,10 @@ module.exports.postEnterpriseLogin = async (req, res) => {
 
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
-    const { companyName, industryType, phnNumber, email, otp, referralCode } = req.body
+    const {username, companyName, industryType, phnNumber, email, otp, referralCode } = req.body
     const passwordRaw = req.body.password
 
-    if (!companyName || !email || !industryType || !passwordRaw || !otp || !phnNumber) {
+    if (!username || !companyName || !email || !industryType || !passwordRaw || !otp || !phnNumber) {
       return res.status(400).json({message:"All fields are required"}); // Correct response handling
     }
     // Check if email exists
@@ -92,6 +91,7 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
 
     const newUser = await enterpriseUser.create({
+      username,
       companyName,
       industryType,
       email,
@@ -100,6 +100,11 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
       referralCodeUsed : referralCode || ""
     });
     console.log(newUser);
+
+     // Set jwt token
+     const payload = { id: newUser._id, email: newUser.email };
+     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
     
     if (newUser) {
       const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });
@@ -115,10 +120,10 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
         );
         if (contact.modifiedCount > 0) {
           console.log("Contact updated successfully, Profile updated successfully");
-          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created", user: newUser });
+          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created", user: newUser, accessToken, refreshToken });
         } else {
           console.log(" Contact not updated , Profile updated successfully");
-          return res.status(201).json({ Contact_message: "Contact not updated ", message: "User created", user: newUser });
+          return res.status(201).json({ Contact_message: "Contact not updated ", message: "User created", user: newUser, accessToken, refreshToken });
         }
       } else {
         console.log("Error: Contact not found.");
@@ -191,7 +196,7 @@ module.exports.OtpValidate = async (req, res ) => {
 
 module.exports.sendForgotPasswordOTP = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email,phnNumber } = req.body;
     const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
     if(!isEmailExist){
       return res.status(401).json({ message: "Email not exist" })
@@ -208,7 +213,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
-    const otpPayload = { email, otp };
+    const otpPayload = { email, otp,phnNumber };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
@@ -267,7 +272,7 @@ module.exports.sendOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
-    const otpPayload = { email, otp };
+    const otpPayload = { email,phnNumber, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
@@ -325,6 +330,7 @@ module.exports.updateProfile = async (req, res) => {
   try {
     const {
       userId,
+      username,
       companyName,
       industryType,
       image,
@@ -347,12 +353,24 @@ module.exports.updateProfile = async (req, res) => {
     let isEnterpriseExist;
     let isEnterpriseEmployeeExist;
 
-    if(phnNumber){
-      // Check if phone number exists in any of the collections
-      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
-      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
-      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+    if (phnNumber) {
+      // Check if phone number exists in any of the collections, excluding the current user
+      isIndividualExist = await individualUserCollection.findOne({
+        phnNumber,
+        _id: { $ne: userId }, // Exclude the current user by _id
+      }).exec();
+    
+      isEnterpriseExist = await enterpriseUser.findOne({
+        phnNumber,
+        _id: { $ne: userId }, // Exclude the current user by _id
+      }).exec();
+    
+      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({
+        phnNumber,
+        _id: { $ne: userId }, // Exclude the current user by _id
+      }).exec();
     }
+    
 
     if (isIndividualExist) {
       return res.status(409).json({ message: "This phone number is already associated with an individual user" });
@@ -385,6 +403,7 @@ module.exports.updateProfile = async (req, res) => {
       { _id: userId },
       {
         $set: {
+          username,
           companyName,
           industryType,
           image: imageUrl,

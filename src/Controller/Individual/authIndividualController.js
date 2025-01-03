@@ -1,6 +1,6 @@
-  const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { otpCollection } = require('../../DBConfig');
+const  otpCollection  = require('../../models/otpModule');
 const enterpriseUser = require('../../models/enterpriseUser');
 const { individualUserCollection } = require('../../DBConfig');
 const EnterpriseEmployee = require('../../models/enterpriseEmploye.model');
@@ -31,9 +31,8 @@ module.exports.postIndividualLogin = async (req, res) => {
     }
     // Set jwt token
     const payload = { id: user._id, email: user.email };
-    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
-    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-    req.session.user = user
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
 
     return res.status(200).json({ message: 'Login successful', accessToken, refreshToken,user });
   } catch (error) {
@@ -83,10 +82,14 @@ module.exports.postIndividualSignup = async (req, res) => {
     });
     console.log(newUser);
 
+    // Set jwt token
+    const payload = { id: newUser._id, email: newUser.email };
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
+
     if (newUser) {
       await referralService.registerInviteeByReferralCode(referralCode, newUser._id);
       // console.log(referralUpdate);
-
 
       const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });
       if (existingContact) {
@@ -102,10 +105,10 @@ module.exports.postIndividualSignup = async (req, res) => {
         );
         if (contact.modifiedCount > 0) {
           console.log("Contact updated successfully, User created successfully");
-          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created successfully.", user: newUser });
+          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created successfully.", user: newUser, accessToken, refreshToken });
         } else {
           console.log("Contact not updated , User created successfully");
-          return res.status(201).json({ Contact_message: "Contact update failed.", message: "User created successfully.", user: newUser});
+          return res.status(201).json({ Contact_message: "Contact update failed.", message: "User created successfully.", user: newUser, accessToken, refreshToken});
         }
       } else {
         console.log("Error: Contact not found.");
@@ -161,7 +164,7 @@ module.exports.OtpValidate = async (req, res ) => {
   try {
     const { email, otp } = req.body
 
-    if (!email || !password) {
+    if (!email || !otp) {
       return res.status(400).json({ message: "Both email and new password are required" });
     }
 
@@ -183,13 +186,13 @@ module.exports.OtpValidate = async (req, res ) => {
 
 module.exports.sendForgotPasswordOTP = async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+    const {email, phnNumber } = req.body;
+    if (!phnNumber || !email) {
+      return res.status(400).json({ message: "Phone Number and email is required" });
     }
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
-    if(!isEmailExist){
-      return res.status(401).json({ message: "No account found with the provided email address" })
+    const isphnNumberExist = await individualUserCollection.findOne({ phnNumber: phnNumber }).exec();
+    if(!isphnNumberExist){
+      return res.status(401).json({ message: "No account found with the provided phnNumber address" })
     }
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
@@ -203,7 +206,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
-    const otpPayload = { email, otp };
+    const otpPayload = { phnNumber,email, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
@@ -274,7 +277,7 @@ module.exports.sendOTP = async (req, res) => {
       result = await otpCollection.findOne({ otp: otp });
     }
 
-    const otpPayload = { email, otp };
+    const otpPayload = { email,phnNumber, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,

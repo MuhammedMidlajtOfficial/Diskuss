@@ -1,13 +1,11 @@
-const {Referral} = require('../../models/referral.model');
+const {Referral, WithdrawalRequest} = require('../../models/referral.model');
 const EnterpriseUser = require('../../models/enterpriseUser');
 const { individualUserCollection: IndividualUser } = require('../../DBConfig');
 const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
 const {convertToMonthlyCounts} = require('../../util/HelperFunctions');
 const { ObjectId } = require('mongodb');
 const { checkUserType } = require('../../util/HelperFunctions');
-const Settings = require('../../models/Settings');
-
-
+const Settings = require('../../models/settingModel');
 
 // Send Invite
 const sendInvite = async (referrerId, inviteePhoneNo) => {
@@ -60,7 +58,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo) => {
 
     if (!individualUser && !enterpriseUser) {
         throw new Error('Invalid referral code');
-    }
+}
     else if (individualUser) {
         referral = await Referral.findOne({ referrer: individualUser._id, inviteePhoneNo, status: 'Invited' }).exec(); 
         if (!referral) {
@@ -275,8 +273,8 @@ const findMonthlyReferralsCounts = async (year) => {
         console.error("Error fetching monthly referrals:", error);
         throw error; // Re-throw the error for higher-level handling if needed
     }
-}
-;
+};
+
 const createWithdrawal = async (userId, amount) => {
     // console.log("userId : ", userId);
     const userType = (await checkUserType(userId)).userType;
@@ -307,8 +305,6 @@ const createWithdrawal = async (userId, amount) => {
     return { coinsWithdrawn: coinsWithdrawn + amount };
 };
 
-
-
 module.exports = {
     sendInvite,
     registerInvitee,
@@ -317,9 +313,10 @@ module.exports = {
     checkReferralCode,
     registerInviteeByReferralCode,
     findAllReferrals,
-    createWithdrawal,
     findMonthlyReferralsCounts,
-    tester
+    createWithdrawalRequest,
+    createWithdrawal,
+
 }
 
 // const {Referral} = require('../../models/referral.model');

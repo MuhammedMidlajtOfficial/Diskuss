@@ -42,6 +42,11 @@ const createProfile = async (req, res) => {
     return res.status(400).json({ message: 'Invalid user ID' });
   }
 
+
+  if(!isValidUserId(userId)){
+    return res.status(400).json({ message: 'Invalid user ID' });
+  }
+
   const newProfile = new Profile({
     userId,
     businessName,

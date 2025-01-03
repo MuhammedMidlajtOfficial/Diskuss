@@ -1,38 +1,43 @@
-const { string } = require('joi')
-const mongoose = require('mongoose')
+const { string } = require("joi");
+const mongoose = require("mongoose");
 
-const enterpriseUserSchema = new mongoose.Schema({
-    companyName : {
-        type:String,
-        required:true
-    }, 
+const enterpriseUserSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: true,
+    },
+    companyName: {
+      type: String,
+      required: true,
+    },
     industryType: {
-        type:String,
-        required:true
-    }, 
+      type: String,
+      required: true,
+    },
     email: {
-        type:String,
-        required:true
-    }, 
-    password : {
-        type:String,
-        required:true
+      type: String,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
     },
     isSubscribed: {
-        type: Boolean,
-        default: false,
-      },
+      type: Boolean,
+      default: false,
+    },
     cardNo: {
-        type: Number,
-        default : 0
+      type: Number,
+      default: 0,
     },
     image: {
-        type:String,
-        default : ''
+      type: String,
+      default: "",
     },
     phnNumber: {
-      type:String,
-      required:true,
+      type: String,
+      required: true,
     },
     referralCode: {
       type: String,
@@ -43,47 +48,51 @@ const enterpriseUserSchema = new mongoose.Schema({
       default: null,
     }, // Referral code used by the user
     aboutUs: {
-        type:String,
-        default : ''
+      type: String,
+      default: "",
     },
     website: {
-        type:String,
-        default : ''
+      type: String,
+      default: "",
     },
     address: {
-        type:String,
-        default : ''
+      type: String,
+      default: "",
     },
-    status:{
-      type:String,
-      default : 'active'
+    status: {
+      type: String,
+      default: "active",
     },
     socialMedia: {
       whatsappNo: {
-        type:String,
-        default : ''
+        type: String,
+        default: "",
       },
       facebookLink: {
-        type:String,
-        default : ''
+        type: String,
+        default: "",
       },
       instagramLink: {
-        type:String,
-        default : ''
+        type: String,
+        default: "",
       },
       twitterLink: {
-        type:String,
-        default : ''
+        type: String,
+        default: "",
       },
     },
-    empCards:[ {
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'EnterpriseEmployeeCard' 
-    } ],
-    empId :[ {
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'EnterpriseEmployee' 
-    } ],
+    empCards: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "EnterpriseEmployeeCard",
+      },
+    ],
+    empId: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "EnterpriseEmployee",
+      },
+    ],
     meetings: [
       {
         type: String,
@@ -91,32 +100,31 @@ const enterpriseUserSchema = new mongoose.Schema({
         required: false,
       },
     ],
-    theme:{
-      type:String,
-      default:'01',
-      required:true
-    }
-},{ timestamps:true })
-
+  },
+  { timestamps: true }
+);
 
 // module.exports.enterpriseUserCollection = mongoose.model('EnterpriseUser',enterpriseUserSchema)
-module.exports = mongoose.model('EnterpriseUser',enterpriseUserSchema)
-
+module.exports = mongoose.model("EnterpriseUser", enterpriseUserSchema);
 
 // Generate a unique referral code using crypto or any other method
-enterpriseUserSchema.pre('save', async function(next) {
+enterpriseUserSchema.pre("save", async function (next) {
   if (!this.referralCode) {
     const generateReferralCode = () => {
-      return crypto.randomBytes(4).toString('hex').toUpperCase(); // Generate 12 character long referral code
+      return crypto.randomBytes(4).toString("hex").toUpperCase(); // Generate 12 character long referral code
     };
 
     let referralCode = generateReferralCode();
-    
+
     // Ensure the referral code is unique
     let isUnique = false;
     while (!isUnique) {
-      const existingUser = await mongoose.model('User').findOne({ 'referralCode': referralCode });
-      const existingEnterpriseUser = await mongoose.model('EnterpriseUser').findOne({ 'referralCode': referralCode });
+      const existingUser = await mongoose
+        .model("User")
+        .findOne({ referralCode: referralCode });
+      const existingEnterpriseUser = await mongoose
+        .model("EnterpriseUser")
+        .findOne({ referralCode: referralCode });
       if (!existingUser && !existingEnterpriseUser) {
         isUnique = true;
       } else {
@@ -129,4 +137,3 @@ enterpriseUserSchema.pre('save', async function(next) {
 
   next();
 });
-

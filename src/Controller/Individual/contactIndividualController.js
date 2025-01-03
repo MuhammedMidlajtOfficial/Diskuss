@@ -53,6 +53,7 @@ const createContact = async (req, res) => {
             phnNumber,
             email,
             website,
+            location,
             businessCategory,
             scheduled,
             scheduledTime,
@@ -98,6 +99,7 @@ const createContact = async (req, res) => {
                 email,
                 website,
                 businessCategory,
+                location,
                 scheduled,
                 scheduledTime,
                 notes,
@@ -153,6 +155,7 @@ const updateContact = async (req, res) => {
             phnNumber,
             email,
             website,
+            location,
             businessCategory,
             scheduled,
             scheduledTime,
@@ -202,6 +205,7 @@ const updateContact = async (req, res) => {
                     phnNumber,
                     email,
                     website,
+                    location,
                     businessCategory,
                     scheduled,
                     scheduledTime,
@@ -324,16 +328,60 @@ const getContactsByOwnerUserId = async (req, res) => {
         const { user_id } = req.params;
         const contacts = await Contact.find({ contactOwnerId: user_id }).exec();
 
+        // If no contacts are found, return a 404 response (optional, uncomment if needed)
         // if (!contacts || contacts.length === 0) {
         //     return res.status(404).json({ message: 'No Contacts found for this user' });
         // }
 
-        return res.status(200).json(contacts);
+        // Fetch user image for each contact's userId
+        const enrichedContacts = await Promise.all(
+            contacts.map(async (contact) => {
+                // Clone the contact object to avoid mutating the original
+                const enrichedContact = { ...contact._doc };
+
+                // Iterate over all contacts in the 'contacts' array
+                enrichedContact.contacts = await Promise.all(
+                    contact.contacts.map(async (individualContact) => {
+                        // Fetch image from one of the collections
+                        let userWithImage = null;
+
+                        if (individualContact.userId) {
+                            userWithImage =
+                                (await individualUserCollection.findById(individualContact.userId, "image")) ||
+                                (await enterpriseUser.findById(individualContact.userId, "image")) ||
+                                (await enterpriseEmployeModel.findById(individualContact.userId, "image"));
+                        }
+
+                        // Add the image (if found) to the individual contact
+                        return {
+                            name: individualContact.name,
+                            companyName: individualContact.companyName,
+                            designation: individualContact.designation,
+                            phnNumber: individualContact.phnNumber,
+                            email: individualContact.email,
+                            website: individualContact.website,
+                            businessCategory: individualContact.businessCategory,
+                            scheduled: individualContact.scheduled,
+                            scheduledTime: individualContact.scheduledTime,
+                            notes: individualContact.notes,
+                            userId: individualContact.userId,
+                            isDiskussUser: individualContact.isDiskussUser,
+                            image: userWithImage?.image || null, // Include the image or null if not found
+                        };
+                    })
+                );
+
+                return enrichedContact;
+            })
+        );
+
+        return res.status(200).json(enrichedContacts);
     } catch (error) {
-        console.error("Error fetching Contacts by user ID:", error);
+        console.error("Error fetching Contacts with images by user ID:", error);
         return res.status(500).json({ error: error.message });
     }
 };
+
 
 /**
  * Search Contacts by Number

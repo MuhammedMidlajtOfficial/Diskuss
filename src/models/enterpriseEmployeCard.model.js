@@ -61,7 +61,7 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
     },
     website:  {
       type:String,
-      required : true,
+      // required : true,
       default:''
     },
     theme:{
@@ -73,7 +73,23 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
       type:String,
       max:5,
       required:true
-    } ]
+    } ],
+      whatsappNo: {
+        type: String,
+        default: "",
+      },
+      facebookLink: {
+        type: String,
+        default: "",
+      },
+      instagramLink: {
+        type: String,
+        default: "",
+      },
+      twitterLink: {
+        type: String,
+        default: "",
+      },
 });
 
 module.exports = mongoose.model("EnterpriseEmployeeCard",EnterpriseEmployeeCardSchema );

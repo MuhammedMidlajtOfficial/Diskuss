@@ -76,6 +76,8 @@ const getMonthlyReferralsCounts = async (req, res) => {
     }
 };
 
+
+
 const createWithdrawal = async (req, res) => {
     try {
         // console.log("req.body : ", req.body)
@@ -83,7 +85,8 @@ const createWithdrawal = async (req, res) => {
         // const withdrawal = await referralService.createWithdrawal(userId, amount);
         const withdrawalData = await referralService.createWithdrawal(userId, amount);
         // console.log("withdrawal : ", withdrawalData)
-        return res.status(201).json({ message: "Withdrawal request created", withdrawal });
+
+        return res.status(201).json({ message: "Withdrawal request created", withdrawalData });
     } catch (e) {
         // handle errors here
         if (e.message === "Insufficient coins for withdrawal") {
@@ -106,6 +109,7 @@ module.exports = {
     checkReferralCode,
     getAllReferrals,
     getMonthlyReferralsCounts,
+    createWithdrawalRequest,
     createWithdrawal
 }
 
