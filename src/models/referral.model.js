@@ -36,6 +36,15 @@ const rewardSchema = new mongoose.Schema({
 //   next();
 // });
 
+// Withdrwal Request Schema
+const WithdrawalRequestSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user requesting withdrawal
+    amount: { type: mongoose.Types.Decimal128, required: true }, // Amount requested for withdrawal
+    status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, // Status of the withdrawal request
+    transactionId: { type: String }, // Transaction ID of the withdrawal
+    createdAt: { type: Date, default: Date.now } // Timestamp of when the withdrawal request was created
+  });
+
 const IncentiveSchema = new mongoose.Schema({
     amount: { type: mongoose.Types.Decimal128, required: true }, // Amount of incentive earned
     userId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Reference to the user who earned the incentive
@@ -67,4 +76,6 @@ const ReferralLevelSchema = new mongoose.Schema({
     Action: mongoose.model('Action', ActionSchema),
     Incentive: mongoose.model('Incentive', IncentiveSchema),
     Referral: mongoose.model('Referral', ReferralSchema),
+    WithdrawalRequest: mongoose.model('WithdrawalRequest', WithdrawalRequestSchema)
 };
+  
