@@ -76,6 +76,27 @@ const getMonthlyReferralsCounts = async (req, res) => {
     }
 };
 
+const createWithdrawal = async (req, res) => {
+    try {
+        // console.log("req.body : ", req.body)
+        const { userId, amount } = req.body;
+        // const withdrawal = await referralService.createWithdrawal(userId, amount);
+        const withdrawalData = await referralService.createWithdrawal(userId, amount);
+        // console.log("withdrawal : ", withdrawalData)
+        return res.status(201).json({ message: "Withdrawal request created", withdrawal });
+    } catch (e) {
+        // handle errors here
+        if (e.message === "Insufficient coins for withdrawal") {
+            return res.status(400).json({ error: e.message });
+        } else if (e.message === "User not found") {
+            return res.status(404).json({ error: e.message });
+        } else if (e.message === "Invalid withdrawal amount") {
+            return res.status(400).json({ error: e.message });
+        }
+            return res.status(500).json({ error: e.message });
+    }
+};
+
 
 module.exports = {
     sendInvite,
@@ -84,8 +105,8 @@ module.exports = {
     getReferralDetails,
     checkReferralCode,
     getAllReferrals,
-    getMonthlyReferralsCounts
-
+    getMonthlyReferralsCounts,
+    createWithdrawal
 }
 
 // // controllers/referralController.js
