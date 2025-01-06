@@ -1,0 +1,5 @@
+[2025-01-06T06:55:45.702Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T06:58:16.703Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T06:58:27.819Z] [32minfo[39m: GET /api/v1 200 - 6.148 ms
+[2025-01-06T06:58:41.150Z] [31merror[39m: GET /admin/supportticketsystem/viewandrespondticket/ 404 - 2.542 ms - message: -
+[2025-01-06T06:58:43.937Z] [31merror[39m: GET /api/v1a 404 - 0.770 ms - message: -

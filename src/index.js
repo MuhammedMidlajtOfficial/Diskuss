@@ -15,12 +15,20 @@ const messageController = require('./Controller/Message/messageController');
 const socketControllers = require('./Controller/Socket.io/NotificationSocketIo.js');
 const notificationSocketController = require('./Controller/Socket.io/NotificationSocketIo');
 require('./services/Cron/cron.service.js');
+const logger = require('./config/logger.js');
+const morgan = require('./config/morgan.js');
 
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
 // const authEnterpriseRouter = require('./Routes/Enterprise/authEnterpriseRouter.js')
 // const profileRoutes = require('./Routes/Profile/profileRoutes.js')
 
 require('dotenv').config();
+
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan.successHandler);
+  app.use(morgan.errorHandler);
+}
+
 
 app.use(session({
   secret: uuidv4(),
@@ -64,4 +72,5 @@ const port = process.env.PORT || "3000"
 
 server.listen(port, () => {
   console.log(`Server connected on http://localhost:${port}`);
+  logger.info(`Server connected on http://localhost:${port}`);
 });
