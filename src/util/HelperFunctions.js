@@ -1,7 +1,6 @@
 const EnterpriseUser = require('../models/enterpriseUser');
 const { individualUserCollection: IndividualUser } = require('../DBConfig');
 
-
 const  convertToMonthlyCounts = (year, data) => {
     year = parseInt(year);
     const months = [];
