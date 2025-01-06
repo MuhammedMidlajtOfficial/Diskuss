@@ -315,7 +315,6 @@ module.exports = {
     findAllReferrals,
     findMonthlyReferralsCounts,
     createWithdrawal,
-
 }
 
 // const {Referral} = require('../../models/referral.model');
