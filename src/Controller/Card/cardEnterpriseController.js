@@ -5,10 +5,8 @@ const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
 const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
 const mailSender = require("../../util/mailSender");
 const bcrypt = require("bcrypt");
-const {
-  uploadImageToS3,
-  deleteImageFromS3,
-} = require("../../services/AWS/s3Bucket");
+const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
+
 module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -32,9 +30,7 @@ module.exports.getCards = async (req, res) => {
 };
 
 module.exports.createCard = async (req, res) => {
-  console.log(req.body);
   try {
-    console.log(req.body);
     const {
       userId,
       businessName,
@@ -58,13 +54,12 @@ module.exports.createCard = async (req, res) => {
       twitterLink,
     } = req.body;
     const passwordRaw = "123";
-    // console.log('create enterprise card- image',image);
+    
     // Check if user email exists
     const isEmailExist = await enterpriseEmployeModel.findOne({ email }).exec();
     const isEmailExistInEnterpriseUser = await enterpriseUser
       .findOne({ email })
       .exec();
-    // console.log('isEmailExist || isEmailExistInEnterpriseUser--',isEmailExist );
     if (isEmailExist) {
       return res.status(409).json({
         message:
@@ -72,7 +67,6 @@ module.exports.createCard = async (req, res) => {
       });
     }
 
-    // console.log('isEmailExistInEnterpriseUser--',isEmailExistInEnterpriseUser);
     // Check if Enterprise ID exists
     const isEnterpriseIDExist = await enterpriseUser
       .findOne({ _id: userId })
@@ -174,15 +168,23 @@ module.exports.createCard = async (req, res) => {
       });
       const result = await newCard.save();
       if (result) {
-        await enterpriseUser.updateOne(
+        const enterpriseUpdate = await enterpriseUser.updateOne(
           { _id: userId },
           {
             $push: {
-              empCards: result._id,
-              empId: newUser._id,
+              empCards: {
+                empCardId: result._id,
+                status: 'active', // Default value
+              },
+              empIds: {
+                empId: newUser._id,
+                status: 'active', // Default value
+              },
             },
           }
         );
+        console.log('enterpriseUpdate-',enterpriseUpdate);
+
         await enterpriseEmployeModel.updateOne(
           { _id: newUser._id },
           { $inc: { cardNo: 1 } }

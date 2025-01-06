@@ -7,5 +7,6 @@ router.get("/:id", cardController.getCards);
 router.post("/", cardController.createCard);
 router.patch("/", cardController.updateCard);
 router.delete("/", cardController.deleteCard);
+router.patch("/disable", cardController.disableCard);
 
 module.exports = router;
