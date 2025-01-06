@@ -322,3 +322,91 @@ module.exports.deleteCard = async (cardId) => {
     throw error;
   }
 };
+
+module.exports.disableCard = async (cardId) => {
+  try {
+    const card = await Card.findOne({ _id: cardId });
+    const employeeCard = await EnterpriseEmployeeCard.findOne({ _id: cardId });
+    if (!card && !employeeCard) {
+      throw new Error("Card not found");
+    }
+    let userId;
+    let enterpriseId;
+
+    if (employeeCard) {
+      userId = employeeCard.userId;
+      enterpriseId = employeeCard.enterpriseId;
+    } else {
+      userId = card.userId;
+    }
+
+    const isIndividualUser = await individualUserCollection.findOne({ _id: userId });
+    const isEnterpriseUser = await enterpriseUser.findOne({ _id: userId });
+    const isEnterpriseEmployee = await enterpriseEmployee.findOne({ _id: userId });
+
+    if (!isIndividualUser && !isEnterpriseUser && !isEnterpriseEmployee) {
+      throw new Error("Invalid user ID associated with the card");
+    }
+
+    if (isEnterpriseEmployee) {
+      // Update the status of the employee card to "inactive"
+      await EnterpriseEmployeeCard.updateOne(
+        { _id: cardId },
+        { $set: { status: 'inactive' } }
+      );
+    
+      // Update the status of the employee in EnterpriseEmployee model to "inactive"
+      const employeeExists = await enterpriseEmployee.updateOne(
+        { _id: userId },
+        { $set: { status: 'inactive' } }
+      );
+      if (!employeeExists.modifiedCount) {
+        throw new Error("Employee not found in EnterpriseEmployee model");
+      }
+    
+      // Update the status of the empCards and empIds in the EnterpriseUser model to "inactive"
+      await enterpriseUser.updateOne(
+        { _id: enterpriseId }, // Filter to find the correct enterprise user
+        {
+          $set: {
+            "empCards.$[card].status": "inactive", // Set the status of a specific empCard to "inactive"
+            "empIds.$[emp].status": "inactive", // Set the status of a specific empId to "inactive"
+          },
+        },
+        {
+          arrayFilters: [
+            { "card.empCardId": cardId }, // Condition to match the empCard with the given cardId
+            { "emp.empId": userId }, // Condition to match the empId with the given userId
+          ],
+        }
+      );
+    
+      return { message: "Employee card disabled successfully" };
+    }
+    
+
+    if (card) {
+      await Card.deleteOne({ _id: cardId });
+
+      if (isIndividualUser) {
+        await individualUserCollection.updateOne(
+          { _id: userId },
+          { $inc: { cardNo: -1 } }
+        );
+      }
+
+      if (isEnterpriseUser) {
+        await enterpriseUser.updateOne(
+          { _id: userId },
+          { $inc: { cardNo: -1 } }
+        );
+      }
+
+      return { message: "Card deleted successfully" };
+    }
+
+    throw new Error("Card deletion failed");
+  } catch (error) {
+    throw error;
+  }
+};

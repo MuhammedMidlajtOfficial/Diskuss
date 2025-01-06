@@ -80,6 +80,20 @@ module.exports.deleteCard = async (req, res) => {
   }
 };
 
+module.exports.disableCard = async (req, res) => {
+  const { cardId } = req.body;
+
+  try {
+    const result = await cardService.disableCard(cardId);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error deleting card:", error.message);
+    res.status(500).json({
+      message: error.message || "Failed to delete card. Please try again later.",
+    });
+  }
+};
+
 
 async function isValidUserId(userId) {
   try {
