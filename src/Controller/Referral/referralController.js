@@ -109,7 +109,6 @@ module.exports = {
     checkReferralCode,
     getAllReferrals,
     getMonthlyReferralsCounts,
-    createWithdrawalRequest,
     createWithdrawal
 }
 
