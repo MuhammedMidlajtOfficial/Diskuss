@@ -314,7 +314,6 @@ module.exports = {
     registerInviteeByReferralCode,
     findAllReferrals,
     findMonthlyReferralsCounts,
-    createWithdrawalRequest,
     createWithdrawal,
 
 }
