@@ -381,10 +381,10 @@ async function sendResponseTicketNotification(email, usermail, ticketNumber, tit
     try {
       const mailResponse = await mailSender(
         email,
-        "Digital Card Admin - New Ticket Assigned",
+        `Digital Card Admin - Ticket ${ticketNumber} Respose`,
         `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; color: #333; border: 1px solid #e0e0e0; border-radius: 10px;">
-          <h2 style="color: #333; text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 20px;">New Ticket Assigned - Digital Card Admin</h2>
+          <h2 style="color: #333; text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 20px;">Ticket Response - Digital Card Admin</h2>
           
           <div style="background-color: #f4f8fc; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <h3 style="font-size: 20px; color: #333; font-weight: 600; margin-bottom: 15px;">Ticket Information</h3>
