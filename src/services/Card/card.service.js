@@ -16,7 +16,7 @@ module.exports.getCard = async (userId) => {
   // Check user existence in collections
   const [isIndividualUserExist, isEnterpriseUserExist, isEmployeeUserExist] = await Promise.all([
     individualUserCollection.findOne({ _id: userId }).lean(),
-    enterpriseUser.findOne({ _id: userId }).populate("empCards").lean(),
+    enterpriseUser.findOne({ _id: userId }).populate("empCards.empCardId").lean(),
     enterpriseEmployee.findOne({ _id: userId }).lean(),
   ]);
 
@@ -28,8 +28,13 @@ module.exports.getCard = async (userId) => {
 
   if (isEnterpriseUserExist) {
     // Fetch enterprise user cards
-    const enterpriseCards = await Card.find({ userId });
-    cards = [...enterpriseCards, ...isEnterpriseUserExist.empCards];
+    const enterpriseCardsFromEmpCards = isEnterpriseUserExist.empCards
+      .filter(empCard => empCard.status === "active")
+      .map(empCard => empCard.empCardId); // Extract empCardId
+
+    const enterpriseCardsFromCardCollection = await Card.find({ userId });
+
+    cards = [...enterpriseCardsFromCardCollection, ...enterpriseCardsFromEmpCards];
   } else if (isIndividualUserExist) {
     // Fetch individual user cards
     cards = await Card.find({ userId });
