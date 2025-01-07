@@ -66,22 +66,22 @@ const createContact = async (req, res) => {
         }
         console.log('contactOwnerId--', contactOwnerId);
 
-        const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
-        const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
-        const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
+        const existIndividualUserNumber = await individualUserCollection.findOne({ phnNumber });
+        const existEnterpriseUserNumber = await enterpriseUser.findOne({ phnNumber });
+        const existEnterpriseEmployeNumber = await enterpriseEmployeModel.findOne({ phnNumber });
 
         let userId = null;
         let isDiskussUser = false;
 
         // Determine the user ID based on the type of user
-        if (existIndividualUser) {
-            userId = existIndividualUser._id;
+        if (existIndividualUserNumber) {
+            userId = existIndividualUserNumber._id;
             isDiskussUser = true;
-        } else if (existEnterpriseUser) {
-            userId = existEnterpriseUser._id;
+        } else if (existEnterpriseUserNumber) {
+            userId = existEnterpriseUserNumber._id;
             isDiskussUser = true;
-        } else if (existEnterpriseEmploye) {
-            userId = existEnterpriseEmploye._id;
+        } else if (existEnterpriseEmployeNumber) {
+            userId = existEnterpriseEmployeNumber._id;
             isDiskussUser = true;
         }
 
@@ -111,6 +111,10 @@ const createContact = async (req, res) => {
         // Create the new contact
         newContact = await Contact.create(contactDetails);
 
+        const existIndividualUser = await individualUserCollection.findOne({ _id : contactOwnerId });
+        const existEnterpriseUser = await enterpriseUser.findOne({ _id : contactOwnerId });
+        const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ _id : contactOwnerId });
+
         // Depending on the user type, add the contact to the correct collection
         if (existIndividualUser) {
             // Add the contact to individualUserCollection
@@ -130,6 +134,23 @@ const createContact = async (req, res) => {
                 { _id: contactOwnerId },
                 { $push: { contacts: newContact._id } }
             );
+
+            
+            const enterpriseUserId = await enterpriseUser.findOne({ 'empIds.empId': contactOwnerId }).select('_id')
+            if(!enterpriseUserId){
+                return res.status(400).json({ message: "Enterprise user not found",})
+            }
+            contactDetails.contactOwnerId = enterpriseUserId._id
+            const newContactOfEnterprise = await Contact.create(contactDetails)
+            if(newContactOfEnterprise){
+                await enterpriseUser.updateOne(
+                    { _id: enterpriseUserId._id },
+                    { $push: { contacts: newContactOfEnterprise?._id } }
+                );
+                console.log('Updated contact owner with new contact ID:', newContactOfEnterprise._id);
+            }else{
+                console.log('Updated contact failed');
+            }
         }
 
         return res.status(201).json({ message: "Contact created successfully", contact: newContact });
