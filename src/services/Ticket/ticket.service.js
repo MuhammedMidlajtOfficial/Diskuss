@@ -324,6 +324,8 @@ exports.replayService = async (ticketId, status, replayBy, replayDescription) =>
         const createdUser = await populateCreatedBy(ticket.createdBy)
         const email = createdUser.email
         const usermail = createdUser.email
+        const support = await configModel.findOne({ "config.title": "Support Mail" })
+        const supportMail = support?.config?.email
 
         const createdAt = new Date(ticket.createdAt);
         // Format the date
@@ -345,6 +347,7 @@ exports.replayService = async (ticketId, status, replayBy, replayDescription) =>
             ticket.description, 
             formattedDate,
             ticket.replayDescription, 
+            supportMail
         )
 
         return ticket;
@@ -377,7 +380,7 @@ const populateCreatedBy = async (createdById) => {
     return user || null; // Return the user or null if not found
 };
 
-async function sendResponseTicketNotification(email, usermail, ticketNumber, title, description, createdAt, replayDescription) {
+async function sendResponseTicketNotification(email, usermail, ticketNumber, title, description, createdAt, replayDescription, supportMail) {
     try {
       const mailResponse = await mailSender(
         email,
@@ -403,7 +406,7 @@ async function sendResponseTicketNotification(email, usermail, ticketNumber, tit
           </div>
   
           <div style="background-color: #f7f7f7; padding: 15px; margin-top: 30px; border-radius: 8px; text-align: center;">
-            <p style="font-size: 14px; color: #777;">If the ticket is not resolved, please contact to our support team</p>
+            <p style="font-size: 14px; color: #777;">If the ticket is not resolved, please contact to our support team ${supportMail ? supportMail : ""}</p>
           </div>
         </div>
   
