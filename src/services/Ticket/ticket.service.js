@@ -299,6 +299,7 @@ exports.addUserToAssigned= async (ticketId, employeeId) => {
         ticket.title, 
         ticket.description, 
         formattedDate,
+        assingedUser.username
     )
     return ticket;
 }
@@ -349,26 +350,26 @@ const populateCreatedBy = async (createdById) => {
     return user || null; // Return the user or null if not found
 };
 
-async function sendAssignTicketNotification(email, usermail, ticketNumber, title, description, createdAt, assignedAt) {
+async function sendAssignTicketNotification(email, usermail, ticketNumber, title, description, createdAt, assignedTo) {
     try {
       const mailResponse = await mailSender(
         email,
         "Digital Card Admin - New Ticket Assigned",
         `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; color: #333; border: 1px solid #e0e0e0; border-radius: 10px;">
-          <h2 style="color: #333; text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 20px;">New Ticket Raised - Digital Card Admin</h2>
+          <h2 style="color: #333; text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 20px;">New Ticket Assigned - Digital Card Admin</h2>
           
           <div style="background-color: #f4f8fc; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <h3 style="font-size: 20px; color: #333; font-weight: 600; margin-bottom: 15px;">Ticket Information</h3>
-            <p style="font-size: 16px; color: #555; margin: 10px 0;">A new ticket has been raised by the user.</p>
+            <p style="font-size: 16px; color: #555; margin: 10px 0;">A new ticket has been assigned by the admin.</p>
   
             <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-top: 20px;">
               <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Ticket Number:</strong> <span style="font-weight: 600;">${ticketNumber}</span></p>
               <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Title:</strong> <span style="font-weight: 600;">${title}</span></p>
               <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Description:</strong> <span style="font-weight: 600;">${description}</span></p>
               <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Created At:</strong> <span style="font-weight: 600;">${createdAt}</span></p>
-              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Assigned At:</strong> <span style="font-weight: 600;">${assignedAt}</span></p>
               <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Ticket created by:</strong> <span style="font-weight: 600;">${usermail}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Assigned To:</strong> <span style="font-weight: 600;">${assignedTo}</span></p>
             </div>
           </div>
   
@@ -380,7 +381,7 @@ async function sendAssignTicketNotification(email, usermail, ticketNumber, title
         <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #888;">
           <p>© 2025 Diskuss. All rights reserved.</p>
         </div>
-        `
+        ` 
       );
       console.log("Email sent successfully: ", mailResponse);
     } catch (error) {
