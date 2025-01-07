@@ -1,5 +1,5 @@
 // controllers/NotificationPreferencesController.js
-const NotificationPreferences = require('../../models/permissionsModel');
+const NotificationPreferences = require('../../models/auth/permissionsModel');
 
 
 

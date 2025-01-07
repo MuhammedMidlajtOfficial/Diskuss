@@ -1,7 +1,7 @@
-const Team = require("../../models/team.model");
-const Contact = require("../../models/contact.individual.model");
-const EnterpriseUser = require("../../models/enterpriseUser");
-const Card = require("../../models/card");
+const Team = require("../../models/team/team.model");
+const Contact = require("../../models/contacts/contact.individual.model");
+const EnterpriseUser = require("../../models/users/enterpriseUser");
+const Card = require("../../models/cards/card");
 
 // const filterByDate = (date, period) => {
 //   const startOfDay = new Date(date.setHours(0, 0, 0, 0));

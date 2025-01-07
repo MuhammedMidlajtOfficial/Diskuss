@@ -1,10 +1,10 @@
 let io;
 const mongoose = require("mongoose");
-const Message = require("../../models/messageModel");
+const Message = require("../../models/message/messageModel");
 const { individualUserCollection: User } = require("../../DBConfig");
-const Contact = require("../../models/contact.individual.model");
-const EnterpriseUser = require("../../models/enterpriseUser");
-const EnterpriseEmployee = require("../../models/enterpriseEmploye.model");
+const Contact = require("../../models/contacts/contact.individual.model");
+const EnterpriseUser = require("../../models/users/enterpriseUser");
+const EnterpriseEmployee = require("../../models/users/enterpriseEmploye.model");
 const axios = require("axios");
 
 exports.setSocketIO = (socketIO) => {

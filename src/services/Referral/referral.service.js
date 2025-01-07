@@ -1,11 +1,11 @@
-const {Referral, WithdrawalRequest} = require('../../models/referral.model');
-const EnterpriseUser = require('../../models/enterpriseUser');
+const {Referral, WithdrawalRequest} = require('../../models/referral/referral.model');
+const EnterpriseUser = require('../../models/users/enterpriseUser');
 const { individualUserCollection: IndividualUser } = require('../../DBConfig');
 const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
 const {convertToMonthlyCounts} = require('../../util/HelperFunctions');
 const { ObjectId } = require('mongodb');
 const { checkUserType } = require('../../util/HelperFunctions');
-const Settings = require('../../models/settingModel');
+const Settings = require('../../models/settings/settingModel');
 
 // Send Invite
 const sendInvite = async (referrerId, inviteePhoneNo) => {
@@ -317,7 +317,7 @@ module.exports = {
     createWithdrawal,
 }
 
-// const {Referral} = require('../../models/referral.model');
+// const {Referral} = require('../../models/referral/referral.model');
 
 // /**
 //  * Find all Referrals

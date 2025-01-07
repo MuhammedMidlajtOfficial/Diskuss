@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const watiSender = require("../util/watiSender");
+const watiSender = require("../../util/watiSender");
 
 const otpSchema = new mongoose.Schema({
   email: {

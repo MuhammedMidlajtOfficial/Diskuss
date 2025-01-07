@@ -1,4 +1,4 @@
-const {ReferralLevel} = require('../../models/referral.model');
+const {ReferralLevel} = require('../../models/referral/referral.model');
 
 /**
  * Find all Referral Levels

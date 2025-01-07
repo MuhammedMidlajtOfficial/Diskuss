@@ -1,8 +1,8 @@
-const enterpriseUser = require("../../models/enterpriseUser");
-const Card = require("../../models/card");
+const enterpriseUser = require("../../models/users/enterpriseUser");
+const Card = require("../../models/cards/card");
 const { ObjectId } = require("mongodb");
-const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
-const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
+const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
+const enterpriseEmployeCardModel = require("../../models/cards/enterpriseEmployeCard.model");
 const mailSender = require("../../util/mailSender");
 const bcrypt = require("bcrypt");
 const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");

@@ -1,13 +1,13 @@
-const MeetingBase = require("../../models/EnterpriseMeetingModel");
+const MeetingBase = require("../../models/meeting/EnterpriseMeetingModel");
 const moment = require("moment");
 const cron = require("node-cron");
-const Profile = require("../../models/enterpriseEmploye.model");
+const Profile = require("../../models/users/enterpriseEmploye.model");
 const axios = require("axios");
-const enterprise = require("../../models/enterpriseUser");
-const individualUserCollection = require("../../models/individualUser");
+const enterprise = require("../../models/users/enterpriseUser");
+const individualUserCollection = require("../../models/users/individualUser");
 const mongoose = require("mongoose");
 
-const Notification = require("../../models/NotificationModel");
+const Notification = require("../../models/notification/NotificationModel");
 const {
   emitNotification,
 } = require("../../Controller/Socket.io/NotificationSocketIo");
