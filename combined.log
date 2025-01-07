@@ -3,3 +3,311 @@
 [2025-01-06T06:58:27.819Z] [32minfo[39m: GET /api/v1 200 - 6.148 ms
 [2025-01-06T06:58:41.150Z] [31merror[39m: GET /admin/supportticketsystem/viewandrespondticket/ 404 - 2.542 ms - message: -
 [2025-01-06T06:58:43.937Z] [31merror[39m: GET /api/v1a 404 - 0.770 ms - message: -
+[2025-01-06T07:06:12.006Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:45:49.109Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:46:25.323Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:46:54.821Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:47:10.542Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:47:18.733Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:47:22.960Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:47:38.789Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:48:10.249Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:48:49.761Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T07:49:54.636Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T09:24:27.634Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:19:08.114Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:19:12.236Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:19:16.395Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:21:12.693Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:21:21.114Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:21:28.213Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:22:16.157Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:22:21.004Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:22:23.248Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:23:18.589Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:23:28.304Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:26:10.177Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:26:19.597Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:26:25.549Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:26:29.271Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:26:32.033Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:26:35.547Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:29:01.224Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:29:15.593Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:34:16.884Z] [31merror[39m: GET /api/v 404 - 8.180 ms - message: -
+[2025-01-06T11:34:22.058Z] [32minfo[39m: GET /api/v1 200 - 3.487 ms
+[2025-01-06T11:34:32.523Z] [32minfo[39m: GET /api/v1 200 - 2.847 ms
+[2025-01-06T11:34:45.130Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:39:00.715Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:39:02.801Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:39:18.156Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:39:23.757Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:39:29.593Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:39:40.737Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:40:44.458Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:40:47.293Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:40:55.150Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:40:57.513Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:41:03.089Z] [31merror[39m: GET /api/v1/users?ID=12345 404 - 4.786 ms - message: -
+[2025-01-06T11:41:03.096Z] [32minfo[39m: GET /api/v1?ID=12345 200 - 2.234 ms
+[2025-01-06T11:41:03.097Z] [31merror[39m: GET /api/v1/posts?ID=12345 404 - 0.543 ms - message: -
+[2025-01-06T11:41:03.098Z] [31merror[39m: GET /api/v1/comments?ID=12345 404 - 0.580 ms - message: -
+[2025-01-06T11:41:13.644Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:41:15.973Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:41:26.721Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:41:27.077Z] [32minfo[39m: GET /api/v1?ID=12345 200 - 3.838 ms
+[2025-01-06T11:41:41.357Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:41:45.684Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:42:11.356Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:42:19.994Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:42:23.858Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:42:26.198Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:42:31.352Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:42:35.502Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:42:46.763Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:42:49.533Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:42:58.424Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:43:00.132Z] [32minfo[39m: GET /api/v1 200 - 3.661 ms
+[2025-01-06T11:43:00.133Z] [31merror[39m: GET /api/v1/users 404 - 2.264 ms - message: -
+[2025-01-06T11:43:00.134Z] [31merror[39m: GET /api/v1/posts 404 - 0.516 ms - message: -
+[2025-01-06T11:43:00.137Z] [31merror[39m: GET /api/v1/comments 404 - 0.584 ms - message: -
+[2025-01-06T11:43:12.743Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:43:19.338Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:43:22.063Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:43:28.574Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:43:30.680Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:43:40.220Z] [31merror[39m: GET /api/v1/users 404 - 3.686 ms - message: -
+[2025-01-06T11:43:40.227Z] [32minfo[39m: GET /api/v1 200 - 2.249 ms
+[2025-01-06T11:43:40.229Z] [31merror[39m: GET /api/v1/posts 404 - 0.598 ms - message: -
+[2025-01-06T11:43:40.230Z] [31merror[39m: GET /api/v1/comments 404 - 0.679 ms - message: -
+[2025-01-06T11:50:01.740Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:50:26.033Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:50:49.185Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:50:55.744Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:51:10.029Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:51:15.444Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:51:55.022Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:52:06.725Z] [32minfo[39m: GET /api/v1 200 - 5.314 ms
+[2025-01-06T11:52:32.022Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:52:42.710Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:52:50.473Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:52:52.686Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:52:58.668Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:53:02.163Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:53:05.602Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:53:17.301Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:53:26.298Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:53:34.742Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:53:43.102Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:53:53.406Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:54:10.950Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:54:11.034Z] [31merror[39m: GET /api/v1/users 404 - 5.040 ms - message: -
+[2025-01-06T11:54:11.036Z] [31merror[39m: GET /api/v1/posts 404 - 1.428 ms - message: -
+[2025-01-06T11:54:11.037Z] [31merror[39m: GET /api/v1/comments 404 - 0.459 ms - message: -
+[2025-01-06T11:54:11.038Z] [32minfo[39m: GET /api/v1 200 - 1.633 ms
+[2025-01-06T11:54:34.431Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:55:42.914Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:55:52.993Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T11:56:24.691Z] [31merror[39m: GET /api/v1/card 404 - 8.325 ms - message: -
+[2025-01-06T11:56:28.469Z] [31merror[39m: GET /api/v1/cards 404 - 1.461 ms - message: -
+[2025-01-06T11:56:39.216Z] [32minfo[39m: GET /api/v1/service 200 - 31.192 ms
+[2025-01-06T11:56:51.566Z] [31merror[39m: GET /api/v1/referral 404 - 1.777 ms - message: -
+[2025-01-06T11:56:55.417Z] [32minfo[39m: GET /api/v1/service 200 - 20.493 ms
+[2025-01-06T11:57:10.157Z] [31merror[39m: GET /api/v1/meeting 404 - 0.722 ms - message: -
+[2025-01-06T11:57:21.160Z] [31merror[39m: GET /api/v1/team 404 - 0.753 ms - message: -
+[2025-01-06T11:57:35.620Z] [32minfo[39m: GET /api/v1/settings 200 - 59.226 ms
+[2025-01-06T11:58:11.720Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:11:05.406Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:11:23.490Z] [32minfo[39m: GET /api/v1 200 - 4.574 ms
+[2025-01-06T14:11:30.081Z] [31merror[39m: GET /api/logs 404 - 3.133 ms - message: -
+[2025-01-06T14:11:46.231Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:11:46.391Z] [31merror[39m: GET /api/logs 404 - 4.018 ms - message: -
+[2025-01-06T14:11:55.727Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:12:11.200Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:12:14.620Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:12:17.237Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:12:23.976Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:12:26.388Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:12:28.425Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:12:41.512Z] [31merror[39m: GET /api/v1/api/logs 404 - 4.199 ms - message: -
+[2025-01-06T14:12:47.144Z] [31merror[39m: GET /logs 404 - 0.903 ms - message: -
+[2025-01-06T14:12:55.888Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:12:56.104Z] [31merror[39m: GET /logs 404 - 4.920 ms - message: -
+[2025-01-06T14:13:07.697Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:13:07.844Z] [31merror[39m: GET /logs 404 - 4.444 ms - message: -
+[2025-01-06T14:13:08.862Z] [31merror[39m: GET /logs 404 - 1.508 ms - message: -
+[2025-01-06T14:13:30.030Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:13:36.137Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:14:04.313Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:17:07.838Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:17:52.225Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:26:49.567Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:27:12.276Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:27:15.042Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:27:23.428Z] [32minfo[39m: GET /logs 200 - 6.236 ms
+[2025-01-06T14:27:44.136Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:27:47.505Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:27:50.276Z] [32minfo[39m: GET /logs 200 - 4.816 ms
+[2025-01-06T14:28:09.421Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:28:09.566Z] [32minfo[39m: GET /logs 200 - 5.741 ms
+[2025-01-06T14:29:25.954Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:29:30.093Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:29:32.130Z] [31merror[39m: GET /logs 500 - 6.321 ms - message: -
+[2025-01-06T14:29:49.877Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:29:53.752Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:30:07.601Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:30:11.751Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:30:20.799Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:30:31.612Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:30:42.676Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-06T14:30:48.908Z] [31merror[39m: GET /logs 500 - 6.476 ms - message: -
+[2025-01-07T06:39:18.769Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:39:19.000Z] [31merror[39m: GET /logs 500 - 10.433 ms - message: -
+[2025-01-07T06:40:09.945Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:40:16.823Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:40:30.818Z] [31merror[39m: GET /logs 500 - 6.336 ms - message: -
+[2025-01-07T06:40:49.951Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:41:10.256Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:41:15.486Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:41:18.158Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:41:20.247Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:41:25.165Z] [31merror[39m: GET /logs 500 - 4.641 ms - message: -
+[2025-01-07T06:46:06.573Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:46:09.536Z] [31merror[39m: GET /logs 500 - 9.702 ms - message: -
+[2025-01-07T06:46:52.280Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:46:52.837Z] [31merror[39m: GET /logs 500 - 7.990 ms - message: -
+[2025-01-07T06:47:00.363Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:47:00.466Z] [31merror[39m: GET /logs 500 - 5.507 ms - message: -
+[2025-01-07T06:47:42.071Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:47:43.895Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:47:50.727Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:47:58.174Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:48:06.673Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:48:20.179Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:50:31.614Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:51:02.447Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:52:56.720Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:53:05.956Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:53:07.973Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:53:12.886Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:53:13.676Z] [31merror[39m: GET /logs 500 - 6.246 ms - message: -
+[2025-01-07T06:53:32.785Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:53:39.146Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:53:41.819Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:53:47.409Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:53:53.130Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:55:20.360Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:55:26.520Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:55:30.986Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:56:19.829Z] [31merror[39m: GET /logs 500 - 6.589 ms - message: -
+[2025-01-07T06:56:39.135Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T06:56:45.033Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:06:02.904Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:06:14.292Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:06:20.081Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:06:24.410Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:06:33.385Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:07:05.310Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:08:09.536Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:08:24.552Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:08:24.776Z] [31merror[39m: GET /logs 500 - 5.889 ms - message: -
+[2025-01-07T07:08:52.368Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:08:54.306Z] [31merror[39m: GET /logs 500 - 14.149 ms - message: -
+[2025-01-07T07:09:06.569Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:09:06.698Z] [31merror[39m: GET /logs 500 - 6.367 ms - message: -
+[2025-01-07T07:09:26.074Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:09:34.565Z] [31merror[39m: GET /logs 500 - 6.782 ms - message: -
+[2025-01-07T07:09:54.878Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:09:58.287Z] [31merror[39m: GET /logs 500 - 5.724 ms - message: -
+[2025-01-07T07:10:42.782Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:10:51.102Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:10:56.182Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:11:00.775Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:11:04.190Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:11:08.947Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:11:13.199Z] [32minfo[39m: GET /logs 200 - 6.875 ms
+[2025-01-07T07:11:31.119Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:11:34.070Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:11:35.892Z] [32minfo[39m: GET /logs 200 - 5.830 ms
+[2025-01-07T07:12:10.233Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:12:15.330Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:12:16.673Z] [32minfo[39m: GET /logs 200 - 6.447 ms
+[2025-01-07T07:15:34.226Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:16:04.358Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:16:06.819Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:16:09.697Z] [32minfo[39m: GET /logs 200 - 7.069 ms
+[2025-01-07T07:16:33.666Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:16:41.902Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:16:56.597Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:17:00.931Z] [32minfo[39m: GET /logs 200 - 8.697 ms
+[2025-01-07T07:17:15.512Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:17:25.365Z] [32minfo[39m: GET /logs 200 - 6.719 ms
+[2025-01-07T07:18:14.175Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:18:16.849Z] [32minfo[39m: GET /logs 200 - 6.459 ms
+[2025-01-07T07:18:25.611Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:18:29.371Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:18:38.718Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:18:41.202Z] [31merror[39m: GET /logs 500 - 8.258 ms - message: -
+[2025-01-07T07:19:16.623Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:19:19.496Z] [31merror[39m: GET /logs 500 - 10.410 ms - message: -
+[2025-01-07T07:19:35.645Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:19:35.916Z] [32minfo[39m: GET /logs 200 - 8.098 ms
+[2025-01-07T07:19:44.097Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:20:15.727Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:20:18.511Z] [31merror[39m: GET /logs 500 - 14.617 ms - message: -
+[2025-01-07T07:20:54.350Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:21:00.900Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:21:43.740Z] [32minfo[39m: GET /logs 200 - 6.231 ms
+[2025-01-07T07:22:46.240Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:22:49.088Z] [32minfo[39m: GET /logs 200 - 6.738 ms
+[2025-01-07T07:23:51.803Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:24:39.637Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:24:43.001Z] [31merror[39m: GET /logs 500 - 11.235 ms - message: -
+[2025-01-07T07:26:58.137Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:27:00.618Z] [31merror[39m: GET /logs 500 - 12.164 ms - message: -
+[2025-01-07T07:27:20.089Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:35:21.060Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:35:24.032Z] [31merror[39m: GET /logs 500 - 16.234 ms - message: -
+[2025-01-07T07:35:48.514Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:35:52.337Z] [31merror[39m: GET /logs 500 - 9.156 ms - message: -
+[2025-01-07T07:36:16.351Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:36:39.234Z] [31merror[39m: GET /logs 500 - 11.421 ms - message: -
+[2025-01-07T07:38:26.116Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:38:30.804Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:38:38.705Z] [32minfo[39m: GET /logs 200 - 27.728 ms
+[2025-01-07T07:45:31.568Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:45:33.610Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:45:45.277Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:45:52.844Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:45:56.110Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:46:13.267Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:46:21.174Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:46:25.617Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:46:27.714Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:46:29.912Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:46:34.025Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:46:44.674Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:46:53.209Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:46:55.461Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:47:00.075Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:47:02.828Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:47:07.500Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:47:10.782Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:47:16.402Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T07:47:18.303Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:41:09.986Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:41:28.053Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:41:40.172Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:42:03.140Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:42:07.705Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:42:12.818Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:42:17.526Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:42:22.179Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:42:25.925Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:42:33.470Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:42:50.245Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:42:58.197Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:43:01.139Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-07T08:43:01.393Z] [32minfo[39m: GET /api/v1/logs 200 - 28.824 ms
+[2025-01-07T08:43:22.519Z] [32minfo[39m: GET /api/v1/logs 200 - 3.789 ms
+[2025-01-07T08:43:31.634Z] [32minfo[39m: GET /api/v1/logs 200 - 14.718 ms
