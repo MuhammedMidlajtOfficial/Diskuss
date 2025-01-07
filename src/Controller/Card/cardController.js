@@ -66,6 +66,22 @@ module.exports.updateCard = async (req, res) => {
   }
 };
 
+module.exports.updateLogo = async (req, res) => {
+  try {
+    const { cardId, image } = req.body;
+    
+    // Call the service to update the logo
+    const result = await cardService.updateLogo(cardId, image);
+
+    res.status(200).json({ message: "Card logo updated successfully" });
+  } catch (error) {
+    console.error("Error updating card logo:", error.message);
+    res.status(500).json({
+      message: error.message || "Failed to update card logo. Please try again later.",
+    });
+  }
+};
+
 module.exports.deleteCard = async (req, res) => {
   const { cardId } = req.body;
 

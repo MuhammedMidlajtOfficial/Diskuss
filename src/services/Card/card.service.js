@@ -243,6 +243,67 @@ module.exports.updateCard = async (updateData) => {
   return result;
 };
 
+module.exports.updateLogo = async (cardId, image) => {
+  // Validate cardId format
+  if (!Types.ObjectId.isValid(cardId)) {
+    throw new Error("Invalid card ID format");
+  }
+
+  // Check if the card exists in Card or EnterpriseEmployeeCard collection
+  let existingCard = await Card.findOne({ _id: cardId });
+  let cardCollection = Card;
+
+  if (!existingCard) {
+    existingCard = await EnterpriseEmployeeCard.findOne({ _id: cardId });
+    cardCollection = EnterpriseEmployeeCard;
+  }
+
+  if (!existingCard) {
+    throw new Error("Card not found");
+  }
+
+  let imageUrl = existingCard.image; // Default to existing image if no new image is provided
+
+  // Upload new image and delete old image if needed
+  if (image) {
+    if (existingCard.image) {
+      // Delete old image if it exists
+      await deleteImageFromS3(existingCard.image);
+    }
+
+    const imageBuffer = Buffer.from(
+      image.replace(/^data:image\/\w+;base64,/, ""),
+      "base64"
+    );
+    const fileName = `${cardId}-${Date.now()}-businessCard.jpg`;
+
+    try {
+      // Upload the new image to S3
+      const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+      imageUrl = uploadResult.Location; // New S3 image URL
+    } catch (uploadError) {
+      throw new Error(`Failed to upload image: ${uploadError.message}`);
+    }
+  }
+
+  // Update the card in the respective collection
+  const result = await cardCollection.updateOne(
+    { _id: cardId },
+    {
+      $set: {
+        image: imageUrl,
+      },
+    }
+  );
+
+  if (result.modifiedCount === 0) {
+    throw new Error("Card not found or no changes detected");
+  }
+
+  return result;
+};
+
+
 // module.exports.deleteCard = async (cardId) => {
 //   try {
 //     const card = await Card.findOne({ _id: cardId });

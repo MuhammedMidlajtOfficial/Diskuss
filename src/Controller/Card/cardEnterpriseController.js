@@ -362,7 +362,6 @@ async function sendVerificationEmail(email, newEmail, newPassword) {
         <p style="font-size: 18px; color: #333; font-weight: 600;">${newEmail}</p>
         <p style="font-size: 18px; color: #555; margin: 10px 0;">Your temporary password:</p>
         <p style="font-size: 18px; color: #333; font-weight: 600;">${newPassword}</p>
-        
       </div>
       <p style="font-size: 14px; color: #777; margin-top: 20px; text-align: center;">
         If you didn’t request this, please ignore this email or contact our support team.
