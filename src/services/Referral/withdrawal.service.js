@@ -1,4 +1,4 @@
-const {WithdrawalRequest} = require('../../models/referral.model');
+const {WithdrawalRequest} = require('../../models/referral/referral.model');
 
 const createWithdrawalRequest = async (userId, amount) => {
     const withdrawalRequest = new WithdrawalRequest({ userId, amount });

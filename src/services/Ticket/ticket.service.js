@@ -1,10 +1,10 @@
 const Ticket = require('../../models/ticket/ticketModel');
 const { checkUserType } = require('../../util/HelperFunctions'); 
-const EnterpriseUser = require('../../models/enterpriseUser');
+const EnterpriseUser = require('../../models/users/enterpriseUser');
 const { individualUserCollection: IndividualUser, individualUserCollection } = require('../../DBConfig');
 const { query } = require('express');
-const enterpriseUser = require('../../models/enterpriseUser');
-const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
+const enterpriseUser = require('../../models/users/enterpriseUser');
+const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
 
 const generateTicketNumber = async () => {
     const lastTicket = await Ticket.findOne().sort({ createdAt: -1 });

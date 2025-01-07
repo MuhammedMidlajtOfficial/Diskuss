@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const  otpCollection  = require('../../models/otpModule');
-const enterpriseUser = require('../../models/enterpriseUser');
+const  otpCollection  = require('../../models/auth/otpModule');
+const enterpriseUser = require('../../models/users/enterpriseUser');
 const { individualUserCollection } = require('../../DBConfig');
-const EnterpriseEmployee = require('../../models/enterpriseEmploye.model');
+const EnterpriseEmployee = require('../../models/users/enterpriseEmploye.model');
 const otpGenerator = require("otp-generator");
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const { createProfile } = require('../Profile/profileController');
-const Contact  = require('../../models/contact.individual.model');
-const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
+const Contact  = require('../../models/contacts/contact.individual.model');
+const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
 const referralService = require('../../services/Referral/referral.service');
 
 

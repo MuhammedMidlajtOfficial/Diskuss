@@ -1,6 +1,6 @@
-const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
-const enterpriseUser = require('../../models/enterpriseUser');
-const UserSubscription = require('../../models/userSubscription.model');
+const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
+const enterpriseUser = require('../../models/users/enterpriseUser');
+const UserSubscription = require('../../models/subscription/userSubscription.model');
 const { individualUserCollection } = require("../../DBConfig");
 
 /**

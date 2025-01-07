@@ -1,15 +1,15 @@
 const { individualUserCollection } = require("../../DBConfig");
-const enterpriseUser = require("../../models/enterpriseUser");
-const enterpriseEmployee = require("../../models/enterpriseEmploye.model");
-const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
-const Card = require("../../models/card");
+const enterpriseUser = require("../../models/users/enterpriseUser");
+const enterpriseEmployee = require("../../models/users/enterpriseEmploye.model");
+const EnterpriseEmployeeCard = require("../../models/cards/enterpriseEmployeCard.model");
+const Card = require("../../models/cards/card");
 const { ObjectId } = require("mongodb");
-const Contact = require("../../models/contact.individual.model");
+const Contact = require("../../models/contacts/contact.individual.model");
 const {
   uploadImageToS3,
   deleteImageFromS3,
 } = require("../../services/AWS/s3Bucket");
-const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
+const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
 const { Types } = require("mongoose");
 
 module.exports.getCard = async (userId) => {

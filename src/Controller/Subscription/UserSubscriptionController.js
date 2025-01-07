@@ -3,7 +3,7 @@ const { findOneByPlanId } = require('../../services/Subscription/subscriptionPla
 const { razorpay } = require('../../services/Razorpay/razorpay');
 const crypto = require('crypto');
 require('dotenv')
-const Notification = require("../../models/NotificationModel");
+const Notification = require("../../models/notification/NotificationModel");
 const {emitNotification,} = require("../../Controller/Socket.io/NotificationSocketIo");
 
 /**

@@ -1,4 +1,4 @@
-const Settings = require('../models/settingModel');
+const Settings = require('../models/settings/settingModel');
 
 exports.updateSettings = async (registrationReward, cardCreationReward, minWithdrawalAmount) => {
     const settings = await Settings.findOne({});

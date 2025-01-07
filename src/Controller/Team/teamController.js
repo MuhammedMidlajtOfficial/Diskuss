@@ -1,5 +1,5 @@
-const enterpriseUser = require("../../models/enterpriseUser");
-const teamModel = require("../../models/team.model");
+const enterpriseUser = require("../../models/users/enterpriseUser");
+const teamModel = require("../../models/team/team.model");
 
 module.exports.getAllTeamById = async (req, res) => {
     try {
