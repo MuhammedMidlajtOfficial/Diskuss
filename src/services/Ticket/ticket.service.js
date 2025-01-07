@@ -5,18 +5,42 @@ const { individualUserCollection: IndividualUser, individualUserCollection } = r
 const { query } = require('express');
 const enterpriseUser = require('../../models/users/enterpriseUser');
 const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
-
-const generateTicketNumber = async () => {
-    const lastTicket = await Ticket.findOne().sort({ createdAt: -1 });
-    const lastNumber = lastTicket ? parseInt(lastTicket.ticketNumber.replace('TCK', '')) : 0;
-    const newNumber = lastNumber + 1;
-    return `TCK${newNumber.toString().padStart(5, '0')}`; // Example format: TCK00001
-}
+const mailSender = require('../../util/mailSender');
+const configModel = require('../../models/config/config.model');
+const employeeModel = require('../../models/adminEmployee/employee.model');
 
 
 exports.create = async (data) => {
     data.ticketNumber = await generateTicketNumber();
     const newTicket = new Ticket(data);
+
+    // Send MAIL
+    const createdUser = await populateCreatedBy(newTicket.createdBy)
+    const notificationMail = await configModel.findOne({ "config.title": "Notification Mail" })
+    const email = notificationMail?.config?.email
+    const usermail = createdUser.email
+
+    const createdAt = new Date(newTicket.createdAt);
+    // Format the date
+    const day = String(createdAt.getDate()).padStart(2, '0');
+    const month = String(createdAt.getMonth() + 1).padStart(2, '0');
+    const year = String(createdAt.getFullYear()).slice(-2); // Get last 2 digits of the year
+    const hours = createdAt.getHours();
+    const minutes = String(createdAt.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedTime = `${hours % 12 || 12}:${minutes}${ampm}`;
+
+    const formattedDate = `${day}/${month}/${year}, ${formattedTime}`;
+
+    sendCreateTicketNotification(
+        email,
+        usermail, 
+        newTicket.ticketNumber, 
+        newTicket.title, 
+        newTicket.description, 
+        formattedDate,
+    )
+
     return await newTicket.save();
 };
 
@@ -157,18 +181,6 @@ exports.getAll = async (page = 1, limit = 10, noPagination = false, userId, stat
     }
 };
 
-// Helper function to populate `createdBy`
-const populateCreatedBy = async (createdById) => {
-    // Try finding the user in each collection
-    const user =
-        (await individualUserCollection.findById(createdById).select('username email image')) ||
-        (await enterpriseUser.findById(createdById).select('companyName email image')) ||
-        (await enterpriseEmployeModel.findById(createdById).select('username email image'));
-
-    return user || null; // Return the user or null if not found
-};
-
-
 exports.getOpenTicket = async (page = 1, limit = 10, noPagination = false, filters = {}) => {
     const options = {
         skip: (page - 1) * limit,
@@ -261,7 +273,33 @@ exports.addUserToAssigned= async (ticketId, employeeId) => {
         ticket.status = 'In Progress'
         await ticket.save();
     }
-    console.log(ticket);
+
+    // Send MAIL
+    const createdUser = await populateCreatedBy(ticket.createdBy)
+    const assingedUser = await employeeModel.findById(employeeId)
+    const email = assingedUser?.email
+    const usermail = createdUser.email
+
+    const createdAt = new Date(ticket.createdAt);
+    // Format the date
+    const day = String(createdAt.getDate()).padStart(2, '0');
+    const month = String(createdAt.getMonth() + 1).padStart(2, '0');
+    const year = String(createdAt.getFullYear()).slice(-2); // Get last 2 digits of the year
+    const hours = createdAt.getHours();
+    const minutes = String(createdAt.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedTime = `${hours % 12 || 12}:${minutes}${ampm}`;
+
+    const formattedDate = `${day}/${month}/${year}, ${formattedTime}`;
+
+    sendAssignTicketNotification(
+        email,
+        usermail,
+        ticket.ticketNumber, 
+        ticket.title, 
+        ticket.description, 
+        formattedDate,
+    )
     return ticket;
 }
 
@@ -288,8 +326,105 @@ exports.replayService = async (ticketId, status, replayBy, replayDescription) =>
     }
 };
 
-
 exports.delete = async (id) => {
     return await Ticket.findByIdAndDelete(id);
 };
 
+
+const generateTicketNumber = async () => {
+    const lastTicket = await Ticket.findOne().sort({ createdAt: -1 });
+    const lastNumber = lastTicket ? parseInt(lastTicket.ticketNumber.replace('TCK', '')) : 0;
+    const newNumber = lastNumber + 1;
+    return `TCK${newNumber.toString().padStart(5, '0')}`; // Example format: TCK00001
+}
+
+// Helper function to populate `createdBy`
+const populateCreatedBy = async (createdById) => {
+    // Try finding the user in each collection
+    const user =
+        (await individualUserCollection.findById(createdById).select('username email image')) ||
+        (await enterpriseUser.findById(createdById).select('companyName email image')) ||
+        (await enterpriseEmployeModel.findById(createdById).select('username email image'));
+
+    return user || null; // Return the user or null if not found
+};
+
+async function sendAssignTicketNotification(email, usermail, ticketNumber, title, description, createdAt, assignedAt) {
+    try {
+      const mailResponse = await mailSender(
+        email,
+        "Digital Card Admin - New Ticket Assigned",
+        `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; color: #333; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #333; text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 20px;">New Ticket Raised - Digital Card Admin</h2>
+          
+          <div style="background-color: #f4f8fc; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <h3 style="font-size: 20px; color: #333; font-weight: 600; margin-bottom: 15px;">Ticket Information</h3>
+            <p style="font-size: 16px; color: #555; margin: 10px 0;">A new ticket has been raised by the user.</p>
+  
+            <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-top: 20px;">
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Ticket Number:</strong> <span style="font-weight: 600;">${ticketNumber}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Title:</strong> <span style="font-weight: 600;">${title}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Description:</strong> <span style="font-weight: 600;">${description}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Created At:</strong> <span style="font-weight: 600;">${createdAt}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Assigned At:</strong> <span style="font-weight: 600;">${assignedAt}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Ticket created by:</strong> <span style="font-weight: 600;">${usermail}</span></p>
+            </div>
+          </div>
+  
+          <div style="background-color: #f7f7f7; padding: 15px; margin-top: 30px; border-radius: 8px; text-align: center;">
+            <p style="font-size: 14px; color: #777;">Please check the dashboard and resolve.</p>
+          </div>
+        </div>
+  
+        <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #888;">
+          <p>© 2025 Diskuss. All rights reserved.</p>
+        </div>
+        `
+      );
+      console.log("Email sent successfully: ", mailResponse);
+    } catch (error) {
+      console.log("Error occurred while sending email: ", error);
+      throw error;
+    }
+}  
+
+async function sendCreateTicketNotification(email, usermail, ticketNumber, title, description, createdAt) {
+    try {
+      const mailResponse = await mailSender(
+        email,
+        "Digital Card Admin - New Ticket Raised",
+        `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; color: #333; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #333; text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 20px;">New Ticket Raised - Digital Card Admin</h2>
+          
+          <div style="background-color: #f4f8fc; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <h3 style="font-size: 20px; color: #333; font-weight: 600; margin-bottom: 15px;">Ticket Information</h3>
+            <p style="font-size: 16px; color: #555; margin: 10px 0;">A new ticket has been raised by the user.</p>
+  
+            <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-top: 20px;">
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Ticket Number:</strong> <span style="font-weight: 600;">${ticketNumber}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Title:</strong> <span style="font-weight: 600;">${title}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Description:</strong> <span style="font-weight: 600;">${description}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Created At:</strong> <span style="font-weight: 600;">${createdAt}</span></p>
+              <p style="font-size: 16px; color: #333; margin: 5px 0;"><strong>Ticket created by:</strong> <span style="font-weight: 600;">${usermail}</span></p>
+            </div>
+          </div>
+  
+          <div style="background-color: #f7f7f7; padding: 15px; margin-top: 30px; border-radius: 8px; text-align: center;">
+            <p style="font-size: 14px; color: #777;">Please check the dashboard and resolve.</p>
+          </div>
+        </div>
+  
+        <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #888;">
+          <p>© 2025 Diskuss. All rights reserved.</p>
+        </div>
+        `
+      );
+      console.log("Email sent successfully: ", mailResponse);
+    } catch (error) {
+      console.log("Error occurred while sending email: ", error);
+      throw error;
+    }
+  }
+  
