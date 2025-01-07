@@ -381,7 +381,7 @@ async function sendAssignTicketNotification(email, usermail, ticketNumber, title
         <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #888;">
           <p>© 2025 Diskuss. All rights reserved.</p>
         </div>
-        `
+        ` 
       );
       console.log("Email sent successfully: ", mailResponse);
     } catch (error) {
