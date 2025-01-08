@@ -1,5 +1,5 @@
 const { individualUserCollection } = require("../../DBConfig");
-const Contact = require("../../models/contact.individual.model");
+const Contact = require("../../models/contacts/contact.individual.model");
 
 
 exports.getCounts = async (req, res) => {

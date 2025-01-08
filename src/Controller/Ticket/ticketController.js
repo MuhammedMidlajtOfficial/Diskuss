@@ -1,11 +1,10 @@
 const TicketService = require('../../services/Ticket/ticket.service');
 
-
 exports.createTicket = async (req, res) => {
     try {
         const newTicket = await TicketService.create(req.body);
-        console.log(newTicket);
-        res.status(201).json({message:"Ticket Created Successfully" ,newTicket});
+        
+        res.status(201).json({message:"Ticket Created Successfully" ,newTicket})
     } catch (error) {
         console.log(error);
         res.status(400).json({ message: error.message });
@@ -37,8 +36,6 @@ exports.getAllTickets = async (req, res) => {
     }
 };
 
-
-    
 exports.getOpenTicket = async (req, res) => {
     const { page, limit, noPagination, } = req.query;
     
@@ -94,7 +91,6 @@ exports.getAllTicketsByCategory = async (req, res) => {
     }
 }
 
-
 exports.updateTicket = async (req, res) => {
     try {
         const updatedTicket = await TicketService.update(req.params.id, req.body);
@@ -148,7 +144,6 @@ exports.replay = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
-
 
 exports.deleteTicket = async (req, res) => {
     try {

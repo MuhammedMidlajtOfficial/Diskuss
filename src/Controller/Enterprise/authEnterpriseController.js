@@ -2,12 +2,12 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const otpGenerator = require("otp-generator")
 const mongoose = require('mongoose');
-const  otpCollection = require('../../models/otpModule');
+const  otpCollection = require('../../models/auth/otpModule');
 const {individualUserCollection } = require('../../DBConfig');
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
-const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
-const Contact  = require('../../models/contact.individual.model');
-const enterpriseUser = require('../../models/enterpriseUser');
+const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
+const Contact  = require('../../models/contacts/contact.individual.model');
+const enterpriseUser = require('../../models/users/enterpriseUser');
 
 module.exports.postEnterpriseLogin = async (req, res) => {
   try {

@@ -1,5 +1,5 @@
 const { individualUserCollection } = require("../../DBConfig");
-const Profile = require("../../models/profile");
+const Profile = require("../../models/profile/profile");
 const { ObjectId } = require('mongodb');
 
 

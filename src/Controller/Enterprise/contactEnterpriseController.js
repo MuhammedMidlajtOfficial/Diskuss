@@ -64,21 +64,16 @@ const createContact = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        console.log('contactOwnerId:', contactOwnerId);
-
         let existUser;
 
         const EnterpriseUser = await enterpriseUser.findOne({ phnNumber });
-        console.log('EnterpriseUser:', EnterpriseUser);
         const EnterpriseEmpUser = await enterpriseEmployeModel.findOne({ phnNumber });
-        console.log('EnterpriseEmpUser:', EnterpriseEmpUser);
 
         existUser = EnterpriseUser || EnterpriseEmpUser;
-        console.log('existUser:', existUser);
 
         let newContact;
 
-        const contactDetails = {
+        let contactDetails = {
             contactOwnerId,
             contactOwnerType: EnterpriseUser ? 'EnterpriseUser' : 'EnterpriseEmployee',
             contacts: [{
@@ -96,20 +91,14 @@ const createContact = async (req, res) => {
             }]
         };
 
-        console.log('existUser._id:', existUser ? existUser?._id : 'existUser is null');
-        console.log('contactDetails:', contactDetails);
-
         if (existUser && existUser?._id) {
             contactDetails.contacts[0].userId = existUser?._id;
         }
 
         newContact = await Contact.create(contactDetails);
-        console.log('newContact:', newContact);
 
-        console.log('existUser:', existUser);
         if (existUser?.userType !== 'employee') {
             const updateUser = await enterpriseUser.findById(contactOwnerId);
-            console.log('updateUser:', updateUser);
             if (updateUser) {
                 await enterpriseUser.updateOne(
                     { _id: contactOwnerId },
@@ -122,13 +111,28 @@ const createContact = async (req, res) => {
             }
         }else{
             const updateUser = await enterpriseEmployeModel.findById(contactOwnerId);
-            console.log('updateUser:', updateUser);
+
             if (updateUser) {
                 await enterpriseEmployeModel.updateOne(
                     { _id: contactOwnerId },
                     { $push: { contacts: newContact?._id } }
                 );
                 console.log('Updated contact owner with new contact ID:', newContact._id);
+
+                const enterpriseUserId = await enterpriseUser.findOne({ 'empIds.empId': contactOwnerId })
+                if(!enterpriseUserId){
+                    return res.status(400).json({ message: "Enterprise user not found",})
+                }
+                contactDetails.contactOwnerId = enterpriseUserId._id
+                const newContactOfEnterprise = await Contact.create(contactDetails)
+                if(newContactOfEnterprise){
+                    await enterpriseUser.updateOne(
+                        { _id: enterpriseUserId._id },
+                        { $push: { contacts: newContactOfEnterprise?._id } }
+                    );
+                    console.log('Updated contact owner with new contact ID:', newContactOfEnterprise._id);
+                }
+
             } else {
                 console.log('Contact owner not found');
                 return res.status(404).json({ message: "Contact owner not found" });
