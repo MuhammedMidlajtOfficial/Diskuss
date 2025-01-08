@@ -422,3 +422,56 @@
 [2025-01-07T10:42:43.599Z] info: Server connected on http://localhost:2000
 [2025-01-07T10:43:46.927Z] info: Server connected on http://localhost:2000
 [2025-01-07T10:43:48.354Z] info: Server connected on http://localhost:2000
+[2025-01-08T05:14:34.826Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:20:24.501Z] info: OPTIONS /api/v1individualContact/user/67513f6e1e263839a3b0df87 204 - 2.053 ms
+[2025-01-08T05:20:24.505Z] error: GET /api/v1individualContact/user/67513f6e1e263839a3b0df87 404 - 1.575 ms - message: -
+[2025-01-08T05:20:45.715Z] info: OPTIONS /api/v1/individualContact/user/67513f6e1e263839a3b0df87 204 - 0.359 ms
+[2025-01-08T05:20:46.001Z] info: GET /api/v1/individualContact/user/67513f6e1e263839a3b0df87 200 - 283.984 ms
+[2025-01-08T05:21:27.978Z] info: OPTIONS /api/v1individualContact/675ff804d4e9f83acde434a9 204 - 0.347 ms
+[2025-01-08T05:21:28.007Z] error: PATCH /api/v1individualContact/675ff804d4e9f83acde434a9 404 - 21.126 ms - message: -
+[2025-01-08T05:21:33.486Z] info: OPTIONS /api/v1/individualContact/675ff804d4e9f83acde434a9 204 - 0.341 ms
+[2025-01-08T05:21:33.688Z] error: PATCH /api/v1/individualContact/675ff804d4e9f83acde434a9 500 - 199.843 ms - message: -
+[2025-01-08T05:21:56.340Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:24:22.190Z] info: OPTIONS /api/v1/individualContact/67791311c70c1e41ab20296d 204 - 2.981 ms
+[2025-01-08T05:24:22.398Z] info: DELETE /api/v1/individualContact/67791311c70c1e41ab20296d 200 - 205.325 ms
+[2025-01-08T05:25:58.158Z] info: OPTIONS /api/v1/individualContact/675ff804d4e9f83acde434a9 204 - 0.469 ms
+[2025-01-08T05:25:58.328Z] error: PATCH /api/v1/individualContact/675ff804d4e9f83acde434a9 500 - 167.904 ms - message: -
+[2025-01-08T05:31:07.224Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:31:11.983Z] info: OPTIONS /api/v1/individualContact/675ff804d4e9f83acde434a9 204 - 1.885 ms
+[2025-01-08T05:31:12.177Z] info: PATCH /api/v1/individualContact/675ff804d4e9f83acde434a9 200 - 192.475 ms
+[2025-01-08T05:31:31.887Z] info: OPTIONS /api/v1/individualContact/user/67513f6e1e263839a3b0df87 204 - 0.467 ms
+[2025-01-08T05:31:32.158Z] info: GET /api/v1/individualContact/user/67513f6e1e263839a3b0df87 200 - 268.927 ms
+[2025-01-08T05:32:35.500Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:34:03.782Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:35:24.502Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:44:53.652Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:48:32.849Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:48:36.597Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:52:18.582Z] error: POST /api/v1/individualContact 400 - 4.020 ms - message: -
+[2025-01-08T05:53:41.391Z] error: POST /api/v1/individualContact 400 - 1.430 ms - message: -
+[2025-01-08T05:54:36.411Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:54:39.243Z] error: POST /api/v1/individualContact 400 - 5.939 ms - message: -
+[2025-01-08T05:57:46.454Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:58:31.820Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:58:34.890Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:58:50.987Z] info: Server connected on http://localhost:5000
+[2025-01-08T05:58:57.484Z] error: POST /api/v1/individualContact 400 - 5.573 ms - message: -
+[2025-01-08T05:59:16.975Z] error: POST /api/v1/individualContact 400 - 2.429 ms - message: -
+[2025-01-08T05:59:58.612Z] info: Server connected on http://localhost:5000
+[2025-01-08T06:00:04.097Z] info: Server connected on http://localhost:5000
+[2025-01-08T06:01:53.405Z] error: POST /api/v1/individualContact 400 - 5.562 ms - message: -
+[2025-01-08T06:02:27.746Z] info: POST /api/v1/individualContact 201 - 356.429 ms
+[2025-01-08T06:03:18.464Z] error: POST /api/v1/individualContact 400 - 1.258 ms - message: -
+[2025-01-08T06:38:42.077Z] info: POST /api/v1/individualContact 201 - 564.439 ms
+[2025-01-08T06:45:42.691Z] error: POST /api/v1/individualContact 500 - 94.397 ms - message: -
+[2025-01-08T06:46:28.670Z] info: Server connected on http://localhost:5000
+[2025-01-08T06:55:38.783Z] error: POST /api/v1/individualContact 500 - 117.860 ms - message: -
+[2025-01-08T06:59:38.547Z] info: Server connected on http://localhost:5000
+[2025-01-08T06:59:40.561Z] error: POST /api/v1/individualContact 500 - 326.937 ms - message: -
+[2025-01-08T07:04:35.584Z] info: Server connected on http://localhost:5000
+[2025-01-08T07:04:37.879Z] info: Server connected on http://localhost:5000
+[2025-01-08T07:04:57.969Z] info: Server connected on http://localhost:5000
+[2025-01-08T07:05:20.451Z] info: Server connected on http://localhost:5000
+[2025-01-08T07:05:23.404Z] info: POST /api/v1/individualContact 201 - 526.545 ms
+[2025-01-08T07:06:16.382Z] info: Server connected on http://localhost:5000
+[2025-01-08T07:06:19.983Z] info: POST /api/v1/individualContact 201 - 484.391 ms
