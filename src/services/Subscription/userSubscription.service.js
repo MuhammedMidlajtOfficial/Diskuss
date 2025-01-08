@@ -38,10 +38,6 @@ const findAll = async () => {
     }
   };
    
-
-
-
-  
 /**
  * Create al UserSubscription
  * * Create a new UserSubscription plan.
@@ -73,7 +69,6 @@ const findAll = async () => {
       throw error;
     }
   };
-
 
 /**
  * Update a UserSubscription plan by plan_id.
@@ -134,7 +129,6 @@ const findAll = async () => {
       throw error; // Re-throw the error for higher-level handling
     }
   };
-  
 
   const updateSubscriptionStatusInUsers = async (razorpay_order_id, updateData) => {
     try {
@@ -179,7 +173,7 @@ const findAll = async () => {
           // Handle case when user doesn't exist in any collection
           console.log("User not found in any collection");
         }
-        console.log("subscribed ---------------");
+        
       return;
     } catch (error) {
       console.error("Error updating UserSubscription:", error);
@@ -211,7 +205,6 @@ const findAll = async () => {
     }
   };
   
-  
 /**
  * Delete a UserSubscription plan by plan_id.
  * @param {String} plan_id - The unique identifier of the UserSubscription plan to delete.
@@ -232,7 +225,6 @@ const findAll = async () => {
       throw error; // Re-throw the error for higher-level handling
     }
   };
-  
   
 // // Import your deactivateExpiredSubscriptions function
 // const deactivateExpiredSubscriptions = async () => {
@@ -263,7 +255,6 @@ const findAll = async () => {
 //     throw error;
 //   }
 // };
-
 
 const deactivateExpiredSubscriptions = async () => {
   try {
@@ -386,6 +377,69 @@ const updateUserStatus = async (userId) => {
   }
 };
 
+const sendNotification = async (data) => {
+  try {
+    const { email, usermail, createdAt, subscriptionExpiry, plan, invoicePath } = data;
+    await sendSuccessSubscriptionNotification(email, usermail, createdAt, subscriptionExpiry, plan, invoicePath);
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    throw error;
+  }
+};
+
+
+async function sendSuccessSubscriptionNotification(email, usermail, createdAt, subscriptionExpiry, plan, invoicePath) {
+  try {
+    const mailResponse = await mailSender(
+      email,
+      "Digital Card Admin - Subscription Successful",
+      `
+      <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; color: #333; border-radius: 10px; border: 1px solid #e0e0e0;">
+        
+        <!-- Header Section -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="https://yourcompanylogo.com/logo.png" alt="Diskuss Logo" style="max-width: 150px;">
+        </div>
+
+        <!-- Main Content Section -->
+        <div style="background-color: #f0f8ff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+          <h2 style="font-size: 26px; color: #3e4a59; font-weight: bold; text-align: center; margin-bottom: 20px;">Subscription Successful</h2>
+          <p style="font-size: 18px; color: #555; line-height: 1.6; text-align: center; margin-bottom: 30px;">Thank you for subscribing to Diskuss! Your subscription has been successfully activated.</p>
+
+          <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px;">
+            <h3 style="font-size: 22px; color: #3e4a59; margin-bottom: 15px;">Subscription Details</h3>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Email:</strong> <span style="font-weight: 600;">${usermail}</span></p>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Subscription Plan:</strong> <span style="font-weight: 600;">${plan}</span></p>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Subscription Date:</strong> <span style="font-weight: 600;">${createdAt}</span></p>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Subscription Expiry Date:</strong> <span style="font-weight: 600;">${subscriptionExpiry}</span></p>
+          </div>
+
+          <!-- Invoice Download Section -->
+          <div style="text-align: center; margin-bottom: 20px;">
+            <p style="font-size: 16px; color: #777;">We’re excited to have you with us! Explore our platform and enjoy all the benefits that come with your subscription.</p>
+            <p style="font-size: 16px; color: #777;">Click below to download your invoice:</p>
+            
+            <!-- Invoice Download Button -->
+            <a href="${invoicePath}" 
+               style="display: inline-block; font-size: 16px; font-weight: 600; color: #fff; background-color: #4CAF50; padding: 12px 30px; border-radius: 5px; text-decoration: none; text-align: center; transition: background-color 0.3s ease, transform 0.3s ease;">
+              Download Invoice
+            </a>
+          </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div style="background-color: #f8f8f8; padding: 15px; border-radius: 8px; margin-top: 30px; text-align: center;">
+          <p style="font-size: 14px; color: #888;">© 2025 Diskuss. All rights reserved.</p>
+        </div>
+      </div>
+      `
+    );
+    console.log("Email sent successfully: ", mailResponse);
+  } catch (error) {
+    console.log("Error occurred while sending email: ", error);
+    throw error;
+  }
+}
 
 
 
@@ -399,4 +453,5 @@ module.exports = {
     updateSubscriptionStatusInUsers,
     deactivateOldSubscriptions,
     deactivateExpiredSubscriptions,
+    sendNotification,
 };
