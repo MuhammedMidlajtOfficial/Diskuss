@@ -3,7 +3,7 @@ const Contact = require("../../models/contacts/contact.individual.model");
 const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/users/enterpriseUser");
 const ContactService = require("../../services/contact.Individual.service");
-const { uploadImageToS3 } = require("../../services/AWS/s3Bucket");
+const { uploadImageToS3,deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
 /**
  * Get all Contacts
  * @param {Request} req
@@ -222,6 +222,7 @@ const updateContact = async (req, res) => {
             businessCategory,
             scheduled,
             scheduledTime,
+            cardImage,
             notes,
             contactOwnerId,
         } = req.body;
@@ -311,17 +312,7 @@ const updateContact = async (req, res) => {
         console.error("Error updating Contact:", error.message);
         return res.status(500).json({ error: "Internal Server Error" });
     }
-
-    return res.status(200).json({
-      message: "Contact updated successfully",
-      updatedContact,
-    });
-  } catch (error) {
-    console.error("Error updating Contact:", error);
-    return res.status(500).json({ error: error.message });
-  }
-};
-
+}
 
 /**
  * Delete a Contact
@@ -369,6 +360,15 @@ const deleteContact = async (req, res) => {
         { _id: contactOwnerId },
         { $pull: { contacts: contact_id } } // Remove the contact from the contacts array
       );
+    }
+
+    let imageUrl = contact.image; // Default to existing image if no new image is provided
+    
+      // Upload new image and delete old image if needed
+      if (imageUrl) {
+        if (contact.image) {
+          await deleteImageFromS3(contact.image); // Delete old image
+        }
     }
 
     // Delete the contact from the Contact collection

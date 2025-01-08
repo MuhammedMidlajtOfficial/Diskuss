@@ -475,3 +475,9 @@
 [2025-01-08T07:05:23.404Z] info: POST /api/v1/individualContact 201 - 526.545 ms
 [2025-01-08T07:06:16.382Z] info: Server connected on http://localhost:5000
 [2025-01-08T07:06:19.983Z] info: POST /api/v1/individualContact 201 - 484.391 ms
+[2025-01-08T07:06:30.606Z] info: Server connected on http://localhost:5000
+[2025-01-08T07:46:06.467Z] info: Server connected on http://localhost:5000
+[2025-01-08T07:46:19.389Z] error: DELETE /api/v1/individualContact/677e23ebff3de72b2160663a 500 - 189.329 ms - message: -
+[2025-01-08T07:46:45.308Z] info: Server connected on http://localhost:5000
+[2025-01-08T07:46:48.075Z] info: DELETE /api/v1/individualContact/677e23ebff3de72b2160663a 200 - 215.577 ms
+[2025-01-08T07:46:57.576Z] info: Server connected on http://localhost:5000

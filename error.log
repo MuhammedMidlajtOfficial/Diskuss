@@ -63,3 +63,4 @@
 [2025-01-08T06:45:42.691Z] error: POST /api/v1/individualContact 500 - 94.397 ms - message: -
 [2025-01-08T06:55:38.783Z] error: POST /api/v1/individualContact 500 - 117.860 ms - message: -
 [2025-01-08T06:59:40.561Z] error: POST /api/v1/individualContact 500 - 326.937 ms - message: -
+[2025-01-08T07:46:19.389Z] error: DELETE /api/v1/individualContact/677e23ebff3de72b2160663a 500 - 189.329 ms - message: -
