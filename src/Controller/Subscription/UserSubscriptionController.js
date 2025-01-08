@@ -125,10 +125,10 @@ const verifyPayment = async (req, res) => {
     return res.status(429).json({ message: "Payment verification already in process. Please wait." });
   }
 
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
   try {
     isProcessing = true; // Lock the process
 
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     // Generate the signature to verify the payment authenticity
     const generatedSignature = crypto
@@ -154,6 +154,7 @@ const verifyPayment = async (req, res) => {
 
     return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
   } catch (error) {
+    await UserSubscriptionService.sendNotification({ success:false, razorpay_order_id });
     console.error("Payment verification failed:", error);
     res.status(500).json({ error: error.message });
   } finally {
