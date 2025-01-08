@@ -3,7 +3,8 @@ const Contact = require("../../models/contacts/contact.individual.model");
 const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/users/enterpriseUser");
 const ContactService = require("../../services/contact.Individual.service");
-const { uploadImageToS3,deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
+const { uploadImageToS3ForContact, deleteImageFromS3ForContact } = require("../../services/AWS/s3Bucket");
+
 /**
  * Get all Contacts
  * @param {Request} req
@@ -103,10 +104,10 @@ const createContact = async (req, res) => {
         cardImage.replace(/^data:image\/\w+;base64,/, ""),
         "base64"
       );
-      const fileName = `${userId}-${contactOwnerId}-${Date.now()}-businessCard.jpg`; // Unique file name
+      const fileName = `${contactOwnerId}-${Date.now()}-businessCard.jpg`; // Unique file name
 
       try {
-        const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+        const uploadResult = await uploadImageToS3ForContact(imageBuffer, fileName);
         imageUrl = uploadResult.Location; // S3 image URL
       } catch (uploadError) {
         throw new Error(`Failed to upload image: ${uploadError.message}`);
@@ -256,6 +257,28 @@ const updateContact = async (req, res) => {
             isDiskussUser = true;
         }
 
+        let imageUrl = contact?.cardImage || null; // Default to provided image URL or null
+
+        // Upload image to S3 if provided
+        if (cardImage) {
+          if (contact.cardImage) {
+            await deleteImageFromS3ForContact(contact.cardImage)
+          }
+
+          const imageBuffer = Buffer.from(
+            cardImage.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+          );
+          const fileName = `${contactOwnerId}-${Date.now()}-businessCard.jpg`; // Unique file name
+
+          try {
+            const uploadResult = await uploadImageToS3ForContact(imageBuffer, fileName);
+            imageUrl = uploadResult.Location; // S3 image URL
+          } catch (uploadError) {
+            throw new Error(`Failed to upload image: ${uploadError.message}`);
+          }
+        }
+
         const updatedContact = await Contact.updateOne(
             {
                 _id: contact_id,
@@ -364,11 +387,11 @@ const deleteContact = async (req, res) => {
 
     let imageUrl = contact.image; // Default to existing image if no new image is provided
     
-      // Upload new image and delete old image if needed
-      if (imageUrl) {
-        if (contact.image) {
-          await deleteImageFromS3(contact.image); // Delete old image
-        }
+    // Upload new image and delete old image if needed
+    if (imageUrl) {
+      if (contact.image) {
+        await deleteImageFromS3ForContact(contact.image); // Delete old image
+      }
     }
 
     // Delete the contact from the Contact collection

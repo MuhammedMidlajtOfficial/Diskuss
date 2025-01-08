@@ -57,6 +57,7 @@ const createContact = async (req, res) => {
             scheduled,
             scheduledTime,
             notes,
+            cardImage,
             contactOwnerId,
         } = req.body;
 
@@ -71,6 +72,24 @@ const createContact = async (req, res) => {
 
         existUser = EnterpriseUser || EnterpriseEmpUser;
 
+        let imageUrl = cardImage; // Default to provided image URL
+
+        // Upload image to S3 if provided
+        if (cardImage) {
+        const imageBuffer = Buffer.from(
+            cardImage.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+        );
+        const fileName = `${contactOwnerId}-${Date.now()}-businessCard.jpg`; // Unique file name
+
+        try {
+            const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+            imageUrl = uploadResult.Location; // S3 image URL
+        } catch (uploadError) {
+            throw new Error(`Failed to upload image: ${uploadError.message}`);
+        }
+        }
+        
         let newContact;
 
         let contactDetails = {
@@ -87,6 +106,7 @@ const createContact = async (req, res) => {
                 scheduled,
                 scheduledTime,
                 notes,
+                cardImage: imageUrl,
                 isDiskussUser: !!existUser,
             }]
         };
