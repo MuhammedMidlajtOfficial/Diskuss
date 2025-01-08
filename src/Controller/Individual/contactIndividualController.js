@@ -188,14 +188,13 @@ const updateContact = async (req, res) => {
         if (!contactOwnerId || !name || !phnNumber) {
             return res.status(400).json({ message: "All fields are required" });
         }
-
-        // Find the contact by its ID
-        const contact = await Contact.findById(contact_id);
+        // Check if the contact exists
+        const contact = await Contact.findOne({_id:contact_id});
         if (!contact) {
             return res.status(404).json({ message: "Contact not found" });
         }
 
-        // Check if the phnNumber exists for any user in the relevant collections
+        // Check if the phone number exists in any user
         const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
         const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
         const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
@@ -203,7 +202,6 @@ const updateContact = async (req, res) => {
         let userId = null;
         let isDiskussUser = false;
 
-        // Determine the user ID based on the type of user
         if (existIndividualUser) {
             userId = existIndividualUser._id;
             isDiskussUser = true;
@@ -215,51 +213,48 @@ const updateContact = async (req, res) => {
             isDiskussUser = true;
         }
 
-        // Update the contact details with the new data
-        const updatedContact = await Contact.findByIdAndUpdate(
-            contact_id,
+        const updatedContact = await Contact.updateOne(
+            {
+                _id: contact_id,
+                "contacts._id": contact.contacts[0]._id
+            },
             {
                 $set: {
-                    name,
-                    companyName,
-                    designation,
-                    phnNumber,
-                    email,
-                    website,
-                    location,
-                    businessCategory,
-                    scheduled,
-                    scheduledTime,
-                    notes,
-                    userId,  // Update the userId based on the type of user
-                    isDiskussUser,  // Update isDiskussUser based on user type
+                    "contacts.$.name": name,
+                    "contacts.$.companyName": companyName,
+                    "contacts.$.designation": designation,
+                    "contacts.$.phnNumber": phnNumber,
+                    "contacts.$.email": email,
+                    "contacts.$.website": website,
+                    "contacts.$.location": location,
+                    "contacts.$.businessCategory": businessCategory,
+                    "contacts.$.scheduled": scheduled,
+                    "contacts.$.scheduledTime": scheduledTime,
+                    "contacts.$.notes": notes,
+                    "contacts.$.userId": userId,
+                    "contacts.$.isDiskussUser": isDiskussUser,
                 },
-            },
-            { new: true } // Return the updated document
+            }
         );
-
-        // If no contact is found to update
-        if (!updatedContact) {
-            return res.status(404).json({ message: 'Contact not found' });
+            console.log(updatedContact);
+        if (updatedContact.matchedCount === 0) {
+            return res.status(404).json({ message: "No contact found to update" });
         }
 
-        // Depending on the user type, update the contact in the correct collection
+        // Depending on the user type, update the contact in the relevant collection
         if (existIndividualUser) {
-            // Update the individualUserCollection
             await individualUserCollection.updateOne(
                 { _id: contactOwnerId },
                 { $set: { "contacts.$[contact].phnNumber": phnNumber } },
                 { arrayFilters: [{ "contact._id": contact_id }] }
             );
         } else if (existEnterpriseUser) {
-            // Update the enterpriseUserCollection
             await enterpriseUser.updateOne(
                 { _id: contactOwnerId },
                 { $set: { "contacts.$[contact].phnNumber": phnNumber } },
                 { arrayFilters: [{ "contact._id": contact_id }] }
             );
         } else if (existEnterpriseEmploye) {
-            // Update the enterpriseEmployeeCollection
             await enterpriseEmployeModel.updateOne(
                 { _id: contactOwnerId },
                 { $set: { "contacts.$[contact].phnNumber": phnNumber } },
@@ -269,13 +264,13 @@ const updateContact = async (req, res) => {
 
         return res.status(200).json({
             message: "Contact updated successfully",
-            updatedContact,
         });
     } catch (error) {
-        console.error("Error updating Contact:", error);
-        return res.status(500).json({ error: error.message });
+        console.error("Error updating Contact:", error.message);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
 
 /**
  * Delete a Contact
