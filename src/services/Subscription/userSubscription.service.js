@@ -4,6 +4,7 @@ const UserSubscription = require('../../models/subscription/userSubscription.mod
 const { individualUserCollection } = require("../../DBConfig");
 const { razorpay } = require('../Razorpay/razorpay');
 const subscriptionPlanModel = require('../../models/subscription/subscriptionPlan.model');
+const mailSender = require('../../util/mailSender');
 
 /**
  * Find all Subscsriptions
