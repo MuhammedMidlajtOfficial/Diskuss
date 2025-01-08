@@ -380,7 +380,7 @@ const updateUserStatus = async (userId) => {
   }
 };
 
-const sendNotification = async ({ success, razorpay_order_id }) => {
+const sendNotification = async ({ success, razorpay_order_id = null }) => {
   try {
     // Fetch order details from Razorpay
     const orderDetails = await razorpay.orders.fetch(razorpay_order_id);
@@ -439,7 +439,6 @@ const sendNotification = async ({ success, razorpay_order_id }) => {
 
 async function sendSuccessSubscriptionNotification(usermail, createdAt, subscriptionExpiry, plan, price, invoicePath) {
   try {
-    console.log('inside sendSuccessSubscriptionNotification');
     // Prepare the email body
     const emailBody = `
       <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; color: #333; border-radius: 10px; border: 1px solid #e0e0e0;">
@@ -498,8 +497,6 @@ async function sendSuccessSubscriptionNotification(usermail, createdAt, subscrip
 
 async function sendFailedSubscriptionNotification(usermail, attemptedPlan) {
   try {
-    console.log('inside sendFailedSubscriptionNotification');
-
     // Prepare the email body
     const emailBody = `
       <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; color: #333; border-radius: 10px; border: 1px solid #e0e0e0;">
