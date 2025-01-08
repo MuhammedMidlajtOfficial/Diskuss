@@ -31,8 +31,6 @@ const getUserSubscriptionByUserId = async (req, res) => {
   }
 }
 
-
-
 /**
  * Create a new UserSubscription
  * @param {Request} req
@@ -149,8 +147,10 @@ const verifyPayment = async (req, res) => {
       status: "active",
       payment: razorpay_payment_id,
     });
-
+    // UPDATE USER STATUS
     await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id, { isSubscribed: true });
+    // SEND NOTIFICATION
+    await UserSubscriptionService.sendNotification({ success:true, razorpay_order_id });
 
     return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
   } catch (error) {
@@ -209,7 +209,6 @@ const updateUserSubscription = async (req, res) => {
     }
   };
 
-
   /**
    * Delete a UserSubscription
    * @param {Request} req
@@ -234,7 +233,6 @@ const updateUserSubscription = async (req, res) => {
     }
   };
   
-
 const getStartEndDate = async (planId) => {
 
     console.log("deriving start and end date")
