@@ -147,9 +147,10 @@ const verifyPayment = async (req, res) => {
       status: "active",
       payment: razorpay_payment_id,
     });
-
+    // UPDATE USER STATUS
     await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id, { isSubscribed: true });
-    await UserSubscriptionService.sendNotification({ success:true, });
+    // SEND NOTIFICATION
+    await UserSubscriptionService.sendNotification({ success:true, razorpay_order_id });
 
     return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
   } catch (error) {
