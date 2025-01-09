@@ -50,28 +50,35 @@ const findAll = async () => {
  * @param {Mixed} planData.features - JSON object for plan features.
  * @returns {Promise<Object>} - Returns the created UserSubscription plan.
  */
-  const createUserSubscription = async (data) => {
-    try {
-      // Prepare the UserSubscription data with unique plan_id
+const createUserSubscription = async (data) => {
+  try {
+    const newSubscription = new UserSubscription({
+      planId: data.planId,
+      userId: data.userId,
+      razorpayOrderId: data.razorpayOrderId,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      status: data.status,
+      payment: [{
+        gstNumber: data.gstNumber,
+        state: data.state,
+        quantity: data.quantity,
+        sgst: data.sgst,
+        cgst: data.cgst,
+        igst: data.igst,
+        netAmount: data.netAmount,
+        currencyType: data.currencyType,
+      }],
+    });
 
-      // console.log("data", data);
-      const newSubscription = new UserSubscription({
-        planId: data.planId,
-        userId: data.userId,
-        razorpayOrderId:data.razorpayOrderId,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        status: data.status
-      });
-  
-      // Save the new UserSubscription plan to the database
-      const savedSubscription = await newSubscription.save();
-      return savedSubscription;
-    } catch (error) {
-      console.error("Error creating UserSubscription plan:", error);
-      throw error;
-    }
-  };
+    // Save the new UserSubscription plan to the database
+    const savedSubscription = await newSubscription.save();
+    return savedSubscription;
+  } catch (error) {
+    console.error("Error creating UserSubscription plan:", error);
+    throw error;
+  }
+};
 
 /**
  * Update a UserSubscription plan by plan_id.
@@ -133,7 +140,7 @@ const findAll = async () => {
     }
   };
 
-  const updateSubscriptionStatusInUsers = async (razorpay_order_id, updateData) => {
+  const updateSubscriptionStatusInUsers = async (razorpay_order_id) => {
     try {
       // Find the user subscription by razorpayOrderId
       const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
