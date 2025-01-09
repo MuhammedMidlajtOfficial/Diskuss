@@ -39,11 +39,20 @@ const getUserSubscriptionByUserId = async (req, res) => {
     */
 const createUserSubscription = async (req, res) => {
   try {
-    const { planId, userId } = req.body;
-    // const userId = req.user._id;
+    const { 
+      planId, 
+      userId, 
+      gstNumber, 
+      state, 
+      quantity, 
+      sgst = null, 
+      cgst = null, 
+      igst = null, 
+      netAmount 
+    } = req.body;
 
-    if (!userId || !planId) {
-      return res.status(400).json({ message: "User ID and Plan ID are required." });
+    if (!userId || !planId || !gstNumber || !state || !quantity || !netAmount) {
+      return res.status(400).json({ message: "User ID, Plan ID GstNumber, netAmount, state and quantity are required." });
     }
 
     // Retrieve subscription start and end dates
@@ -51,11 +60,11 @@ const createUserSubscription = async (req, res) => {
    
     const subscriptionPlan = await findOneByPlanId(planId)
     console.log("subscriptionPlan----",subscriptionPlan);
-    const amount = parseFloat(subscriptionPlan.price.toString())
+    // const amount = parseFloat(subscriptionPlan.price.toString())
+    const amount = netAmount
 
     // Shortened receipt ID to stay within 40 characters
     const receiptId = `recpt_${userId.toString().slice(-6)}_${newPlanId.toString().slice(-6)}`;
-
 
     const amountInPaisa = amount*100
     // Create a Razorpay order for the subscription amount
@@ -77,6 +86,14 @@ const createUserSubscription = async (req, res) => {
       planId: newPlanId,
       startDate,
       endDate,
+      gstNumber : gstNumber,
+      state : state,
+      quantity : quantity,
+      sgst : sgst,
+      cgst : cgst,
+      igst : igst,
+      netAmount : netAmount,
+      currencyType : 'INR',
       razorpayOrderId: razorpayOrder.id,  // Store the Razorpay order ID
       status: 'pending'  // Set as 'pending' until payment confirmation
     };
@@ -129,7 +146,6 @@ const verifyPayment = async (req, res) => {
   try {
     isProcessing = true; // Lock the process
 
-
     // Generate the signature to verify the payment authenticity
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_API_SECRET) // Use your Razorpay key secret
@@ -145,10 +161,11 @@ const verifyPayment = async (req, res) => {
     // Update the subscription status to active on successful payment verification
     await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, {
       status: "active",
-      payment: razorpay_payment_id,
+      'payment.paymentId': razorpay_payment_id,
+      'payment.paymentDate': Date.now(),
     });
     // UPDATE USER STATUS
-    await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id, { isSubscribed: true });
+    await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id);
     // SEND NOTIFICATION
     await UserSubscriptionService.sendNotification({ success:true, razorpay_order_id });
 

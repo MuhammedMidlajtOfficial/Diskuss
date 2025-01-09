@@ -5,11 +5,24 @@ const UserSubscriptionSchema = new mongoose.Schema({
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'SubscriptionPlan',required: true },
     razorpayOrderId: { type:String,required:true },
     startDate: { type: Date, default: Date.now },
-    payment : {type: Array },
+    payment: { type: [PaymentSchema], default: [] },
     endDate: { type: Date },
     status: { type: String, enum: ['active', 'inactive', 'canceled', 'pending', 'failed'], default: 'active' },
 }, { timestamps: true });
 
+const PaymentSchema = new mongoose.Schema({
+    paymentId: { type: String, required: true },
+    paymentMethod: { type: String },
+    paymentDate: { type: Date, default: Date.now },
+    gstNumber: { type: String, required: true },
+    state: { type: String, required: true },
+    quantity: { type: Number, required: true },
+    sgst: { type: Boolean, default: false },
+    cgst: { type: Boolean, default: false },
+    igst: { type: Boolean, default: false },
+    netAmount: { type: Number, required: true },
+    currencyType: { type: String},
+}); 
 
 // // Middleware to ensure only one membership type is active
 // subscriptionPlanSchema.pre("save", function (next) {
