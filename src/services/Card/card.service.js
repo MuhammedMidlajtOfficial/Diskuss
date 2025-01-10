@@ -236,6 +236,10 @@ module.exports.updateCard = async (updateData) => {
     }
   );
 
+  if(cardCollection === EnterpriseEmployeeCard){
+    await enterpriseEmployeModel.updateOne({ _id:userId },{ theme })
+  }
+
   if (result.modifiedCount === 0) {
     throw new Error("Card not found or no changes detected");
   }
