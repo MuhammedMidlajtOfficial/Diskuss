@@ -139,6 +139,7 @@ module.exports.createCard = async (req, res) => {
         phnNumber: mobile,
         password: hashedPassword,
         cardNo: 0,
+        theme
       });
       if (!newUser) {
         return res.status(404).json({ message: "User creation failed" });
