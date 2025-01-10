@@ -4,8 +4,8 @@ const PaymentSchema = new mongoose.Schema({
     paymentId: { type: String, required: true },
     paymentMethod: { type: String },
     paymentDate: { type: Date, default: Date.now },
-    gstNumber: { type: String, required: true },
-    state: { type: String, required: true },
+    gstNumber: { type: String, },
+    state: { type: String, },
     quantity: { type: Number, required: true },
     sgst: { type: Boolean, default: false },
     cgst: { type: Boolean, default: false },
@@ -17,6 +17,7 @@ const PaymentSchema = new mongoose.Schema({
 const UserSubscriptionSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'SubscriptionPlan',required: true },
+    planName: { type: String, required: true },
     razorpayOrderId: { type:String,required:true },
     startDate: { type: Date, default: Date.now },
     payment: { type: [PaymentSchema], default: [] },
