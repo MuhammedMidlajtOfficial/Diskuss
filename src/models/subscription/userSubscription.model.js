@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const PaymentSchema = new mongoose.Schema({
-    paymentId: { type: String, required: true },
+    paymentId: { type: String, },
     paymentMethod: { type: String },
     paymentDate: { type: Date, default: Date.now },
     gstNumber: { type: String, },
