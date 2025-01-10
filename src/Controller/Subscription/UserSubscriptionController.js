@@ -52,7 +52,7 @@ const createUserSubscription = async (req, res) => {
     } = req.body;
 
     if (!userId || !planId || !quantity || !netAmount) {
-      return res.status(400).json({ message: "User ID, Plan ID GstNumber, netAmount, state and quantity are required." });
+      return res.status(400).json({ message: "User ID, Plan ID, netAmount and quantity are required." });
     }
 
     // Retrieve subscription start and end dates
@@ -64,6 +64,7 @@ const createUserSubscription = async (req, res) => {
       console.error(`No subscription plan found with planId: ${planId}`);
       return res.status(404).json({ error: "Subscription plan not found" });
     }
+    console.log('subscriptionPlan-',subscriptionPlan);
     // console.log("subscriptionPlan----",subscriptionPlan);
     // const amount = parseFloat(subscriptionPlan.price.toString())
     const amount = netAmount

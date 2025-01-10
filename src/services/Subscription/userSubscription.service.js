@@ -54,6 +54,7 @@ const createUserSubscription = async (data) => {
   try {
     const newSubscription = new UserSubscription({
       planId: data.planId,
+      planName: data.planName,
       userId: data.userId,
       razorpayOrderId: data.razorpayOrderId,
       startDate: data.startDate,
