@@ -162,22 +162,24 @@ module.exports.postforgotPassword = async (req, res ) => {
 
 module.exports.OtpValidate = async (req, res ) => {
   try {
-    const { email, otp } = req.body
+    const { phnNumber, otp } = req.body
 
-    if (!email || !otp) {
-      return res.status(400).json({ message: "Both email and new password are required" });
+    if (!phnNumber || !otp) {
+      return res.status(400).json({ message: "Both phnNumber and Otp are required" });
     }
 
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
-    if(isEmailExist){
-      const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
+    const isphoneExist = await individualUserCollection.findOne({ phnNumber: phnNumber }).exec();
+    console.log("phone:",isphoneExist);
+    
+    if(isphoneExist){
+      const response = await otpCollection.find({ phnNumber }).sort({ createdAt: -1 }).limit(1);
       console.log("res-",response);
       if (response.length === 0 || otp !== response[0].otp) {
         return res.status(400).json({ success: false, message: 'The OTP is not valid' })
       } else {
         return res.status(200).json({ success: true, message: 'The OTP is valid' })
       }
-    } return res.status(401).json({ message: "No user found with the provided email address" })
+    } return res.status(401).json({ message: "There is no User with this Phone Number" })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });

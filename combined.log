@@ -481,3 +481,43 @@
 [2025-01-08T07:46:45.308Z] info: Server connected on http://localhost:5000
 [2025-01-08T07:46:48.075Z] info: DELETE /api/v1/individualContact/677e23ebff3de72b2160663a 200 - 215.577 ms
 [2025-01-08T07:46:57.576Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:06:51.770Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:11:21.350Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:12:13.230Z] info: POST /api/v1/individual/sendForgotPasswordOtp 200 - 18994.992 ms
+[2025-01-11T01:12:24.541Z] error: POST /api/v1/individual/validateotp 401 - 2028.937 ms - message: -
+[2025-01-11T01:14:21.020Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:14:52.136Z] info: POST /api/v1/individual/sendForgotPasswordOtp 200 - 12255.675 ms
+[2025-01-11T01:15:09.176Z] error: POST /api/v1/individual/validateotp 401 - 3120.930 ms - message: -
+[2025-01-11T01:16:40.864Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:16:47.856Z] error: POST /api/v1/individual/validateotp 401 - 3677.369 ms - message: -
+[2025-01-11T01:16:56.857Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:18:11.768Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:18:24.372Z] error: POST /api/v1/individual/validateotp 500 - 10032.694 ms - message: -
+[2025-01-11T01:18:39.595Z] error: POST /api/v1/individual/validateotp 401 - 831.362 ms - message: -
+[2025-01-11T01:19:14.876Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:19:37.052Z] info: POST /api/v1/individual/validateotp 200 - 18270.619 ms
+[2025-01-11T01:19:44.230Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:19:56.539Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:20:27.372Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:20:46.720Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:26:46.790Z] info: POST /api/v1/enterprise/sendForgotPasswordOtp 200 - 8911.422 ms
+[2025-01-11T01:27:03.874Z] error: POST /api/v1/individual/validateotp 401 - 670.775 ms - message: -
+[2025-01-11T01:27:54.255Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:28:13.331Z] error: POST /api/v1/individual/validateotp 500 - 10045.056 ms - message: -
+[2025-01-11T01:28:20.808Z] error: POST /api/v1/individual/validateotp 401 - 4238.025 ms - message: -
+[2025-01-11T01:28:53.769Z] info: POST /api/v1/enterprise/validateotp 200 - 3218.996 ms
+[2025-01-11T01:29:00.317Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:30:12.164Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:30:49.199Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:31:04.417Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:32:05.290Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:32:55.233Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:57:48.765Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:58:11.245Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:58:16.678Z] info: Server connected on http://localhost:5000
+[2025-01-11T01:59:09.539Z] info: POST /api/v1/enterprise/sendForgotPasswordOtp 200 - 7837.158 ms
+[2025-01-11T01:59:19.654Z] info: POST /api/v1/enterprise/validateotp 200 - 2086.041 ms
+[2025-01-11T01:59:40.148Z] info: POST /api/v1/enterprise/sendForgotPasswordOtp 200 - 7531.319 ms
+[2025-01-11T01:59:49.875Z] info: POST /api/v1/enterprise/validateotp 200 - 2043.824 ms
+[2025-01-11T02:00:26.681Z] info: Server connected on http://localhost:5000
+[2025-01-11T02:00:33.564Z] info: Server connected on http://localhost:5000

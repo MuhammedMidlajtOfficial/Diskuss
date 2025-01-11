@@ -64,3 +64,11 @@
 [2025-01-08T06:55:38.783Z] error: POST /api/v1/individualContact 500 - 117.860 ms - message: -
 [2025-01-08T06:59:40.561Z] error: POST /api/v1/individualContact 500 - 326.937 ms - message: -
 [2025-01-08T07:46:19.389Z] error: DELETE /api/v1/individualContact/677e23ebff3de72b2160663a 500 - 189.329 ms - message: -
+[2025-01-11T01:12:24.541Z] error: POST /api/v1/individual/validateotp 401 - 2028.937 ms - message: -
+[2025-01-11T01:15:09.176Z] error: POST /api/v1/individual/validateotp 401 - 3120.930 ms - message: -
+[2025-01-11T01:16:47.856Z] error: POST /api/v1/individual/validateotp 401 - 3677.369 ms - message: -
+[2025-01-11T01:18:24.372Z] error: POST /api/v1/individual/validateotp 500 - 10032.694 ms - message: -
+[2025-01-11T01:18:39.595Z] error: POST /api/v1/individual/validateotp 401 - 831.362 ms - message: -
+[2025-01-11T01:27:03.874Z] error: POST /api/v1/individual/validateotp 401 - 670.775 ms - message: -
+[2025-01-11T01:28:13.331Z] error: POST /api/v1/individual/validateotp 500 - 10045.056 ms - message: -
+[2025-01-11T01:28:20.808Z] error: POST /api/v1/individual/validateotp 401 - 4238.025 ms - message: -
