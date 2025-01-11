@@ -16,6 +16,7 @@ router.get('/withdraw', WithdrawalController.getAllWithdrawalDetails);
 router.get('/withdraw/:id', WithdrawalController.getWithdrawalRequestByUserId);
 router.post('/withdraw', WithdrawalController.createWithdrawalRequest);
 
+
 // Dashboard Routes
 router.get('/admin', ReferralController.getAllReferrals);
 router.get('/admin/monthly', ReferralController.getMonthlyReferralsCounts);

@@ -83,15 +83,27 @@ const enterpriseUserSchema = new mongoose.Schema(
     },
     empCards: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "EnterpriseEmployeeCard",
-      },
+        empCardId : {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "EnterpriseEmployeeCard",
+        },
+        status:{
+          type:String,
+          default : 'active'
+        },
+      }
     ],
-    empId: [
+    empIds: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "EnterpriseEmployee",
-      },
+        empId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "EnterpriseEmployee",
+        },
+        status:{
+          type:String,
+          default : 'active'
+        },
+      }
     ],
     meetings: [
       {

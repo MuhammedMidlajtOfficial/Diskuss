@@ -1,9 +1,9 @@
 const bcrypt = require("bcrypt");
-const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
-const enterpriseUser = require("../../models/enterpriseUser");
-const enterpriseEmployeCardModel = require("../../models/enterpriseEmployeCard.model");
+const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
+const enterpriseUser = require("../../models/users/enterpriseUser");
+const enterpriseEmployeCardModel = require("../../models/cards/enterpriseEmployeCard.model");
 const mailSender = require("../../util/mailSender");
-const Contact = require("../../models/contact.individual.model");
+const Contact = require("../../models/contacts/contact.individual.model");
 const {
   deleteImageFromS3,
   uploadImageToS3,

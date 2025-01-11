@@ -1,13 +1,13 @@
-const MeetingBase = require("../../models/EnterpriseMeetingModel");
+const MeetingBase = require("../../models/meeting/EnterpriseMeetingModel");
 const moment = require("moment");
 const cron = require("node-cron");
-const Profile = require("../../models/enterpriseEmploye.model");
+const Profile = require("../../models/users/enterpriseEmploye.model");
 const axios = require("axios");
-const enterprise = require("../../models/enterpriseUser");
-const individualUserCollection = require("../../models/individualUser");
+const enterprise = require("../../models/users/enterpriseUser");
+const individualUserCollection = require("../../models/users/individualUser");
 const mongoose = require("mongoose");
 
-const Notification = require("../../models/NotificationModel");
+const Notification = require("../../models/notification/NotificationModel");
 const {
   emitNotification,
 } = require("../../Controller/Socket.io/NotificationSocketIo");
@@ -236,20 +236,27 @@ const updateMeetingStatus = async (req, res) => {
     const decision = status === "accepted" ? "accepted" : "rejected";
     const notificationContent = `${username} has ${decision} your meeting titled "${meetingTitle}".`;
 
-    if (meetingOwner.length != 0) {
-      // Send notification to admin backend
-      const repose = await axios.post(
-        "http://13.203.24.247:9000/api/v1/fcm/acceptanceNotification",
-        {
-          userId: meetingOwner,
-          notification: {
-            title: "Meeting Status",
-            body: notificationContent,
-          },
-        }
-      );
-
-      console.log(repose.data);
+    try {
+      if (meetingOwner.length != 0) {
+        // Send notification to admin backend
+        const repose = await axios.post(
+          "http://13.203.24.247:9000/api/v1/fcm/acceptanceNotification",
+          {
+            userId: meetingOwner,
+            notification: {
+              title: "Meeting Status",
+              body: notificationContent,
+            },
+          }
+        );
+  
+        console.log(repose.data);
+      }
+    } catch (notificationError) {
+        console.error(
+          "Error sending meeting acceptance notification:",
+          notificationError.response?.data || notificationError.message
+        );
     }
 
 

@@ -1,15 +1,15 @@
 const { individualUserCollection } = require("../../DBConfig");
-const Card = require("../../models/card");
+const Card = require("../../models/cards/card");
 const { ObjectId } = require("mongodb");
-const Contact = require("../../models/contact.individual.model");
-const enterpriseUser = require("../../models/enterpriseUser");
-const enterpriseEmployee = require("../../models/enterpriseEmploye.model");
-const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
+const Contact = require("../../models/contacts/contact.individual.model");
+const enterpriseUser = require("../../models/users/enterpriseUser");
+const enterpriseEmployee = require("../../models/users/enterpriseEmploye.model");
+const EnterpriseEmployeeCard = require("../../models/cards/enterpriseEmployeCard.model");
 const {
   uploadImageToS3,
   deleteImageFromS3,
 } = require("../../services/AWS/s3Bucket");
-const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
+const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
 const cardService = require('../../services/Card/card.service');
 const { mongoose } = require("mongoose");
 
@@ -66,6 +66,22 @@ module.exports.updateCard = async (req, res) => {
   }
 };
 
+module.exports.updateLogo = async (req, res) => {
+  try {
+    const { cardId, image } = req.body;
+    
+    // Call the service to update the logo
+    const result = await cardService.updateLogo(cardId, image);
+
+    res.status(200).json({ message: "Card logo updated successfully" });
+  } catch (error) {
+    console.error("Error updating card logo:", error.message);
+    res.status(500).json({
+      message: error.message || "Failed to update card logo. Please try again later.",
+    });
+  }
+};
+
 module.exports.deleteCard = async (req, res) => {
   const { cardId } = req.body;
 
@@ -79,6 +95,20 @@ module.exports.deleteCard = async (req, res) => {
     });
   }
 };
+
+// module.exports.changeStatus = async (req, res) => {
+//   const { cardId } = req.body;
+
+//   try {
+//     const result = await cardService.changeStatus(cardId);
+//     res.status(200).json(result);
+//   } catch (error) {
+//     console.error("Error deleting card:", error.message);
+//     res.status(500).json({
+//       message: error.message || "Failed to delete card. Please try again later.",
+//     });
+//   }
+// };
 
 
 async function isValidUserId(userId) {

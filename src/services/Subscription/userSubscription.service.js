@@ -1,7 +1,10 @@
-const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
-const enterpriseUser = require('../../models/enterpriseUser');
-const UserSubscription = require('../../models/userSubscription.model');
+const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
+const enterpriseUser = require('../../models/users/enterpriseUser');
+const UserSubscription = require('../../models/subscription/userSubscription.model');
 const { individualUserCollection } = require("../../DBConfig");
+const { razorpay } = require('../Razorpay/razorpay');
+const subscriptionPlanModel = require('../../models/subscription/subscriptionPlan.model');
+const mailSender = require('../../util/mailSender');
 
 /**
  * Find all Subscsriptions
@@ -38,10 +41,6 @@ const findAll = async () => {
     }
   };
    
-
-
-
-  
 /**
  * Create al UserSubscription
  * * Create a new UserSubscription plan.
@@ -51,29 +50,36 @@ const findAll = async () => {
  * @param {Mixed} planData.features - JSON object for plan features.
  * @returns {Promise<Object>} - Returns the created UserSubscription plan.
  */
-  const createUserSubscription = async (data) => {
-    try {
-      // Prepare the UserSubscription data with unique plan_id
+const createUserSubscription = async (data) => {
+  try {
+    const newSubscription = new UserSubscription({
+      planId: data.planId,
+      planName: data.planName,
+      userId: data.userId,
+      razorpayOrderId: data.razorpayOrderId,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      status: data.status,
+      payment: [{
+        gstNumber: data.gstNumber,
+        state: data.state,
+        quantity: data.quantity,
+        sgst: data.sgst,
+        cgst: data.cgst,
+        igst: data.igst,
+        netAmount: data.netAmount,
+        currencyType: data.currencyType,
+      }],
+    });
 
-      // console.log("data", data);
-      const newSubscription = new UserSubscription({
-        planId: data.planId,
-        userId: data.userId,
-        razorpayOrderId:data.razorpayOrderId,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        status: data.status
-      });
-  
-      // Save the new UserSubscription plan to the database
-      const savedSubscription = await newSubscription.save();
-      return savedSubscription;
-    } catch (error) {
-      console.error("Error creating UserSubscription plan:", error);
-      throw error;
-    }
-  };
-
+    // Save the new UserSubscription plan to the database
+    const savedSubscription = await newSubscription.save();
+    return savedSubscription;
+  } catch (error) {
+    console.error("Error creating UserSubscription plan:", error);
+    throw error;
+  }
+};
 
 /**
  * Update a UserSubscription plan by plan_id.
@@ -134,9 +140,8 @@ const findAll = async () => {
       throw error; // Re-throw the error for higher-level handling
     }
   };
-  
 
-  const updateSubscriptionStatusInUsers = async (razorpay_order_id, updateData) => {
+  const updateSubscriptionStatusInUsers = async (razorpay_order_id) => {
     try {
       // Find the user subscription by razorpayOrderId
       const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
@@ -179,7 +184,7 @@ const findAll = async () => {
           // Handle case when user doesn't exist in any collection
           console.log("User not found in any collection");
         }
-        console.log("subscribed ---------------");
+        
       return;
     } catch (error) {
       console.error("Error updating UserSubscription:", error);
@@ -211,7 +216,6 @@ const findAll = async () => {
     }
   };
   
-  
 /**
  * Delete a UserSubscription plan by plan_id.
  * @param {String} plan_id - The unique identifier of the UserSubscription plan to delete.
@@ -232,7 +236,6 @@ const findAll = async () => {
       throw error; // Re-throw the error for higher-level handling
     }
   };
-  
   
 // // Import your deactivateExpiredSubscriptions function
 // const deactivateExpiredSubscriptions = async () => {
@@ -263,7 +266,6 @@ const findAll = async () => {
 //     throw error;
 //   }
 // };
-
 
 const deactivateExpiredSubscriptions = async () => {
   try {
@@ -386,7 +388,176 @@ const updateUserStatus = async (userId) => {
   }
 };
 
+const sendNotification = async ({ success, razorpay_order_id = null }) => {
+  try {
+    // Fetch order details from Razorpay
+    const orderDetails = await razorpay.orders.fetch(razorpay_order_id);
 
+    if (!orderDetails || !orderDetails.notes) {
+      throw new Error("Invalid order details or missing notes.");
+    }
+
+    // Extract planId and userId from Razorpay order notes
+    const { planId, userId } = orderDetails.notes;
+
+    // Fetch subscription plan details
+    const planDetails = await subscriptionPlanModel.findById(planId);
+    if (!planDetails) {
+      throw new Error(`Subscription plan not found for planId: ${planId}`);
+    }
+
+    // Fetch user details from individual or enterprise collections
+    let userDetails = await individualUserCollection.findById(userId);
+    if (!userDetails) {
+      userDetails = await enterpriseUser.findById(userId);
+      if (!userDetails) {
+        throw new Error(`User not found for userId: ${userId}`);
+      }
+    }
+
+    // Extract relevant details from the plan and user
+    const plan = planDetails.name;
+    const price = planDetails.price;
+    const createdAt = new Date(); // Current timestamp
+    const subscriptionExpiry = new Date(createdAt);
+    subscriptionExpiry.setDate(subscriptionExpiry.getDate() + planDetails.duration); // Calculate expiry
+    const usermail = userDetails.email;
+
+    // Check if success flag is true and send the notification
+    if (success) {
+      const invoicePath = `invoices/${razorpay_order_id}.pdf`; // Example path for invoice
+      await sendSuccessSubscriptionNotification(
+        usermail,
+        createdAt,
+        subscriptionExpiry,
+        plan,
+        price,
+        invoicePath
+      );
+      console.log("Notification sent successfully.");
+    }else{
+      await sendFailedSubscriptionNotification(usermail,plan)
+    }
+  } catch (error) {
+    console.error("Error in sendNotification:", error.message);
+    throw error;
+  }
+};
+
+
+async function sendSuccessSubscriptionNotification(usermail, createdAt, subscriptionExpiry, plan, price, invoicePath) {
+  try {
+    // Prepare the email body
+    const emailBody = `
+      <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; color: #333; border-radius: 10px; border: 1px solid #e0e0e0;">
+        <!-- Header Section -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/Diskuss+Logo+Blue.png" alt="Diskuss Logo" style="max-width: 150px;">
+        </div>
+
+        <!-- Main Content Section -->
+        <div style="background-color: #f0f8ff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+          <h2 style="font-size: 26px; color: #3e4a59; font-weight: bold; text-align: center; margin-bottom: 20px;">Subscription Successful</h2>
+          <p style="font-size: 18px; color: #555; line-height: 1.6; text-align: center; margin-bottom: 30px;">
+            Thank you for subscribing to Diskuss! Your subscription has been successfully activated.
+          </p>
+
+          <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px;">
+            <h3 style="font-size: 22px; color: #3e4a59; margin-bottom: 15px;">Subscription Details</h3>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Email:</strong> ${usermail}</p>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Subscription Plan:</strong> ${plan}</p>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Subscription Amount:</strong> ${price}</p>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Subscription Date:</strong> ${new Date(createdAt).toLocaleDateString()}</p>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Subscription Expiry Date:</strong> ${new Date(subscriptionExpiry).toLocaleDateString()}</p>
+          </div>
+
+          <!-- Invoice Download Section -->
+          <div style="text-align: center; margin-bottom: 20px;">
+            <p style="font-size: 16px; color: #777;">We’re excited to have you with us! Explore our platform and enjoy all the benefits that come with your subscription.</p>
+            <p style="font-size: 16px; color: #777;">Click below to download your invoice:</p>
+            <a href="${invoicePath}" 
+               style="display: inline-block; font-size: 16px; font-weight: 600; color: #fff; background-color: #4CAF50; padding: 12px 30px; border-radius: 5px; text-decoration: none; text-align: center; transition: background-color 0.3s ease, transform 0.3s ease;">
+              Download Invoice
+            </a>
+          </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div style="background-color: #f8f8f8; padding: 15px; border-radius: 8px; margin-top: 30px; text-align: center;">
+          <p style="font-size: 14px; color: #888;">© 2025 Diskuss. All rights reserved.</p>
+        </div>
+      </div>
+    `;
+
+    // Send the email using mailSender
+    const mailResponse = await mailSender(
+      usermail,
+      "Digital Card Admin - Subscription Successful",
+      emailBody
+    );
+
+    console.log("Email sent successfully:", mailResponse);
+  } catch (error) {
+    console.error("Error occurred while sending email:", error.message);
+    throw error;
+  }
+}
+
+async function sendFailedSubscriptionNotification(usermail, attemptedPlan) {
+  try {
+    // Prepare the email body
+    const emailBody = `
+      <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; color: #333; border-radius: 10px; border: 1px solid #e0e0e0;">
+        <!-- Header Section -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/Diskuss+Logo+Blue.png" alt="Diskuss Logo" style="max-width: 150px;">
+        </div>
+
+        <!-- Main Content Section -->
+        <div style="background-color: #ffe5e5; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+          <h2 style="font-size: 26px; color: #b71c1c; font-weight: bold; text-align: center; margin-bottom: 20px;">Subscription Failed</h2>
+          <p style="font-size: 18px; color: #555; line-height: 1.6; text-align: center; margin-bottom: 30px;">
+            Unfortunately, we could not process your subscription to Diskuss at this time. Please review your payment details and try again.
+          </p>
+
+          <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px;">
+            <h3 style="font-size: 22px; color: #b71c1c; margin-bottom: 15px;">Failed Subscription Details</h3>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Email:</strong> ${usermail}</p>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Attempted Plan:</strong> ${attemptedPlan}</p>
+          </div>
+
+          <!-- Retry Suggestion -->
+          <div style="text-align: center; margin-bottom: 20px;">
+            <p style="font-size: 16px; color: #777;">We apologize for the inconvenience. Please try subscribing again or contact our support team for assistance.</p>
+            
+            <!-- Retry Button -->
+            <a href="#" 
+               style="display: inline-block; font-size: 16px; font-weight: 600; color: #fff; background-color: #f44336; padding: 12px 30px; border-radius: 5px; text-decoration: none; text-align: center; transition: background-color 0.3s ease, transform 0.3s ease;">
+              Retry Subscription
+            </a>
+          </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div style="background-color: #f8f8f8; padding: 15px; border-radius: 8px; margin-top: 30px; text-align: center;">
+          <p style="font-size: 14px; color: #888;">© 2025 Diskuss. All rights reserved.</p>
+        </div>
+      </div>
+    `;
+
+    // Send the email using mailSender
+    const mailResponse = await mailSender(
+      usermail,
+      "Digital Card Admin - Subscription Failed",
+      emailBody
+    );
+
+    console.log("Failed subscription email sent successfully:", mailResponse);
+  } catch (error) {
+    console.error("Error occurred while sending failed subscription email:", error.message);
+    throw error;
+  }
+}
 
 
 module.exports = {
@@ -399,4 +570,5 @@ module.exports = {
     updateSubscriptionStatusInUsers,
     deactivateOldSubscriptions,
     deactivateExpiredSubscriptions,
+    sendNotification,
 };

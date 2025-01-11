@@ -1,5 +1,5 @@
-const enterpriseUser = require("../../models/enterpriseUser");
-const teamModel = require("../../models/team.model");
+const enterpriseUser = require("../../models/users/enterpriseUser");
+const teamModel = require("../../models/team/team.model");
 
 module.exports.getAllTeamById = async (req, res) => {
     try {
@@ -156,14 +156,14 @@ module.exports.getUserOfEnterprise = async (req, res) => {
     try {
         const { id: userId } = req.params;
         const user = await enterpriseUser.findOne({ _id : userId }).populate({
-            path: 'empId',
+            path: 'empIds.empId',
             strictPopulate: false, 
         } )
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
         console.log(user);
-        return res.status(200).json({ employee:user.empId })
+        return res.status(200).json({ employee:user.empIds })
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Failed to fetch employee", error });

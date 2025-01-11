@@ -2,12 +2,12 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const otpGenerator = require("otp-generator")
 const mongoose = require('mongoose');
-const  otpCollection = require('../../models/otpModule');
+const  otpCollection = require('../../models/auth/otpModule');
 const {individualUserCollection } = require('../../DBConfig');
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
-const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
-const Contact  = require('../../models/contact.individual.model');
-const enterpriseUser = require('../../models/enterpriseUser');
+const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
+const Contact  = require('../../models/contacts/contact.individual.model');
+const enterpriseUser = require('../../models/users/enterpriseUser');
 
 module.exports.postEnterpriseLogin = async (req, res) => {
   try {
@@ -177,17 +177,24 @@ module.exports.postforgotPassword = async (req, res ) => {
 
 module.exports.OtpValidate = async (req, res ) => {
   try {
-    const { email, otp } = req.body
-    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
-    if(isEmailExist){
-      const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
+    const { phnNumber, otp } = req.body
+
+    if (!phnNumber || !otp) {
+      return res.status(400).json({ message: "Both phnNumber and Otp are required" });
+    }
+
+    const isPhoneInEnterpriseUser = await enterpriseUser.findOne({ phnNumber }).exec();
+    const isPhoneInEmployee = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+
+    if (isPhoneInEnterpriseUser || isPhoneInEmployee) {
+      const response = await otpCollection.find({ phnNumber }).sort({ createdAt: -1 }).limit(1);
       console.log("res-",response);
       if (response.length === 0 || otp !== response[0].otp) {
         return res.status(400).json({ success: false, message: 'The OTP is not valid' })
       } else {
         return res.status(200).json({ success: true, message: 'The OTP is valid' })
       } 
-    } return res.status(401).json({ message: "User Not Found with this email" })
+    } return res.status(401).json({ message: "There is no User with this Phone Number" })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });

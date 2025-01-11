@@ -25,6 +25,7 @@ const contactSchema = new mongoose.Schema({
     scheduled: { type: Boolean, default: false },
     scheduledTime: { type: Date },
     notes: { type: String },
+    cardImage:{ type:String},
     userId: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'EnterpriseEmployee', // Dynamic reference to either 'EnterpriseUser' or 'EnterpriseEmployee'

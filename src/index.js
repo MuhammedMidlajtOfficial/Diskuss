@@ -18,6 +18,8 @@ require('./services/Cron/cron.service.js');
 const logger = require('./config/logger.js');
 const morgan = require('./config/morgan.js');
 const expressListRoutes = require('express-list-routes');
+// const { parseLogs } = require('./crons/testCron.js');
+
 
 
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
@@ -98,6 +100,7 @@ function getRoutes(stack, basePath = '') {
 
 // Log all routes
 // console.log('All Routes:', JSON.stringify(allRoutes, null, 2));
+
 
 
 const port = process.env.PORT || "3000"

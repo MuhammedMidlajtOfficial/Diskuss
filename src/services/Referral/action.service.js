@@ -1,5 +1,5 @@
 // services/actionService.js
-const {Action} = require('../../models/referral.model');
+const {Action} = require('../../models/referral/referral.model');
 
 /**
  * Find all Actions

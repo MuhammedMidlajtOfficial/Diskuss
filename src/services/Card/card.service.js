@@ -1,22 +1,22 @@
 const { individualUserCollection } = require("../../DBConfig");
-const enterpriseUser = require("../../models/enterpriseUser");
-const enterpriseEmployee = require("../../models/enterpriseEmploye.model");
-const EnterpriseEmployeeCard = require("../../models/enterpriseEmployeCard.model");
-const Card = require("../../models/card");
+const enterpriseUser = require("../../models/users/enterpriseUser");
+const enterpriseEmployee = require("../../models/users/enterpriseEmploye.model");
+const EnterpriseEmployeeCard = require("../../models/cards/enterpriseEmployeCard.model");
+const Card = require("../../models/cards/card");
 const { ObjectId } = require("mongodb");
-const Contact = require("../../models/contact.individual.model");
+const Contact = require("../../models/contacts/contact.individual.model");
 const {
   uploadImageToS3,
   deleteImageFromS3,
 } = require("../../services/AWS/s3Bucket");
-const enterpriseEmployeModel = require("../../models/enterpriseEmploye.model");
+const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
 const { Types } = require("mongoose");
 
 module.exports.getCard = async (userId) => {
   // Check user existence in collections
   const [isIndividualUserExist, isEnterpriseUserExist, isEmployeeUserExist] = await Promise.all([
     individualUserCollection.findOne({ _id: userId }).lean(),
-    enterpriseUser.findOne({ _id: userId }).populate("empCards").lean(),
+    enterpriseUser.findOne({ _id: userId }).populate("empCards.empCardId").lean(),
     enterpriseEmployee.findOne({ _id: userId }).lean(),
   ]);
 
@@ -28,8 +28,13 @@ module.exports.getCard = async (userId) => {
 
   if (isEnterpriseUserExist) {
     // Fetch enterprise user cards
-    const enterpriseCards = await Card.find({ userId });
-    cards = [...enterpriseCards, ...isEnterpriseUserExist.empCards];
+    const enterpriseCardsFromEmpCards = isEnterpriseUserExist.empCards
+      .filter(empCard => empCard.status === "active")
+      .map(empCard => empCard.empCardId); // Extract empCardId
+
+    const enterpriseCardsFromCardCollection = await Card.find({ userId });
+
+    cards = [...enterpriseCardsFromCardCollection, ...enterpriseCardsFromEmpCards];
   } else if (isIndividualUserExist) {
     // Fetch individual user cards
     cards = await Card.find({ userId });
@@ -231,12 +236,162 @@ module.exports.updateCard = async (updateData) => {
     }
   );
 
+  if(cardCollection === EnterpriseEmployeeCard){
+    await enterpriseEmployeModel.updateOne({ _id:userId },{ theme })
+  }
+
   if (result.modifiedCount === 0) {
     throw new Error("Card not found or no changes detected");
   }
 
   return result;
 };
+
+module.exports.updateLogo = async (cardId, image) => {
+  // Validate cardId format
+  if (!Types.ObjectId.isValid(cardId)) {
+    throw new Error("Invalid card ID format");
+  }
+
+  // Check if the card exists in Card or EnterpriseEmployeeCard collection
+  let existingCard = await Card.findOne({ _id: cardId });
+  let cardCollection = Card;
+
+  if (!existingCard) {
+    existingCard = await EnterpriseEmployeeCard.findOne({ _id: cardId });
+    cardCollection = EnterpriseEmployeeCard;
+  }
+
+  if (!existingCard) {
+    throw new Error("Card not found");
+  }
+
+  let imageUrl = existingCard.image; // Default to existing image if no new image is provided
+
+  // Upload new image and delete old image if needed
+  if (image) {
+    if (existingCard.image) {
+      // Delete old image if it exists
+      await deleteImageFromS3(existingCard.image);
+    }
+
+    const imageBuffer = Buffer.from(
+      image.replace(/^data:image\/\w+;base64,/, ""),
+      "base64"
+    );
+    const fileName = `${cardId}-${Date.now()}-businessCard.jpg`;
+
+    try {
+      // Upload the new image to S3
+      const uploadResult = await uploadImageToS3(imageBuffer, fileName);
+      imageUrl = uploadResult.Location; // New S3 image URL
+    } catch (uploadError) {
+      throw new Error(`Failed to upload image: ${uploadError.message}`);
+    }
+  }
+
+  // Update the card in the respective collection
+  const result = await cardCollection.updateOne(
+    { _id: cardId },
+    {
+      $set: {
+        image: imageUrl,
+      },
+    }
+  );
+
+  if (result.modifiedCount === 0) {
+    throw new Error("Card not found or no changes detected");
+  }
+
+  return result;
+};
+
+
+// module.exports.deleteCard = async (cardId) => {
+//   try {
+//     const card = await Card.findOne({ _id: cardId });
+//     const employeeCard = await EnterpriseEmployeeCard.findOne({ _id: cardId });
+//     if (!card && !employeeCard) {
+//       throw new Error("Card not found");
+//     }
+//     let userId;
+//     let enterpriseId;
+
+//     if (employeeCard) {
+//       userId = employeeCard.userId;
+//       enterpriseId = employeeCard.enterpriseId;
+//     } else {
+//       userId = card.userId;
+//     }
+
+//     const isIndividualUser = await individualUserCollection.findOne({ _id: userId });
+//     const isEnterpriseUser = await enterpriseUser.findOne({ _id: userId });
+//     const isEnterpriseEmployee = await enterpriseEmployee.findOne({ _id: userId });
+
+//     if (!isIndividualUser && !isEnterpriseUser && !isEnterpriseEmployee) {
+//       throw new Error("Invalid user ID associated with the card");
+//     }
+
+//     if (isEnterpriseEmployee) {
+//       const employeePhoneNumber = isEnterpriseEmployee.phnNumber;
+
+//       const existingContact = await Contact.findOne({
+//         "contacts.phnNumber": employeePhoneNumber,
+//       });
+
+//       if (existingContact) {
+//         await Contact.updateOne(
+//           { "contacts.phnNumber": employeePhoneNumber },
+//           {
+//             $set: {
+//               "contacts.$.isDiskussUser": false,
+//               "contacts.$.userId": null,
+//             },
+//           }
+//         );
+//       }
+
+//       await EnterpriseEmployeeCard.deleteOne({ _id: cardId });
+
+//       const employeeExists = await enterpriseEmployee.deleteOne({ _id: userId });
+//       if (!employeeExists.deletedCount) {
+//         throw new Error("Employee not found in EnterpriseEmployee model");
+//       }
+
+//       await enterpriseUser.updateOne(
+//         { _id: enterpriseId },
+//         { $pull: { empCards: cardId, empId : userId } }
+//       );
+
+//       return { message: "Employee card deleted successfully" };
+//     }
+
+//     if (card) {
+//       await Card.deleteOne({ _id: cardId });
+
+//       if (isIndividualUser) {
+//         await individualUserCollection.updateOne(
+//           { _id: userId },
+//           { $inc: { cardNo: -1 } }
+//         );
+//       }
+
+//       if (isEnterpriseUser) {
+//         await enterpriseUser.updateOne(
+//           { _id: userId },
+//           { $inc: { cardNo: -1 } }
+//         );
+//       }
+
+//       return { message: "Card deleted successfully" };
+//     }
+
+//     throw new Error("Card deletion failed");
+//   } catch (error) {
+//     throw error;
+//   }
+// };
 
 module.exports.deleteCard = async (cardId) => {
   try {
@@ -264,37 +419,47 @@ module.exports.deleteCard = async (cardId) => {
     }
 
     if (isEnterpriseEmployee) {
-      const employeePhoneNumber = isEnterpriseEmployee.phnNumber;
-
-      const existingContact = await Contact.findOne({
-        "contacts.phnNumber": employeePhoneNumber,
-      });
-
-      if (existingContact) {
-        await Contact.updateOne(
-          { "contacts.phnNumber": employeePhoneNumber },
-          {
-            $set: {
-              "contacts.$.isDiskussUser": false,
-              "contacts.$.userId": null,
-            },
-          }
-        );
+      // Get the current status of the employee card
+      const card = await EnterpriseEmployeeCard.findOne({ _id: cardId });
+      if (!card) {
+        throw new Error("Employee card not found");
       }
-
-      await EnterpriseEmployeeCard.deleteOne({ _id: cardId });
-
-      const employeeExists = await enterpriseEmployee.deleteOne({ _id: userId });
-      if (!employeeExists.deletedCount) {
+    
+      const newStatus = card.status === "active" ? "inactive" : "active";
+    
+      // Update the status of the employee card
+      await EnterpriseEmployeeCard.updateOne(
+        { _id: cardId },
+        { $set: { status: newStatus } }
+      );
+    
+      // Update the status of the employee in the EnterpriseEmployee model
+      const employeeExists = await enterpriseEmployee.updateOne(
+        { _id: userId },
+        { $set: { status: newStatus } }
+      );
+      if (!employeeExists.modifiedCount) {
         throw new Error("Employee not found in EnterpriseEmployee model");
       }
-
+    
+      // Update the status of the empCards and empIds in the EnterpriseUser model
       await enterpriseUser.updateOne(
-        { _id: enterpriseId },
-        { $pull: { empCards: cardId, empId : userId } }
+        { _id: enterpriseId }, // Filter to find the correct enterprise user
+        {
+          $set: {
+            "empCards.$[card].status": newStatus, // Update the status of a specific empCard
+            "empIds.$[emp].status": newStatus,   // Update the status of a specific empId
+          },
+        },
+        {
+          arrayFilters: [
+            { "card.empCardId": cardId }, // Condition to match the empCard with the given cardId
+            { "emp.empId": userId },      // Condition to match the empId with the given userId
+          ],
+        }
       );
-
-      return { message: "Employee card deleted successfully" };
+    
+      return { message: `Employee card status updated to ${newStatus} successfully` };
     }
 
     if (card) {

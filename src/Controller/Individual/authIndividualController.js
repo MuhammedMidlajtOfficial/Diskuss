@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const  otpCollection  = require('../../models/otpModule');
-const enterpriseUser = require('../../models/enterpriseUser');
+const  otpCollection  = require('../../models/auth/otpModule');
+const enterpriseUser = require('../../models/users/enterpriseUser');
 const { individualUserCollection } = require('../../DBConfig');
-const EnterpriseEmployee = require('../../models/enterpriseEmploye.model');
+const EnterpriseEmployee = require('../../models/users/enterpriseEmploye.model');
 const otpGenerator = require("otp-generator");
 const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Bucket');
 const { createProfile } = require('../Profile/profileController');
-const Contact  = require('../../models/contact.individual.model');
-const enterpriseEmployeModel = require('../../models/enterpriseEmploye.model');
+const Contact  = require('../../models/contacts/contact.individual.model');
+const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
 const referralService = require('../../services/Referral/referral.service');
 
 
@@ -162,22 +162,24 @@ module.exports.postforgotPassword = async (req, res ) => {
 
 module.exports.OtpValidate = async (req, res ) => {
   try {
-    const { email, otp } = req.body
+    const { phnNumber, otp } = req.body
 
-    if (!email || !otp) {
-      return res.status(400).json({ message: "Both email and new password are required" });
+    if (!phnNumber || !otp) {
+      return res.status(400).json({ message: "Both phnNumber and Otp are required" });
     }
 
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
-    if(isEmailExist){
-      const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
+    const isphoneExist = await individualUserCollection.findOne({ phnNumber: phnNumber }).exec();
+    console.log("phone:",isphoneExist);
+    
+    if(isphoneExist){
+      const response = await otpCollection.find({ phnNumber }).sort({ createdAt: -1 }).limit(1);
       console.log("res-",response);
       if (response.length === 0 || otp !== response[0].otp) {
         return res.status(400).json({ success: false, message: 'The OTP is not valid' })
       } else {
         return res.status(200).json({ success: true, message: 'The OTP is valid' })
       }
-    } return res.status(401).json({ message: "No user found with the provided email address" })
+    } return res.status(401).json({ message: "There is no User with this Phone Number" })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });

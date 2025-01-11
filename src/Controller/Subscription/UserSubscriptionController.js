@@ -3,7 +3,7 @@ const { findOneByPlanId } = require('../../services/Subscription/subscriptionPla
 const { razorpay } = require('../../services/Razorpay/razorpay');
 const crypto = require('crypto');
 require('dotenv')
-const Notification = require("../../models/NotificationModel");
+const Notification = require("../../models/notification/NotificationModel");
 const {emitNotification,} = require("../../Controller/Socket.io/NotificationSocketIo");
 
 /**
@@ -31,8 +31,6 @@ const getUserSubscriptionByUserId = async (req, res) => {
   }
 }
 
-
-
 /**
  * Create a new UserSubscription
  * @param {Request} req
@@ -41,23 +39,38 @@ const getUserSubscriptionByUserId = async (req, res) => {
     */
 const createUserSubscription = async (req, res) => {
   try {
-    const { planId, userId } = req.body;
-    // const userId = req.user._id;
+    const { 
+      planId, 
+      userId, 
+      gstNumber, 
+      state, 
+      quantity, 
+      sgst = null, 
+      cgst = null, 
+      igst = null, 
+      netAmount 
+    } = req.body;
 
-    if (!userId || !planId) {
-      return res.status(400).json({ message: "User ID and Plan ID are required." });
+    if (!userId || !planId || !quantity || !netAmount) {
+      return res.status(400).json({ message: "User ID, Plan ID, netAmount and quantity are required." });
     }
 
     // Retrieve subscription start and end dates
     const { startDate, endDate, newPlanId } = await getStartEndDate(planId);
    
     const subscriptionPlan = await findOneByPlanId(planId)
-    console.log("subscriptionPlan----",subscriptionPlan);
-    const amount = parseFloat(subscriptionPlan.price.toString())
+
+    if (!subscriptionPlan) {
+      console.error(`No subscription plan found with planId: ${planId}`);
+      return res.status(404).json({ error: "Subscription plan not found" });
+    }
+    console.log('subscriptionPlan-',subscriptionPlan);
+    // console.log("subscriptionPlan----",subscriptionPlan);
+    // const amount = parseFloat(subscriptionPlan.price.toString())
+    const amount = netAmount
 
     // Shortened receipt ID to stay within 40 characters
     const receiptId = `recpt_${userId.toString().slice(-6)}_${newPlanId.toString().slice(-6)}`;
-
 
     const amountInPaisa = amount*100
     // Create a Razorpay order for the subscription amount
@@ -77,8 +90,17 @@ const createUserSubscription = async (req, res) => {
     const userSubscriptionData = {
       userId,
       planId: newPlanId,
+      planName: subscriptionPlan.name,
       startDate,
       endDate,
+      gstNumber : gstNumber,
+      state : state,
+      quantity : quantity,
+      sgst : sgst,
+      cgst : cgst,
+      igst : igst,
+      netAmount : netAmount,
+      currencyType : 'INR',
       razorpayOrderId: razorpayOrder.id,  // Store the Razorpay order ID
       status: 'pending'  // Set as 'pending' until payment confirmation
     };
@@ -127,10 +149,9 @@ const verifyPayment = async (req, res) => {
     return res.status(429).json({ message: "Payment verification already in process. Please wait." });
   }
 
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
   try {
     isProcessing = true; // Lock the process
-
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     // Generate the signature to verify the payment authenticity
     const generatedSignature = crypto
@@ -147,13 +168,17 @@ const verifyPayment = async (req, res) => {
     // Update the subscription status to active on successful payment verification
     await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, {
       status: "active",
-      payment: razorpay_payment_id,
+      'payment.paymentId': razorpay_payment_id,
+      'payment.paymentDate': Date.now(),
     });
-
-    await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id, { isSubscribed: true });
+    // UPDATE USER STATUS
+    await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id);
+    // SEND NOTIFICATION
+    await UserSubscriptionService.sendNotification({ success:true, razorpay_order_id });
 
     return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
   } catch (error) {
+    await UserSubscriptionService.sendNotification({ success:false, razorpay_order_id });
     console.error("Payment verification failed:", error);
     res.status(500).json({ error: error.message });
   } finally {
@@ -209,7 +234,6 @@ const updateUserSubscription = async (req, res) => {
     }
   };
 
-
   /**
    * Delete a UserSubscription
    * @param {Request} req
@@ -234,7 +258,6 @@ const updateUserSubscription = async (req, res) => {
     }
   };
   
-
 const getStartEndDate = async (planId) => {
 
     console.log("deriving start and end date")

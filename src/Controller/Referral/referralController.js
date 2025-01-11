@@ -76,15 +76,7 @@ const getMonthlyReferralsCounts = async (req, res) => {
     }
 };
 
-const createWithdrawalRequest = async (req, res) => {
-    try {
-        const { userId, amount } = req.body;
-        const withdrawal = await referralService.createWithdrawalRequest(userId, amount);
-        return res.status(201).json({ message: "Withdrawal request created", withdrawal });
-    } catch (e) {
-        return res.status(500).json({ error: e.message });
-    }
-};
+
 
 const createWithdrawal = async (req, res) => {
     try {
@@ -93,6 +85,7 @@ const createWithdrawal = async (req, res) => {
         // const withdrawal = await referralService.createWithdrawal(userId, amount);
         const withdrawalData = await referralService.createWithdrawal(userId, amount);
         // console.log("withdrawal : ", withdrawalData)
+
         return res.status(201).json({ message: "Withdrawal request created", withdrawalData });
     } catch (e) {
         // handle errors here
@@ -116,7 +109,6 @@ module.exports = {
     checkReferralCode,
     getAllReferrals,
     getMonthlyReferralsCounts,
-    createWithdrawalRequest,
     createWithdrawal
 }
 

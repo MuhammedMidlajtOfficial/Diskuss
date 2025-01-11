@@ -1,11 +1,11 @@
-const {Referral, WithdrawalRequest} = require('../../models/referral.model');
-const EnterpriseUser = require('../../models/enterpriseUser');
+const {Referral, WithdrawalRequest} = require('../../models/referral/referral.model');
+const EnterpriseUser = require('../../models/users/enterpriseUser');
 const { individualUserCollection: IndividualUser } = require('../../DBConfig');
 const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
 const {convertToMonthlyCounts} = require('../../util/HelperFunctions');
 const { ObjectId } = require('mongodb');
 const { checkUserType } = require('../../util/HelperFunctions');
-const Settings = require('../../models/settingModel');
+const Settings = require('../../models/settings/settingModel');
 
 // Send Invite
 const sendInvite = async (referrerId, inviteePhoneNo) => {
@@ -273,16 +273,6 @@ const findMonthlyReferralsCounts = async (year) => {
         console.error("Error fetching monthly referrals:", error);
         throw error; // Re-throw the error for higher-level handling if needed
     }
-}
-
-const createWithdrawalRequest = async (userId, amount) => {
-    const withdrawalRequest = new WithdrawalRequest({
-        userId,
-        amount,
-        status: 'pending'
-    });
-    await withdrawalRequest.save();
-    return withdrawalRequest;
 };
 
 const createWithdrawal = async (userId, amount) => {
@@ -315,9 +305,6 @@ const createWithdrawal = async (userId, amount) => {
     return { coinsWithdrawn: coinsWithdrawn + amount };
 };
 
-// const getWithdrawalDetailsById = async (userId) => {
-//     const 
-
 module.exports = {
     sendInvite,
     registerInvitee,
@@ -327,11 +314,10 @@ module.exports = {
     registerInviteeByReferralCode,
     findAllReferrals,
     findMonthlyReferralsCounts,
-    createWithdrawalRequest,
     createWithdrawal,
 }
 
-// const {Referral} = require('../../models/referral.model');
+// const {Referral} = require('../../models/referral/referral.model');
 
 // /**
 //  * Find all Referrals
