@@ -1,4 +1,4 @@
-// routes/notificationPreferences.js
+// Permission routes
 const express = require('express');
 const router = express.Router();
 const { getNotificationPreferences, updateNotificationPreferences ,createNotificationPreferences} = require('../../Controller/Permissions/PermissionController');

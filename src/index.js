@@ -19,7 +19,7 @@ const logger = require('./config/logger.js');
 const morgan = require('./config/morgan.js');
 const expressListRoutes = require('express-list-routes');
 // const { parseLogs } = require('./crons/testCron.js');
-const { parseLogs } = require('../testlogs.js');
+
 
 
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
@@ -73,33 +73,34 @@ app.get('/api/v1',(req,res)=>{
   })
 })
 
-app.get('/logs',async (req,res)=>{
-  try{
-    const logs = await parseLogs();
-    console.log('logs1: ', logs);
-    res.status(200).json({logs})
-  }
-  catch(err){
-    console.log(err);
-    res.status(500).json({error : 'Error reading log file'})
-  }
-});
 
-// // List all routes
-// expressListRoutes(app);
+// Function to recursively extract routes
+function getRoutes(stack, basePath = '') {
+  const routes = [];
 
-// console.log(list);
-// Function to list all routes
-const listRoutes = () => {
-  app._router.stack.forEach((middleware) => {
-      if (middleware.route) { // If it's a route
-          console.log(`${Object.keys(middleware.route.methods).join(', ').toUpperCase()} ${middleware.route.path}`);
-      }
+  stack.forEach((layer) => {
+    if (layer.route) {
+      // Routes directly defined on a router
+      const routePath = basePath + layer.route.path;
+      const methods = Object.keys(layer.route.methods).map((method) => method.toUpperCase());
+      routes.push({ path: routePath, methods });
+    } else if (layer.name === 'router' && layer.handle.stack) {
+      // Nested routers
+      const nestedBasePath = basePath + (layer.regexp.source.match(/\/\^\\\/(.*?)\\\/\?\$/)?.[1] || '');
+      routes.push(...getRoutes(layer.handle.stack, `/${nestedBasePath}`));
+    }
   });
-};
 
-// Call the function to list routes
-listRoutes();
+  return routes;
+}
+
+
+// Extract all routes
+// const allRoutes = getRoutes(app._router.stack);
+
+// Log all routes
+// console.log('All Routes:', JSON.stringify(allRoutes, null, 2));
+
 
 
 const port = process.env.PORT || "3000"

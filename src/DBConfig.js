@@ -10,18 +10,32 @@ if (!process.env.MongoDBURL) {
   process.exit(1);
 }
 
-
-mongoose.connect( process.env.MongoDBURL,{
-  connectTimeoutMS: 20000, 
-  socketTimeoutMS: 45000,
-})
-
-  .then(() => {
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MongoDBURL, {
+      connectTimeoutMS: 20000,
+      socketTimeoutMS: 45000,
+    });
     console.log('DB Connected');
-  })
-  .catch((err) => {
-    console.error('DB Connection Failed:', err);
-  });
+    return
+  } catch (error) {
+    console.error('DB Connection Failed:', error);
+    return
+  }
+};
+
+connectDB();
+
+// mongoose.connect( process.env.MongoDBURL,{
+//   connectTimeoutMS: 20000, 
+//   socketTimeoutMS: 45000,
+// })
+//   .then(() => {
+//     console.log('DB Connected');
+//   })
+//   .catch((err) => {
+//     console.error('DB Connection Failed:', err);
+//   });
 
 
 // } else{
@@ -202,5 +216,7 @@ individualUserSchema.pre('save', async function(next) {
 });
 
 
-module.exports.individualUserCollection = mongoose.model('user', individualUserSchema);
+module.exports = {
+  individualUserCollection :  mongoose.model('user', individualUserSchema),
+}
 // module.exports.otpCollection = mongoose.model('otp', otpSchema);
