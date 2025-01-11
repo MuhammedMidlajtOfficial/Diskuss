@@ -1,3 +1,4 @@
+// Auth Individual Router
 const express = require('express')
 const authIndividualController = require('../../Controller/Individual/authIndividualController')
 const authIndividualRouter = express.Router()

@@ -1,0 +1,28 @@
+2025-01-07T09:17:54.065Z - {"route":"/api/v1","status":200,"success":true,"responseTime":65,"timestamp":"2025-01-07T09:17:53.080Z"}
+2025-01-07T09:17:54.070Z - {"route":"/api/v1/logss","status":404,"success":false,"error":"Request failed with status code 404","timestamp":"2025-01-07T09:17:53.106Z"}
+2025-01-07T09:17:54.072Z - {"route":"/api/v1/","status":200,"success":true,"responseTime":74,"timestamp":"2025-01-07T09:17:53.106Z"}
+2025-01-07T09:17:54.074Z - {"route":"/api/v1/analytic","status":200,"success":true,"responseTime":1030,"timestamp":"2025-01-07T09:17:54.064Z"}
+2025-01-07T09:22:00.711Z - {"route":"/api/v1","status":200,"success":true,"responseTime":44,"timestamp":"2025-01-07T09:22:00.551Z"}
+2025-01-07T09:22:00.713Z - {"route":"/api/v1/logss","status":404,"success":false,"error":"Request failed with status code 404","timestamp":"2025-01-07T09:22:00.568Z"}
+2025-01-07T09:22:00.714Z - {"route":"/api/v1/","status":200,"success":true,"responseTime":44,"timestamp":"2025-01-07T09:22:00.568Z"}
+2025-01-07T09:22:00.716Z - {"route":"/api/v1/analytic","status":200,"success":true,"responseTime":183,"timestamp":"2025-01-07T09:22:00.710Z"}
+2025-01-07T09:22:56.697Z - {"route":"/api/v1","status":500,"success":false,"error":"","timestamp":"2025-01-07T09:22:56.695Z"}
+2025-01-07T09:22:56.700Z - {"route":"/api/v1/logss","status":500,"success":false,"error":"","timestamp":"2025-01-07T09:22:56.695Z"}
+2025-01-07T09:22:56.702Z - {"route":"/api/v1/","status":500,"success":false,"error":"","timestamp":"2025-01-07T09:22:56.696Z"}
+2025-01-07T09:22:56.704Z - {"route":"/api/v1/analytic","status":500,"success":false,"error":"","timestamp":"2025-01-07T09:22:56.696Z"}
+2025-01-07T09:25:16.788Z - {"route":"/api/v1","status":200,"success":true,"responseTime":47,"timestamp":"2025-01-07T09:25:16.313Z"}
+2025-01-07T09:25:16.790Z - {"route":"/api/v1/logss","status":404,"success":false,"error":"Request failed with status code 404","timestamp":"2025-01-07T09:25:16.331Z"}
+2025-01-07T09:25:16.791Z - {"route":"/api/v1/","status":200,"success":true,"responseTime":46,"timestamp":"2025-01-07T09:25:16.332Z"}
+2025-01-07T09:25:16.793Z - {"route":"/api/v1/analytic","status":200,"success":true,"responseTime":499,"timestamp":"2025-01-07T09:25:16.787Z"}
+2025-01-07T09:26:28.949Z - {"route":"/api/v1","status":200,"success":true,"responseTime":46,"timestamp":"2025-01-07T09:26:28.815Z"}
+2025-01-07T09:26:28.952Z - {"route":"/api/v1/logss","status":404,"success":false,"error":"Request failed with status code 404","timestamp":"2025-01-07T09:26:28.807Z"}
+2025-01-07T09:26:28.954Z - {"route":"/api/v1/","status":200,"success":true,"responseTime":32,"timestamp":"2025-01-07T09:26:28.816Z"}
+2025-01-07T09:26:28.956Z - {"route":"/api/v1/analytic","status":200,"success":true,"responseTime":163,"timestamp":"2025-01-07T09:26:28.948Z"}
+2025-01-07T09:27:30.324Z - {"route":"/api/v1","status":200,"success":true,"responseTime":49,"timestamp":"2025-01-07T09:27:29.245Z"}
+2025-01-07T09:27:30.326Z - {"route":"/api/v1/logss","status":404,"success":false,"error":"Request failed with status code 404","timestamp":"2025-01-07T09:27:29.237Z"}
+2025-01-07T09:27:30.328Z - {"route":"/api/v1/","status":200,"success":true,"responseTime":34,"timestamp":"2025-01-07T09:27:29.246Z"}
+2025-01-07T09:27:30.330Z - {"route":"/api/v1/analytic","status":200,"success":true,"responseTime":1110,"timestamp":"2025-01-07T09:27:30.323Z"}
+2025-01-07T09:28:12.310Z - {"route":"/api/v1","status":200,"success":true,"responseTime":54,"timestamp":"2025-01-07T09:28:11.248Z"}
+2025-01-07T09:28:12.312Z - {"route":"/api/v1/logss","status":404,"success":false,"error":"Request failed with status code 404","timestamp":"2025-01-07T09:28:11.236Z"}
+2025-01-07T09:28:12.315Z - {"route":"/api/v1/","status":200,"success":true,"responseTime":38,"timestamp":"2025-01-07T09:28:11.249Z"}
+2025-01-07T09:28:12.317Z - {"route":"/api/v1/analytic","status":200,"success":true,"responseTime":1097,"timestamp":"2025-01-07T09:28:12.310Z"}

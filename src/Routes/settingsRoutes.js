@@ -1,3 +1,4 @@
+// Setting Routes
 const { Router } = require('express');
 const controller = require('../Controller/adminController');
 

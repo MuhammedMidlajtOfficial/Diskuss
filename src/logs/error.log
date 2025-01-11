@@ -49,3 +49,11 @@
 [2025-01-07T07:35:24.032Z] [31merror[39m: GET /logs 500 - 16.234 ms - message: -
 [2025-01-07T07:35:52.337Z] [31merror[39m: GET /logs 500 - 9.156 ms - message: -
 [2025-01-07T07:36:39.234Z] [31merror[39m: GET /logs 500 - 11.421 ms - message: -
+[2025-01-07T08:59:13.469Z] [31merror[39m: GET /api/v1/logss 404 - 5.272 ms - message: -
+[2025-01-07T09:03:18.659Z] [31merror[39m: GET /api/v1/logs 500 - 5.558 ms - message: -
+[2025-01-07T09:17:53.103Z] [31merror[39m: GET /api/v1/logss 404 - 4.534 ms - message: -
+[2025-01-07T09:22:00.566Z] [31merror[39m: GET /api/v1/logss 404 - 2.547 ms - message: -
+[2025-01-07T09:25:16.331Z] [31merror[39m: GET /api/v1/logss 404 - 2.717 ms - message: -
+[2025-01-07T09:26:28.803Z] [31merror[39m: GET /api/v1/logss 404 - 4.103 ms - message: -
+[2025-01-07T09:27:29.233Z] [31merror[39m: GET /api/v1/logss 404 - 4.623 ms - message: -
+[2025-01-07T09:28:11.231Z] [31merror[39m: GET /api/v1/logss 404 - 5.281 ms - message: -

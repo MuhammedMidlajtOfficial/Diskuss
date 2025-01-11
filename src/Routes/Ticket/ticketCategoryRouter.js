@@ -1,3 +1,4 @@
+// ticket category routes
 const express = require('express');
 const router = express.Router();
 const ticketCategoryController = require('../../Controller/Ticket/ticketCategoryController');
