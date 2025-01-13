@@ -37,7 +37,6 @@ const enterpriseUserSchema = new mongoose.Schema(
     },
     phnNumber: {
       type: String,
-      required: true,
     },
     referralCode: {
       type: String,
