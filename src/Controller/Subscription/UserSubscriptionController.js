@@ -315,7 +315,7 @@ const createFreeSubscription = async (req, res) => {
     }
 
     // Fetch the config data to get the free trial period
-    const configResponse = await axios.get('http://localhost:9000/api/v1/config');
+    const configResponse = await axios.get('http://13.203.24.247:9000/api/v1/config');
     const configData = configResponse.data;
 
     // Look for the specific config ID and extract the free trial days
