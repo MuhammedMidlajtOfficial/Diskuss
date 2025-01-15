@@ -487,3 +487,30 @@ module.exports.deleteCard = async (cardId) => {
     throw error;
   }
 };
+
+module.exports.getCardsByNum = async (phnNumber) => {
+  // Check if a card exists in either Card or EnterpriseEmployeeCard collections
+  const [cardsFromCardCollection, employeeCard] = await Promise.all([
+    Card.find({ mobile: phnNumber }).lean(), // Find all cards with matching phone number
+    EnterpriseEmployeeCard.findOne({ mobile: phnNumber }).lean() // Find single employee card
+  ]);
+
+  if (!cardsFromCardCollection.length && !employeeCard) {
+    throw new Error("No cards found with the provided phone number");
+  }
+
+  let cards = [];
+
+  // Add personal/business cards if found
+  if (cardsFromCardCollection.length) {
+    cards = [...cardsFromCardCollection];
+  }
+
+  // Add employee card if found
+  if (employeeCard) {
+    cards.push(employeeCard);
+  }
+
+  return cards;
+};
+
