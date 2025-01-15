@@ -41,7 +41,6 @@ const IndividualUserSchema = new mongoose.Schema({
   },
   phnNumber: {
     type: String,
-    required:true,
     
   },
   address: {

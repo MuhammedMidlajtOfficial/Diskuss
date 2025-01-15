@@ -14,5 +14,6 @@ router.delete('/:userSubscription_id',authMiddleware.authenticateToken2, control
 
 router.post('/verifyPayment', authMiddleware.authenticateToken2, controller.verifyPayment)
 router.post('/deactivate-expired-subscriptions', controller.deactivateSubscriptions)
+router.post('/free', controller.createFreeSubscription)
 
 module.exports = router;

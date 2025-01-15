@@ -25,11 +25,12 @@ const findAll = async () => {
     try {
       console.log("user id :", userId);
   
-      const userSubscriptions = await UserSubscription.find({ userId, status: 'active' }) // Assuming `status` is a field indicating activity
+      const userSubscriptions = await UserSubscription.find({ userId, status: { $in: ['active', 'free'] }  }) // Assuming `status` is a field indicating activity
         .sort({ startDate: -1 }) // Sort by `startDate` in descending order (latest first)
         .populate('userId')
         .populate('planId')
         .limit(1) // Fetch only the latest subscription
+        .lean()
         .exec();
   
       console.log("Latest active user subscription:", userSubscriptions);

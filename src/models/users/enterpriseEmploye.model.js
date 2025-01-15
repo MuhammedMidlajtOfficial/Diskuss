@@ -44,7 +44,6 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     },
     phnNumber: {
       type:String,
-      required:true,
     },
     address: {
       type:String,
