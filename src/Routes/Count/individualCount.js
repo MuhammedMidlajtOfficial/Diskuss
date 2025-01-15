@@ -1,3 +1,4 @@
+// Individual Count Route
 const express = require('express');
 const router = express.Router();
 const IndividualCountController = require('../../Controller/CountController/IndividualCountController');
@@ -6,3 +7,4 @@ const IndividualCountController = require('../../Controller/CountController/Indi
 router.get('/:userId/counts', IndividualCountController.getCounts);
 
 module.exports = router;
+

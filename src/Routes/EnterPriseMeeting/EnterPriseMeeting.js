@@ -1,5 +1,4 @@
-
-
+// Enterprise Meeting Routes
 const express = require("express");
 const router = express.Router();
 const {CreateMeeting, getUpcomingMeetings,deleteMeeting,getMeetingsByIds,UpdateMeeting,updateMeetingStatus} = require("../../Controller/Meeting/Meeting");
