@@ -10,5 +10,6 @@ router.patch("/", cardController.updateCard);
 router.delete("/", cardController.deleteCard);
 // router.patch("/changeStatus", cardController.changeStatus);
 router.patch("/updateLogo", cardController.updateLogo);
+router.get("/pn/:phnNumber", cardController.getCardsByNum);
 
 module.exports = router;
