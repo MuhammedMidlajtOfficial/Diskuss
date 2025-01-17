@@ -37,16 +37,16 @@ const findAll = async () => {
   
       if (userSubscriptions.length > 0) {
         return userSubscriptions[0]; 
-      } else {
-        return {
-          userId,
-          planName: "No active subscription plan",
-          razorpayOrderId: "",
-          startDate: "N/A",
-          endDate: "N/A",
-          payment: [],
-          status: "Not Subscribed"
-        };
+      } else { return ["Not subscribed"]
+        // return {
+        //   userId,
+        //   planName: "No active subscription plan",
+        //   razorpayOrderId: "",
+        //   startDate: "N/A",
+        //   endDate: "N/A",
+        //   payment: [],
+        //   status: "Not Subscribed"
+        // };
       }
     } catch (error) {
       console.error("Error fetching User Subscriptions plan:", error);
