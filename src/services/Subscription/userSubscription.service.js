@@ -40,15 +40,12 @@ const findAll = async () => {
       } else {
         return {
           userId,
-          planId: null,
           planName: "No active subscription plan",
           razorpayOrderId: "",
           startDate: "N/A",
           endDate: "N/A",
           payment: [],
-          status: "Not Subscribed",
-          createdAt: null,
-          updatedAt: null
+          status: "Not Subscribed"
         };
       }
     } catch (error) {
