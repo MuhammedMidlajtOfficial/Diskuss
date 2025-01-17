@@ -21,6 +21,11 @@ module.exports.postEnterpriseLogin = async (req, res) => {
     if (!enterprise && !enterpriseEmp) {
       return res.status(404).json({ message: 'No account associated with the provided email address.' });
     }
+    if (enterpriseEmp.status === 'inactive') {
+      return res.status(403).json({
+        message: 'The account is inactive. Please contact support for further assistance.',
+      });
+    }
 
     let user = null;
     let emp = false;
