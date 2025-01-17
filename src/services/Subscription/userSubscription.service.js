@@ -35,19 +35,7 @@ const findAll = async () => {
   
       console.log("Latest active user subscription:", userSubscriptions);
   
-      if (userSubscriptions.length > 0) {
-        return userSubscriptions[0]; 
-      } else {
-        return {
-          userId,
-          planName: "No active subscription plan",
-          razorpayOrderId: "",
-          startDate: "N/A",
-          endDate: "N/A",
-          payment: [],
-          status: "Not Subscribed"
-        };
-      }
+      return userSubscriptions.length > 0 ? userSubscriptions : [ "Not subscribed" ]; 
     } catch (error) {
       console.error("Error fetching User Subscriptions plan:", error);
       throw error; // Re-throw the error for higher-level handling if needed
