@@ -5,6 +5,7 @@ const { individualUserCollection } = require("../../DBConfig");
 const { razorpay } = require('../Razorpay/razorpay');
 const subscriptionPlanModel = require('../../models/subscription/subscriptionPlan.model');
 const mailSender = require('../../util/mailSender');
+const { sendSubscriptionSuccessFast2SMS, sendSubscriptionFailedFast2SMS } = require('../../util/Fast2SMS/fast2SMSSender');
 
 /**
  * Find all Subscsriptions
@@ -435,9 +436,11 @@ const sendNotification = async ({ success, razorpay_order_id = null }) => {
         price,
         invoicePath
       );
+      await sendSubscriptionSuccessFast2SMS(userDetails.phnNumber, userDetails.name, price, Date.now())
       console.log("Notification sent successfully.");
     }else{
       await sendFailedSubscriptionNotification(usermail,plan)
+      await sendSubscriptionFailedFast2SMS(userDetails.phnNumber, userDetails.name, price, Date.now())
     }
   } catch (error) {
     console.error("Error in sendNotification:", error.message);

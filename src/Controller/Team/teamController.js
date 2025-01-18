@@ -140,7 +140,7 @@ module.exports.deleteTeam = async (req, res) => {
 module.exports.getCardForEnterprise = async (req, res) => {
     try {
         const { id: userId } = req.params;
-        const user = await enterpriseUser.findOne({ _id : userId }).populate('empCards');
+        const user = await enterpriseUser.findOne({ _id : userId }).populate('empCards.empCardId');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
