@@ -131,9 +131,14 @@ const createUserSubscription = async (data) => {
   
       // Update the subscription plan status with the new data
       const updatedUserSubscription = await UserSubscription.updateOne(
-        { razorpayOrderId: razorpay_order_id }, // Search by razorpayOrderId, not _id
-        { $set: updateData }, // Update the subscription with the new data
-        { new: true }
+        { razorpayOrderId: razorpay_order_id }, // Search by razorpayOrderId
+        { 
+          $set: updateData, // Update the subscription with the new data
+        },
+        { 
+          new: true,
+          arrayFilters: [{ 'elem.paymentId': "" }] // Use arrayFilters to target the specific payment element
+        }
       ).exec();
   
       return updatedUserSubscription; // Return the result of the update operation
@@ -142,6 +147,7 @@ const createUserSubscription = async (data) => {
       throw error; // Re-throw the error for higher-level handling
     }
   };
+  
 
   const updateSubscriptionStatusInUsers = async (razorpay_order_id) => {
     try {
