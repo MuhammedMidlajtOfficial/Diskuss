@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const watiSender = require("../../util/Wati/watiSender");
+const { sendOtpFast2SMS } = require("../../util/Fast2SMS/fast2SMSSender");
 
 const otpSchema = new mongoose.Schema({
   email: {
@@ -19,22 +20,22 @@ const otpSchema = new mongoose.Schema({
   },
 });
 
-// async function sendVerificationMessage(phnNumber, otp) {
-//   try {
-//     const response = await watiSender(phnNumber, otp);
-//     console.log("WhatsApp OTP sent successfully:", response);
-//   } catch (error) {
-//     console.error("Error occurred while sending WhatsApp OTP:", error);
-//     throw error;
-//   }
-// }
+async function sendVerificationMessage(phnNumber, otp) {
+  try {
+    const response = await sendOtpFast2SMS(phnNumber, otp);
+    console.log("SMS OTP sent successfully:", response);
+  } catch (error) {
+    console.error("Error occurred while sending SMS OTP:", error);
+    throw error;
+  }
+}
 
-// otpSchema.pre("save", async function (next) {
-//   console.log("New OTP document saved to the database");
-//   if (this.isNew) {
-//     await sendVerificationMessage(this.phnNumber, this.otp);
-//   }
-//   next();
-// });
+otpSchema.pre("save", async function (next) {
+  console.log("New OTP document saved to the database");
+  if (this.isNew) {
+    await sendVerificationMessage(this.phnNumber, this.otp);
+  }
+  next();
+});
 
 module.exports = mongoose.model("otp", otpSchema);
