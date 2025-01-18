@@ -10,6 +10,7 @@ const { createProfile } = require('../Profile/profileController');
 const Contact  = require('../../models/contacts/contact.individual.model');
 const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
 const referralService = require('../../services/Referral/referral.service');
+const { sendOtpFast2SMS } = require('../../util/Fast2SMS/fast2SMSSender');
 
 
 module.exports.postIndividualLogin = async (req, res) => {
@@ -51,32 +52,9 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
     }
 
     // Check if phnNumber exists
-    const isEmailExist = await individualUserCollection.findOne({ phnNumber }).exec();
-    if (!isEmailExist) {
-      return res.status(409).json({ message: "No account found with this phone number" });
-    }
-
-    let isIndividualExist;
-    let isEnterpriseExist;
-    let isEnterpriseEmployeeExist;
-
-    if(phnNumber){
-      // Check if phone number exists in any of the collections
-      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
-      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
-      isEnterpriseEmployeeExist = await EnterpriseEmployee.findOne({ phnNumber }).exec();
-    }
-
-    if (isIndividualExist) {
-      return res.status(409).json({ message: "This phone number is already associated with an individual user" });
-    }
-
-    if (isEnterpriseExist) {
-      return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
-    }
-
-    if (isEnterpriseEmployeeExist) {
-      return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+    const user = await individualUserCollection.findOne({ phnNumber });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this phone number' });
     }
 
     // Generate OTP
@@ -97,7 +75,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
       result = await otpCollection.findOne({ otp: otp });
     }
 
-    const otpPayload = { email,phnNumber, otp };
+    const otpPayload = { phnNumber, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
@@ -105,7 +83,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
       otp,
     });
 
-
+    sendOtpFast2SMS(phnNumber, user.username ,otp)
   } catch (error) {
     console.log(error)
     return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
@@ -114,17 +92,29 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
 
 module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
   try {
-    const { phnNumber } = req.body;
+    const { phnNumber, otp } = req.body;
 
-    if (!phnNumber ) {
+    if (!phnNumber || !otp ) {
       return res.status(400).json({ message: 'phone number are required' });
     }
 
+    // Check if phnNumber exists
     const user = await individualUserCollection.findOne({ phnNumber });
     if (!user) {
       return res.status(404).json({ message: 'No account found with this phone number' });
     }
     
+    if(!user){
+      return res.status(401).json({ message: "There is no User with this Phone Number" })
+    }
+    // FETCH OTP FROM otpCollection
+    const response = await otpCollection.find({ phnNumber }).sort({ createdAt: -1 }).limit(1);
+    console.log("res-",response);
+
+    if (response.length === 0 || otp !== response[0].otp) {
+      return res.status(400).json({ success: false, message: 'The OTP is not valid' })
+    }
+
     // Set jwt token
     const payload = { id: user._id, phnNumber: user.phnNumber };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
