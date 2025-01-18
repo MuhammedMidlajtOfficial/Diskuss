@@ -124,29 +124,33 @@ const createUserSubscription = async (data) => {
     try {
       // Find the user subscription by razorpayOrderId
       const userSubscription = await UserSubscription.findOne({ razorpayOrderId: razorpay_order_id }).exec();
-      
+  
       if (!userSubscription) {
         throw new Error("User Subscription plan not found");
       }
   
-      // Update the subscription plan status with the new data
+      // Update the subscription plan status with the new data using the positional operator `$`
       const updatedUserSubscription = await UserSubscription.updateOne(
-        { razorpayOrderId: razorpay_order_id }, // Search by razorpayOrderId
         { 
-          $set: updateData, // Update the subscription with the new data
+          razorpayOrderId: razorpay_order_id,  // Match by razorpayOrderId
+          'payment.paymentId': ""  // Find the payment element with an empty paymentId (assuming this is the first payment)
         },
         { 
-          new: true,
-          arrayFilters: [{ 'elem.paymentId': "" }] // Use arrayFilters to target the specific payment element
-        }
+          $set: {
+            status: updateData.status,  // Update the status to 'active'
+            'payment.$.paymentId': updateData.paymentId,  // Update the paymentId in the matched element
+            'payment.$.paymentDate': updateData.paymentDate  // Update the paymentDate in the matched element
+          },
+        },
+        { new: true }  // Return the updated document
       ).exec();
   
-      return updatedUserSubscription; // Return the result of the update operation
+      return updatedUserSubscription;  // Return the result of the update operation
     } catch (error) {
       console.error("Error updating UserSubscription:", error);
-      throw error; // Re-throw the error for higher-level handling
+      throw error;  // Re-throw the error for higher-level handling
     }
-  };
+  };  
   
 
   const updateSubscriptionStatusInUsers = async (razorpay_order_id) => {
