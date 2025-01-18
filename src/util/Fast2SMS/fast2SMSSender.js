@@ -100,7 +100,7 @@ module.exports.sendSubscriptionFailedFast2SMS = async (phnNumber, name, amount, 
       {
         route: config.Route,
         sender_id: config["Sender Id"],
-        message: config["Transaction Failed ID:"],
+        message: config["Transaction Failed ID"],
         flash:0,
         variables_values: `${name}|Rs.${amount}|${date}|`,
         numbers: phnNumber,
