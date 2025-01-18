@@ -1,3 +1,4 @@
+const axios = require("axios");
 const fetchFast2SMSConfig = require("./fast2SMSConfigFetcher");
 
 module.exports.sendOtpFast2SMS = async (phnNumber, name, otp) => {
