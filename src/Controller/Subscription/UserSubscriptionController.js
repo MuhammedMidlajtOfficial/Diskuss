@@ -170,8 +170,8 @@ const verifyPayment = async (req, res) => {
     // Update the subscription status to active on successful payment verification
     await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, {
       status: "active",
-      'payment.paymentId': razorpay_payment_id,
-      'payment.paymentDate': Date.now(),
+      'payment.$.paymentId': razorpay_payment_id,  // Update the paymentId in the matching payment element
+      'payment.$.paymentDate': Date.now(),  // Update the paymentDate in the matching payment element
     });
     // UPDATE USER STATUS
     await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id);
