@@ -67,6 +67,114 @@ module.exports.postEnterpriseLogin = async (req, res) => {
   }
 };
 
+module.exports.sendOTPForPhnNumber = async (req, res) => {
+  try {
+    const { phnNumber } = req.body;
+
+    // Check for missing fields
+    if ( !phnNumber) {
+      return res.status(400).json({ message :"phnNumber is required"}); 
+    }
+
+    // Find enterprise user 
+    const enterprise = await enterpriseUser.findOne({ phnNumber });
+    const enterpriseEmp = await enterpriseEmployeModel.findOne({ phnNumber });
+
+    // Check if neither user is found
+    if (!enterprise && !enterpriseEmp) {
+      return res.status(404).json({ message: 'No account associated with the provided phnNumber.' });
+    }
+
+    if (enterpriseEmp?.status === 'inactive') {
+      return res.status(403).json({
+        message: 'The account is inactive. Please contact support for further assistance.',
+      });
+    }
+
+    // Generate OTP
+    let otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    console.log(otp);
+
+    // Ensure OTP is unique
+    let result = await otpCollection.findOne({ otp: otp });
+    while (result) {
+      otp = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+      });
+      result = await otpCollection.findOne({ otp: otp });
+    }
+
+    const otpPayload = { phnNumber, otp };
+    await otpCollection.create(otpPayload);
+    return res.status(200).json({
+      success: true,
+      message: 'OTP sent successfully',
+      otp,
+    });
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+  }
+};
+
+module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
+  try {
+    const { phnNumber, otp } = req.body;
+
+    if (!phnNumber || !otp ) {
+      return res.status(400).json({ message: 'phone number are required' });
+    }
+
+    let user = null;
+    let emp = false;
+    // Find enterprise user 
+    const enterprise = await enterpriseUser.findOne({ phnNumber });
+    const enterpriseEmp = await enterpriseEmployeModel.findOne({ phnNumber });
+
+    // Check if neither user is found
+    if (!enterprise && !enterpriseEmp) {
+      return res.status(404).json({ message: 'No account associated with the provided phnNumber.' });
+    }
+
+    if (enterpriseEmp?.status === 'inactive') {
+      return res.status(403).json({
+        message: 'The account is inactive. Please contact support for further assistance.',
+      });
+    }
+
+    if (enterprise) {
+      user = enterprise._id;
+    }else{
+      user = enterpriseEmp._id;
+      emp = true;
+    }
+
+    // FETCH OTP FROM otpCollection
+    const response = await otpCollection.find({ phnNumber }).sort({ createdAt: -1 }).limit(1);
+    console.log("res-",response);
+
+    if (response.length === 0 || otp !== response[0].otp) {
+      return res.status(400).json({ success: false, message: 'The OTP is not valid' })
+    }
+
+    // Set JWT token if a match was found
+    const payload = { id: user._id, email: user.email };
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+
+    return res.status(200).json({ message: 'Login successful', emp, accessToken, refreshToken, user });
+
+  } catch (error) {
+    console.error('Error during login:', error);
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+  }
+};
+
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
     const {username, companyName, industryType, phnNumber, email, otp, referralCode } = req.body

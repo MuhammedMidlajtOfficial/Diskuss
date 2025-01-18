@@ -77,13 +77,11 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
 
     const otpPayload = { phnNumber, otp };
     await otpCollection.create(otpPayload);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'OTP sent successfully',
       otp,
     });
-
-    sendOtpFast2SMS(phnNumber, user.username ,otp)
   } catch (error) {
     console.log(error)
     return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });

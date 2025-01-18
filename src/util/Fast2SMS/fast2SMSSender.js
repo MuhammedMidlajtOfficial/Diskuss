@@ -1,7 +1,7 @@
 const axios = require("axios");
 const fetchFast2SMSConfig = require("./fast2SMSConfigFetcher");
 
-module.exports.sendOtpFast2SMS = async (phnNumber, name, otp) => {
+module.exports.sendOtpFast2SMS = async (phnNumber, otp) => {
   try {
     const config = await fetchFast2SMSConfig();
 
@@ -12,7 +12,7 @@ module.exports.sendOtpFast2SMS = async (phnNumber, name, otp) => {
         sender_id: config["Sender Id"],
         message: config["OTP ID"],
         flash:0,
-        variables_values: `${name}|${otp}|`,
+        variables_values: `Sir or Madam|${otp}|`,
         numbers: phnNumber,
       },
       {
