@@ -197,7 +197,7 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
   }
 
     // Validate OTP
-    const response = await otpCollection.find({ email }).sort({ createdAt: -1 }).limit(1);
+    const response = await otpCollection.find({ phnNumber }).sort({ createdAt: -1 }).limit(1);
     if (response.length === 0 || otp !== response[0].otp) {
       return res.status(400).json({ success: false, message: 'The OTP is not valid' }); // Correct response handling
     }
@@ -348,25 +348,23 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
 
 module.exports.sendOTP = async (req, res) => {
   try {
-    const { email, phnNumber } = req.body;
+    const { phnNumber } = req.body;
 
     // Check for missing fields
-    if ( !email || !phnNumber) {
-      return res.status(400).json({ message :"email & phnNumber are required"}); // Correct response handling
-    }
-    
-    // Check if email exists in enterpriseUser or enterpriseEmployee
-    const isEmailInEnterpriseUser = await enterpriseUser.findOne({ email }).exec();
-    const isEmailInEnterpriseEmployee = await enterpriseEmployeModel.findOne({ email }).exec();
-
-    if (isEmailInEnterpriseUser || isEmailInEnterpriseEmployee) {
-      return res.status(409).json({ message: "A user with this email address already exists. Please login instead" });
+    if ( !phnNumber) {
+      return res.status(400).json({ message :"phnNumber is required"}); 
     }
 
-    // Check if phone number exists in any of the collections
-    const isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
-    const isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
-    const isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+    let isIndividualExist;
+    let isEnterpriseExist;
+    let isEnterpriseEmployeeExist;
+
+    if(phnNumber){
+      // Check if phone number exists in any of the collections
+      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+    }
 
     if (isIndividualExist) {
       return res.status(409).json({ message: "This phone number is already associated with an individual user" });
@@ -380,11 +378,16 @@ module.exports.sendOTP = async (req, res) => {
       return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
     }
 
+    // Generate OTP
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
     });
+
+    console.log(otp);
+
+    // Ensure OTP is unique
     let result = await otpCollection.findOne({ otp: otp });
     while (result) {
       otp = otpGenerator.generate(6, {
@@ -392,16 +395,18 @@ module.exports.sendOTP = async (req, res) => {
       });
       result = await otpCollection.findOne({ otp: otp });
     }
-    const otpPayload = { email,phnNumber, otp };
+
+    const otpPayload = { phnNumber, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
       message: 'OTP sent successfully',
       otp,
     });
+
   } catch (error) {
     console.log(error)
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
   }
 };
 
