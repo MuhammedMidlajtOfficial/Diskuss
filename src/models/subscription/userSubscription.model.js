@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const PaymentSchema = new mongoose.Schema({
     paymentId: { type: String ,default:""},
     paymentMethod: { type: String ,default:""},
-    paymentDate: { type: Date, default: Date.now ,default:""},
+    paymentDate: { type: Date, default: Date.now },
     gstNumber: { type: String ,default:""},
     state: { type: String ,default:"" },
     quantity: { type: Number ,default:""},
