@@ -446,11 +446,11 @@ const sendNotification = async ({ success, razorpay_order_id = null }) => {
         price,
         invoicePath
       );
-      await sendSubscriptionSuccessFast2SMS(userDetails.phnNumber, userDetails.name, price, Date.now())
+      await sendSubscriptionSuccessFast2SMS(userDetails.phnNumber, userDetails.username ? userDetails.username : userDetails.companyName, price, Date.now())
       console.log("Notification sent successfully.");
     }else{
       await sendFailedSubscriptionNotification(usermail,plan)
-      await sendSubscriptionFailedFast2SMS(userDetails.phnNumber, userDetails.name, price, Date.now())
+      await sendSubscriptionFailedFast2SMS(userDetails.phnNumber, userDetails.username ? userDetails.username : userDetails.companyName, price, Date.now())
     }
   } catch (error) {
     console.error("Error in sendNotification:", error.message);
