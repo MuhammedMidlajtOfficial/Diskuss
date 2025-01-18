@@ -41,6 +41,102 @@ module.exports.postIndividualLogin = async (req, res) => {
   }
 };
 
+module.exports.sendOTPForPhnNumber = async (req, res) => {
+  try {
+    const { phnNumber } = req.body;
+
+    // Check for missing fields
+    if ( !phnNumber) {
+      return res.status(400).json({ message :"phnNumber is required"}); 
+    }
+
+    // Check if phnNumber exists
+    const isEmailExist = await individualUserCollection.findOne({ phnNumber }).exec();
+    if (!isEmailExist) {
+      return res.status(409).json({ message: "No account found with this phone number" });
+    }
+
+    let isIndividualExist;
+    let isEnterpriseExist;
+    let isEnterpriseEmployeeExist;
+
+    if(phnNumber){
+      // Check if phone number exists in any of the collections
+      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
+      isEnterpriseEmployeeExist = await EnterpriseEmployee.findOne({ phnNumber }).exec();
+    }
+
+    if (isIndividualExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+    }
+
+    if (isEnterpriseExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+    }
+
+    if (isEnterpriseEmployeeExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+    }
+
+    // Generate OTP
+    let otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    console.log(otp);
+
+    // Ensure OTP is unique
+    let result = await otpCollection.findOne({ otp: otp });
+    while (result) {
+      otp = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+      });
+      result = await otpCollection.findOne({ otp: otp });
+    }
+
+    const otpPayload = { email,phnNumber, otp };
+    await otpCollection.create(otpPayload);
+    res.status(200).json({
+      success: true,
+      message: 'OTP sent successfully',
+      otp,
+    });
+
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+  }
+};
+
+module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
+  try {
+    const { phnNumber } = req.body;
+
+    if (!phnNumber ) {
+      return res.status(400).json({ message: 'phone number are required' });
+    }
+
+    const user = await individualUserCollection.findOne({ phnNumber });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this phone number' });
+    }
+    
+    // Set jwt token
+    const payload = { id: user._id, phnNumber: user.phnNumber };
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
+
+    return res.status(200).json({ message: 'Login successful', accessToken, refreshToken,user });
+  } catch (error) {
+    console.error('Error during login:', error);
+    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+  }
+};
+
 module.exports.postIndividualSignup = async (req, res) => {
   const { username, email, phnNumber, otp, referralCode } = req.body;
   const passwordRaw = req.body.password;
