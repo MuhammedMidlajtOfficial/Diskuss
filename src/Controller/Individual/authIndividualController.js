@@ -140,18 +140,18 @@ module.exports.postIndividualSignup = async (req, res) => {
       return res.status(409).json({ message :"A user with this email address already exists. Please login instead"}); // Correct response handling
     }
     // Validate OTP
-    const otpRecord = await otpCollection.findOne({ email }).sort({ createdAt: -1 });
+    const otpRecord = await otpCollection.findOne({ phnNumber }).sort({ createdAt: -1 });
     if (!otpRecord || otpRecord.otp !== otp) {
       return res.status(400).json({ success: false, message: 'The OTP is not valid or has expired' });
     }
     
     if(referralCode){
-    // check if referral code is valid
-    const isReferralCodeValid = await individualUserCollection.findOne({ referralCode}).exec();
-    if (!isReferralCodeValid) {
-      return res.status(400).json({ message: "The referral code is invalid" });
+      // check if referral code is valid
+      const isReferralCodeValid = await individualUserCollection.findOne({ referralCode}).exec();
+      if (!isReferralCodeValid) {
+        return res.status(400).json({ message: "The referral code is invalid" });
+      }
     }
-  }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
@@ -172,8 +172,9 @@ module.exports.postIndividualSignup = async (req, res) => {
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
 
     if (newUser) {
-      await referralService.registerInviteeByReferralCode(referralCode, newUser._id);
-      // console.log(referralUpdate);
+      if(referralCode){
+        await referralService.registerInviteeByReferralCode(referralCode, newUser._id);
+      }
 
       const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });
       if (existingContact) {
@@ -307,19 +308,11 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
 
 module.exports.sendOTP = async (req, res) => {
   try {
-    const { email, phnNumber } = req.body;
-    console.log("email form individual sendOTP --",email);
+    const { phnNumber } = req.body;
 
     // Check for missing fields
-    if ( !email || !phnNumber) {
-      return res.status(400).json({ message :"email & phnNumber are required"}); // Correct response handling
-    }
-
-
-    // Check if email exists
-    const isEmailExist = await individualUserCollection.findOne({ email }).exec();
-    if (isEmailExist) {
-      return res.status(409).json({ message: "A user with this email address already exists. Please login instead" });
+    if ( !phnNumber) {
+      return res.status(400).json({ message :"phnNumber is required"}); 
     }
 
     let isIndividualExist;
@@ -363,14 +356,13 @@ module.exports.sendOTP = async (req, res) => {
       result = await otpCollection.findOne({ otp: otp });
     }
 
-    const otpPayload = { email,phnNumber, otp };
+    const otpPayload = { phnNumber, otp };
     await otpCollection.create(otpPayload);
     res.status(200).json({
       success: true,
       message: 'OTP sent successfully',
       otp,
     });
-
 
   } catch (error) {
     console.log(error)
