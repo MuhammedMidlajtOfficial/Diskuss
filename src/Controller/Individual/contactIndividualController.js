@@ -468,6 +468,7 @@ const getContactsByOwnerUserId = async (req, res) => {
               businessCategory: individualContact.businessCategory,
               scheduled: individualContact.scheduled,
               scheduledTime: individualContact.scheduledTime,
+              location: individualContact.location,
               notes: individualContact.notes,
               userId: individualContact.userId,
               isDiskussUser: individualContact.isDiskussUser,
