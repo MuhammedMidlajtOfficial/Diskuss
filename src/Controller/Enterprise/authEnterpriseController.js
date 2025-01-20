@@ -135,7 +135,6 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
     // Find enterprise user 
     const enterprise = await enterpriseUser.findOne({ phnNumber });
     const enterpriseEmp = await enterpriseEmployeModel.findOne({ phnNumber });
-
     // Check if neither user is found
     if (!enterprise && !enterpriseEmp) {
       return res.status(404).json({ message: 'No account associated with the provided phnNumber.' });
@@ -148,11 +147,12 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
     }
 
     if (enterprise) {
-      user = enterprise._id;
+      user = enterprise;
     }else{
-      user = enterpriseEmp._id;
+      user = enterpriseEmp;
       emp = true;
     }
+    console.log('user-',user);
 
     // FETCH OTP FROM otpCollection
     const response = await otpCollection.find({ phnNumber }).sort({ createdAt: -1 }).limit(1);
