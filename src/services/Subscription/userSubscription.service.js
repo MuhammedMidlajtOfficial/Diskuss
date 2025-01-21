@@ -35,8 +35,24 @@ const findAll = async () => {
         .exec();
   
       console.log("Latest active user subscription:", userSubscriptions);
-  
-      return userSubscriptions.length > 0 ? userSubscriptions : [ "Not subscribed" ]; 
+      
+      const noSubResponse = {
+        "_id": "",
+        "userId": null,
+        "planId": null,
+        "razorpayOrderId": "",
+        "startDate": "",
+        "payment": [
+            ""
+        ],
+        "endDate": "",
+        "status": "Not subscribed",
+        "createdAt": "",
+        "updatedAt": "",
+        "__v": 0
+    }
+
+      return userSubscriptions.length > 0 ? userSubscriptions : [ noSubResponse ]; 
     } catch (error) {
       console.error("Error fetching User Subscriptions plan:", error);
       throw error; // Re-throw the error for higher-level handling if needed
