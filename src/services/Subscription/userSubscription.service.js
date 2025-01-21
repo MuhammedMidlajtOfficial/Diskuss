@@ -41,14 +41,14 @@ const findAll = async () => {
         "userId": null,
         "planId": null,
         "razorpayOrderId": "",
-        "startDate": "",
+        "startDate": "1970-01-01T00:00:00.000Z",
         "payment": [
             ""
         ],
-        "endDate": "",
+        "endDate": "1970-01-01T00:00:00.000Z",
         "status": "Not subscribed",
-        "createdAt": "",
-        "updatedAt": "",
+        "createdAt": "1970-01-01T00:00:00.000Z",
+        "updatedAt": "1970-01-01T00:00:00.000Z",
         "__v": 0
     }
 
