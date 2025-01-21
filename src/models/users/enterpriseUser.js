@@ -20,8 +20,7 @@ const enterpriseUserSchema = new mongoose.Schema(
       required: true,
     },
     password: {
-      type: String,
-      required: true,
+      type: String
     },
     isSubscribed: {
       type: Boolean,
