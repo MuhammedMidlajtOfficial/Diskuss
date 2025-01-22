@@ -41,9 +41,9 @@ const WithdrawalRequestSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user requesting withdrawal
     amount: { type: mongoose.Types.Decimal128, required: true }, // Amount requested for withdrawal
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, // Status of the withdrawal request
+    upiId : { type: String, required: true }, // UPI ID of the user
     transactionId: { type: String }, // Transaction ID of the withdrawal
-    createdAt: { type: Date, default: Date.now } // Timestamp of when the withdrawal request was created
-  });
+  },{ timestamps: true });
 
 const IncentiveSchema = new mongoose.Schema({
     amount: { type: mongoose.Types.Decimal128, required: true }, // Amount of incentive earned

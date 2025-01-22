@@ -138,6 +138,12 @@ connectDB();
       type: String,
       default: null,
     }, // Referral code used by the user
+    coinsBalance : { type: Number, default: 0 },
+    coinsRewarded: { type: Number, default: 0 },
+    coinsWithdrawn: { type: Number, default: 0 },
+    coinsWithdrawn: { type: Number, default: 0 },
+    invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
+      
   } ,{ timestamps: true });
 
   // const otpSchema = new mongoose.Schema({
