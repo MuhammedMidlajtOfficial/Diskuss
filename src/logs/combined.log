@@ -662,3 +662,322 @@
 [2025-01-11T07:02:50.668Z] [32minfo[39m: GET /api/v1/count/6733094e3f139528a2d37a18/counts 200 - 92.326 ms
 [2025-01-11T07:02:55.686Z] [32minfo[39m: GET /api/v1/count/6733094e3f139528a2d37a18/counts 200 - 94.480 ms
 [2025-01-11T07:03:27.508Z] [32minfo[39m: GET /api/v1/analytic/meeting/enterprise/6721dfcb8db81fd317e24130 200 - 291.718 ms
+[2025-01-11T07:21:07.537Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-11T07:36:02.537Z] [32minfo[39m: GET /api/v1/count/6733094e3f139528a2d37a18/counts 200 - 163.665 ms
+[2025-01-22T07:27:32.722Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T07:36:25.772Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T07:37:25.372Z] [31merror[39m: POST /api/v1/referral/withdraw 500 - 955.462 ms - message: -
+[2025-01-22T07:37:34.646Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 152.673 ms - message: -
+[2025-01-22T07:39:42.096Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 355.818 ms - message: -
+[2025-01-22T07:43:19.791Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T07:45:07.127Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T07:45:10.552Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T07:45:20.377Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T07:47:09.276Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T07:47:24.502Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T07:47:36.539Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T07:58:22.710Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:01:03.852Z] [32minfo[39m: POST /api/v1/referral/withdraw 201 - 445.723 ms
+[2025-01-22T08:01:42.572Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:01:44.297Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 80.673 ms - message: -
+[2025-01-22T08:01:57.917Z] [32minfo[39m: GET /api/v1/referral/withdraw 200 - 45.686 ms
+[2025-01-22T08:02:06.620Z] [31merror[39m: GET /api/v1/referral/withdraw/6731e31c1637d690957d8e69 404 - 40.230 ms - message: -
+[2025-01-22T08:02:13.983Z] [31merror[39m: GET /api/v1/referral/withdraw/6731e31c1637d690957d8e69 404 - 47.816 ms - message: -
+[2025-01-22T08:02:14.885Z] [31merror[39m: GET /api/v1/referral/withdraw/6731e31c1637d690957d8e69 404 - 50.553 ms - message: -
+[2025-01-22T08:02:22.109Z] [31merror[39m: GET /api/v1/referral/withdraw/6731e31c1637d690957d8e69 404 - 27.781 ms - message: -
+[2025-01-22T08:02:53.339Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:03:27.293Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:03:30.697Z] [31merror[39m: GET /api/v1/referral/withdraw/6731e31c1637d690957d8e69 404 - 67.215 ms - message: -
+[2025-01-22T08:04:47.462Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:04:54.751Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:06:27.464Z] [31merror[39m: GET /api/v1/referral/withdraw/6731e31c1637d690957d8e69 404 - 50.748 ms - message: -
+[2025-01-22T08:07:12.871Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:07:15.621Z] [32minfo[39m: GET /api/v1/referral/withdraw/6731e31c1637d690957d8e69 200 - 70.021 ms
+[2025-01-22T08:09:02.824Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:10:06.160Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:10:54.469Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:12:45.460Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:13:03.928Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:13:18.460Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:15:01.400Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:15:34.776Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:17:07.292Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:17:16.517Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:17:21.456Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:17:35.883Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:18:13.149Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:18:18.482Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:18:39.010Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:18:43.058Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:19:16.508Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:19:27.753Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:19:36.455Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:22:09.716Z] [31merror[39m: PUT /api/v1/referral/withdraw 404 - 188.936 ms - message: -
+[2025-01-22T08:22:22.253Z] [31merror[39m: PUT /api/v1/referral/withdraw/6731e31c1637d690957d8e69 500 - 10.931 ms - message: -
+[2025-01-22T08:22:23.551Z] [31merror[39m: PUT /api/v1/referral/withdraw/6731e31c1637d690957d8e69 500 - 2.275 ms - message: -
+[2025-01-22T08:23:03.568Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:23:19.605Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:23:26.066Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:23:38.300Z] [31merror[39m: PUT /api/v1/referral/withdraw/6731e31c1637d690957d8e69 500 - 155.450 ms - message: -
+[2025-01-22T08:51:59.180Z] [31merror[39m: PUT /api/v1/referral/withdraw/6731e31c1637d690957d8e69 500 - 102.176 ms - message: -
+[2025-01-22T08:53:00.230Z] [32minfo[39m: GET /api/v1/referral/withdraw 200 - 100.036 ms
+[2025-01-22T08:53:09.193Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 577.308 ms - message: -
+[2025-01-22T08:55:04.636Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:55:09.756Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 1252.810 ms - message: -
+[2025-01-22T08:55:44.180Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:55:47.889Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 316.188 ms
+[2025-01-22T08:57:04.291Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:58:31.045Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:58:53.611Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:58:59.947Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:59:20.412Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:59:24.864Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T08:59:28.718Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 789.288 ms
+[2025-01-22T09:01:24.691Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:01:50.432Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:01:53.127Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 411.996 ms
+[2025-01-22T09:03:33.766Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:03:37.015Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 290.909 ms
+[2025-01-22T09:04:45.992Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:04:48.638Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 303.501 ms
+[2025-01-22T09:04:59.465Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:05:22.723Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:06:55.288Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:06:58.177Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 1162.740 ms - message: -
+[2025-01-22T09:07:15.507Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:07:17.034Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 - - - ms
+[2025-01-22T09:07:19.162Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 639.723 ms
+[2025-01-22T09:08:07.881Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:08:15.798Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 289.569 ms
+[2025-01-22T09:19:41.663Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:19:44.657Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 1274.434 ms
+[2025-01-22T09:20:20.007Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:21:03.675Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:21:12.178Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 818.072 ms
+[2025-01-22T09:21:49.182Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:22:04.433Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:22:08.813Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 335.958 ms
+[2025-01-22T09:25:21.135Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:25:24.212Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 517.353 ms
+[2025-01-22T09:38:52.745Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:38:55.598Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 2686.563 ms - message: -
+[2025-01-22T09:39:14.883Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:39:19.531Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:39:21.427Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 1807.990 ms - message: -
+[2025-01-22T09:39:35.612Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:39:38.057Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 596.564 ms - message: -
+[2025-01-22T09:40:03.291Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:40:10.895Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:40:13.244Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 569.432 ms
+[2025-01-22T09:41:05.179Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T09:41:07.725Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 423.818 ms
+[2025-01-22T10:30:05.550Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:30:09.012Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 460.200 ms
+[2025-01-22T10:30:26.256Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:30:28.717Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 315.962 ms
+[2025-01-22T10:30:32.893Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:30:35.324Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 298.174 ms
+[2025-01-22T10:31:22.569Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:31:33.631Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:31:35.647Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 1766.154 ms
+[2025-01-22T10:32:25.084Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:32:28.234Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 494.618 ms - message: -
+[2025-01-22T10:32:42.928Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:32:45.680Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 2616.088 ms
+[2025-01-22T10:32:55.483Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:33:18.408Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:33:22.120Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 257.264 ms
+[2025-01-22T10:33:44.767Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:33:50.774Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:33:55.480Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:34:01.016Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 289.928 ms
+[2025-01-22T10:34:18.263Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:34:21.078Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 337.032 ms
+[2025-01-22T10:35:04.369Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:35:07.471Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 2940.898 ms
+[2025-01-22T10:36:49.655Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T10:36:55.711Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 505.606 ms
+[2025-01-22T10:37:43.442Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T11:59:04.183Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 1268.148 ms
+[2025-01-22T12:01:40.810Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:01:44.572Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 352.935 ms
+[2025-01-22T12:02:05.981Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:02:10.193Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:02:15.372Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:02:17.958Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 609.531 ms
+[2025-01-22T12:02:42.875Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:02:45.261Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 236.179 ms - message: -
+[2025-01-22T12:03:15.242Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:03:23.891Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 249.715 ms - message: -
+[2025-01-22T12:04:19.794Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:04:24.255Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:04:27.431Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 554.967 ms
+[2025-01-22T12:05:46.698Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:05:49.512Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:05:54.970Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:05:56.669Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 1619.704 ms
+[2025-01-22T12:06:26.518Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:06:29.801Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 1136.202 ms
+[2025-01-22T12:06:45.344Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:06:47.313Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 350.787 ms
+[2025-01-22T12:08:22.406Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:08:29.111Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:08:38.229Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:08:44.190Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:08:48.153Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:08:51.289Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 647.878 ms
+[2025-01-22T12:09:28.699Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:09:34.854Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 246.103 ms
+[2025-01-22T12:12:21.156Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:12:56.347Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 421.810 ms
+[2025-01-22T12:13:34.462Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:13:40.852Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 432.571 ms
+[2025-01-22T12:14:03.451Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:14:08.893Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:14:14.324Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 202.940 ms
+[2025-01-22T12:14:39.465Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:14:41.462Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 541.375 ms
+[2025-01-22T12:15:03.223Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:15:07.290Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:15:14.443Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:15:18.427Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 195.077 ms
+[2025-01-22T12:17:34.819Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:17:59.051Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 462.325 ms
+[2025-01-22T12:18:17.384Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 210.902 ms
+[2025-01-22T12:30:07.886Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:30:13.174Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:30:15.786Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:30:20.435Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 291.850 ms - message: -
+[2025-01-22T12:33:56.779Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:34:13.380Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:34:20.808Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:35:10.402Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:35:24.981Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:35:39.574Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:35:51.625Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:36:13.371Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:36:22.326Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:36:24.005Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 300.807 ms - message: -
+[2025-01-22T12:37:23.591Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:37:27.350Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:37:30.971Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:37:32.345Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 497.338 ms - message: -
+[2025-01-22T12:37:40.890Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:37:45.169Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:37:49.953Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:37:53.179Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:38:07.581Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:38:09.334Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 48.201 ms - message: -
+[2025-01-22T12:38:34.487Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:38:37.398Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:38:43.900Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:39:02.720Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:39:12.697Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:39:13.941Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 589.323 ms - message: -
+[2025-01-22T12:39:38.207Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:39:38.902Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 609.259 ms - message: -
+[2025-01-22T12:44:42.474Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:45:16.425Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:45:28.736Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:45:34.534Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T12:45:51.973Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:00:00.980Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:00:03.218Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:00:15.485Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:00:31.965Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 376.026 ms - message: -
+[2025-01-22T13:02:06.310Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:02:09.212Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 91.734 ms - message: -
+[2025-01-22T13:03:38.850Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 320.995 ms - message: -
+[2025-01-22T13:04:38.165Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:04:46.841Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 248.641 ms - message: -
+[2025-01-22T13:05:58.240Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 39.356 ms - message: -
+[2025-01-22T13:06:05.975Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 71.459 ms - message: -
+[2025-01-22T13:06:36.974Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:06:38.711Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 400 - 429.194 ms - message: -
+[2025-01-22T13:06:59.713Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 243.205 ms - message: -
+[2025-01-22T13:07:24.239Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:07:28.350Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:07:36.069Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:07:43.475Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:07:55.507Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:08:29.412Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:08:59.004Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:09:00.232Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 934.842 ms - message: -
+[2025-01-22T13:09:01.300Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 76.148 ms - message: -
+[2025-01-22T13:09:23.256Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 257.017 ms
+[2025-01-22T13:10:01.559Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:10:06.033Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 847.027 ms
+[2025-01-22T13:10:38.252Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:10:41.129Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:10:46.688Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:11:03.001Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:11:06.825Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:11:08.296Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 1386.550 ms
+[2025-01-22T13:14:10.137Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:14:16.514Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 630.536 ms
+[2025-01-22T13:14:46.957Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:14:49.694Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 698.642 ms
+[2025-01-22T13:15:54.797Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:02.445Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:08.947Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:12.910Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:18.148Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:24.797Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:28.269Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:35.957Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:46.697Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:52.803Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:16:55.889Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 1356.601 ms
+[2025-01-22T13:18:11.436Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:18:27.544Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 549.583 ms - message: -
+[2025-01-22T13:22:09.506Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:22:13.111Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 1666.070 ms - message: -
+[2025-01-22T13:28:44.787Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:28:53.734Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 486.114 ms - message: -
+[2025-01-22T13:30:45.866Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 264.782 ms - message: -
+[2025-01-22T13:31:22.547Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:32:38.193Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:35:57.125Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 322.124 ms - message: -
+[2025-01-22T13:36:26.813Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:38:47.204Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 453.973 ms - message: -
+[2025-01-22T13:39:08.942Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:39:11.555Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 212.930 ms - message: -
+[2025-01-22T13:41:39.497Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:41:41.682Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 2031.932 ms - message: -
+[2025-01-22T13:41:43.922Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 160.320 ms - message: -
+[2025-01-22T13:41:45.254Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 170.509 ms - message: -
+[2025-01-22T13:50:49.196Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:53:35.018Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:53:40.724Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:53:43.847Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:54:10.672Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:54:19.515Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:54:21.305Z] [31merror[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 500 - 917.286 ms - message: -
+[2025-01-22T13:54:37.781Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:54:52.497Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 253.268 ms
+[2025-01-22T13:55:20.939Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:55:23.724Z] [32minfo[39m: PUT /api/v1/referral/withdraw/6790a5bf783db155a8923d40 200 - 1397.381 ms
+[2025-01-22T13:56:31.901Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 47.595 ms - message: -
+[2025-01-22T13:56:49.117Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 31.088 ms - message: -
+[2025-01-22T13:57:50.645Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:58:50.882Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:59:06.581Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:59:11.585Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:59:15.552Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:59:50.637Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T13:59:56.082Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T14:00:02.498Z] [31merror[39m: POST /api/v1/referral/withdraw 500 - 148.066 ms - message: -
+[2025-01-22T14:00:12.923Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T14:00:14.620Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 275.744 ms - message: -
+[2025-01-22T14:00:43.167Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T14:00:46.859Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 326.638 ms - message: -
+[2025-01-22T14:01:06.923Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T14:01:20.142Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T14:01:23.441Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T14:01:24.547Z] [31merror[39m: POST /api/v1/referral/withdraw 500 - 617.060 ms - message: -
+[2025-01-22T14:01:36.691Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T14:01:38.902Z] [31merror[39m: POST /api/v1/referral/withdraw 500 - 2095.742 ms - message: -
+[2025-01-22T14:01:57.474Z] [32minfo[39m: POST /api/v1/referral/withdraw 201 - 368.832 ms
+[2025-01-22T14:03:26.195Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-22T14:03:30.709Z] [32minfo[39m: POST /api/v1/referral/withdraw 201 - 512.061 ms
+[2025-01-22T14:08:08.411Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 140.522 ms - message: -

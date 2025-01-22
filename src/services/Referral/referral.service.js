@@ -42,9 +42,9 @@ const registerInvitee = async (referralId, inviteePhoneNo) => {
     const userType = await checkUserType(referral.referrer).userType;
     // Update referrerId's coin balance
     if (userType === 'individual') {
-        await IndividualUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+        await IndividualUser.findByIdAndUpdate(referral.referrer,  { coinsRewarded: totalCoins.total } );
     } else {
-        await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+        await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coinsRewarded: totalCoins.total } );
     }    
     return referral;
 };
@@ -104,9 +104,9 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo) => {
     const userType = (await checkUserType(referral.referrer)).userType;
     // Update referrerId's coin balance
     if (userType === 'individual') {
-        await IndividualUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+        await IndividualUser.findByIdAndUpdate(referral.referrer,  { coinsRewarded: totalCoins.total } );
     } else {
-        await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+        await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coinsRewarded: totalCoins.total } );
     }    
     return referral;
 }   
@@ -132,9 +132,9 @@ const createCardByInvitee = async (referralId) => {
     const userType = await checkUserType(referral.referrer).userType;
     // Update referrerId's coin balance
     if (userType === 'individual') {
-        await IndividualUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+        await IndividualUser.findByIdAndUpdate(referral.referrer,  { coinsRewarded: totalCoins.total } );
     } else {
-        await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coins: totalCoins.total } );
+        await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coinsRewarded: totalCoins.total } );
     }    
     
     return referral;
@@ -275,7 +275,7 @@ const findMonthlyReferralsCounts = async (year) => {
     }
 };
 
-const createWithdrawal = async (userId, amount) => {
+const validateWithdrawal = async (userId, amount, upiId) => {
     // console.log("userId : ", userId);
     const userType = (await checkUserType(userId)).userType;
     const settings = await Settings.findOne({});
@@ -297,13 +297,79 @@ const createWithdrawal = async (userId, amount) => {
     if (amount <= 0) {
         throw new Error('Invalid withdrawal amount');
     }
-    if (userType === 'individual') {
-        await IndividualUser.findByIdAndUpdate(userId, { coinsWithdrawn: coinsWithdrawn + amount });
-    } else {
-        await EnterpriseUser.findByIdAndUpdate(userId, { coinsWithdrawn: coinsWithdrawn + amount });
-    }
+    // if (userType === 'individual') {
+    //     await IndividualUser.findByIdAndUpdate(userId, { coinsWithdrawn: coinsWithdrawn + amount });
+    // } else {
+    //     await EnterpriseUser.findByIdAndUpdate(userId, { coinsWithdrawn: coinsWithdrawn + amount });
+    // }
     return { coinsWithdrawn: coinsWithdrawn + amount };
 };
+
+
+const updateWithdrawalRequest = async (id, status, transactionId) => {
+    const withdrawalRequest = await WithdrawalRequest.findById(id);
+    if (!withdrawalRequest) throw new Error('Withdrawal request not found');
+    if (withdrawalRequest.status === status ) throw new Error('Same status');
+    if (status === 'approved') {
+        const userType = (await checkUserType(withdrawalRequest.userId)).userType;
+        if (userType === 'individual') {
+            // console.log("in indi" , withdrawalRequest.userId)
+            // const up = await IndividualUser.findById(withdrawalRequest.userId);
+            const withDrawn = await WithdrawalRequest.aggregate([
+                { 
+                    $match: { userId: withdrawalRequest.userId, status : "pending" } },
+                    // $match: { userId: withdrawalRequest.userId } },
+                { 
+                    $group: { _id: null, coinsRedeemed: { $sum: '$amount' } },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        total: "$coinsRedeemed"
+                    }
+                }
+            ]).exec();
+
+            // console.log("withDrawn : ", withDrawn);
+            // console.log("withDrawn[0].total : ", withDrawn[0].total);
+
+            const user = await IndividualUser.findById(withdrawalRequest.userId);
+        if (!user) {
+            throw new Error("User not found.");
+        }
+
+        const newCoinsBalance = (user.coinsRewarded || 0) - withDrawn[0].total;
+
+            const up = await IndividualUser.findOneAndUpdate(
+                { _id: new ObjectId(withdrawalRequest.userId) },
+                {
+                    $set: {
+                 coinsWithdrawn: withDrawn[0].total,
+                 coinsBalance: newCoinsBalance }
+                },
+                {
+                    new: true,
+                }
+            );
+            
+            withdrawalRequest.status = 'approved';
+            withdrawalRequest.transactionId = transactionId;
+            await withdrawalRequest.save();
+            console.log("withdrawalRequest : ", withdrawalRequest   );
+
+        } else {
+            await EnterpriseUser.findByIdAndUpdate(withdrawalRequest.userId, { $inc: { coinsWithdrawn:  withdrawalRequest.amount } });
+        }
+
+    } else if (status === 'rejected') {
+        withdrawalRequest.status = 'rejected';
+        await withdrawalRequest.save();
+    } else {
+        throw new Error('Invalid status');
+    }
+    return withdrawalRequest;
+};
+
 
 module.exports = {
     sendInvite,
@@ -314,7 +380,8 @@ module.exports = {
     registerInviteeByReferralCode,
     findAllReferrals,
     findMonthlyReferralsCounts,
-    createWithdrawal,
+    validateWithdrawal,
+    updateWithdrawalRequest
 }
 
 // const {Referral} = require('../../models/referral/referral.model');
