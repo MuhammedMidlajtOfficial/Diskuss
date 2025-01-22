@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const watiSender = require("../../util/watiSender");
+const watiSender = require("../../util/Wati/watiSender");
+const { sendOtpFast2SMS } = require("../../util/Fast2SMS/fast2SMSSender");
 
 const otpSchema = new mongoose.Schema({
   email: {
@@ -21,10 +22,10 @@ const otpSchema = new mongoose.Schema({
 
 async function sendVerificationMessage(phnNumber, otp) {
   try {
-    const response = await watiSender(phnNumber, otp);
-    console.log("WhatsApp OTP sent successfully:", response);
+    const response = await sendOtpFast2SMS(phnNumber, otp);
+    console.log("SMS OTP sent successfully:", response);
   } catch (error) {
-    console.error("Error occurred while sending WhatsApp OTP:", error);
+    console.error("Error occurred while sending SMS OTP:", error);
     throw error;
   }
 }

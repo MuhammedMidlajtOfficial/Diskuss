@@ -11,8 +11,7 @@ const IndividualUserSchema = new mongoose.Schema({
     required: true,
   },
   password: {
-    type: String,
-    required: true,
+    type: String
   },
   isSubscribed: {
     type: Boolean,
@@ -41,7 +40,6 @@ const IndividualUserSchema = new mongoose.Schema({
   },
   phnNumber: {
     type: String,
-    required:true,
     
   },
   address: {

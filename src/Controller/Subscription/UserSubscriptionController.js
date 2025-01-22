@@ -5,6 +5,8 @@ const crypto = require('crypto');
 require('dotenv')
 const Notification = require("../../models/notification/NotificationModel");
 const {emitNotification,} = require("../../Controller/Socket.io/NotificationSocketIo");
+const axios = require('axios');
+const mongoose = require('mongoose');
 
 /**
  * Get all UserSubscription
@@ -168,8 +170,8 @@ const verifyPayment = async (req, res) => {
     // Update the subscription status to active on successful payment verification
     await UserSubscriptionService.updateSubscriptionStatus(razorpay_order_id, {
       status: "active",
-      'payment.paymentId': razorpay_payment_id,
-      'payment.paymentDate': Date.now(),
+      'payment.$.paymentId': razorpay_payment_id,  // Update the paymentId in the matching payment element
+      'payment.$.paymentDate': new Date(),  // Update the paymentDate in the matching payment element
     });
     // UPDATE USER STATUS
     await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id);
@@ -291,6 +293,69 @@ const deactivateSubscriptions = async (req, res) => {
   }
 };
 
+const createFreeSubscription = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+    console.log("User ID for new subscription:", userId);
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid User ID." });
+    }
+
+    // Check if the user already has an active or free subscription
+    const existingSubscription = await UserSubscriptionService.findOneById(userId);
+    console.log("sub:", existingSubscription);
+
+    if (existingSubscription.length > 0 && existingSubscription[0] !== "Not subscribed") {
+      return res.status(400).json({ message: "User already has an active or free subscription." });
+    }
+
+    // Fetch the config data to get the free trial period
+    const configResponse = await axios.get('http://13.203.24.247:9000/api/v1/config');
+    const configData = configResponse.data;
+
+    // Look for the specific config ID and extract the free trial days
+    const config = configData.find(item => item._id === "67872b6eb5030861b04cf35a");
+    if (!config) {
+      return res.status(500).json({ message: "Configuration not found." });
+    }
+
+    const trialDays = parseInt(config.config["Subscription Free Trial Date"], 10);
+    if (isNaN(trialDays)) {
+      return res.status(500).json({ message: "Invalid trial days configuration." });
+    }
+
+    // Set start and end dates
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(startDate.getDate() + trialDays);
+
+    // Create a new free subscription
+    const freeSubscriptionData = {
+      userId,
+      status: 'free',
+      startDate,
+      endDate
+    };
+
+    const newFreeSubscription = await UserSubscriptionService.createUserSubscription(freeSubscriptionData);
+
+    // Respond with success message
+    return res.status(201).json({
+      message: "Free subscription activated successfully.",
+      subscription: newFreeSubscription
+    });
+
+  } catch (error) {
+    console.error("Error in createFreeSubscription:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
     getUserSubscriptions,
     getUserSubscriptionByUserId,
@@ -298,5 +363,6 @@ module.exports = {
     updateUserSubscription,
     deleteUserSubscription,
     verifyPayment,
-    deactivateSubscriptions
+    deactivateSubscriptions,
+    createFreeSubscription
 };

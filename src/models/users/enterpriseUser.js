@@ -20,8 +20,7 @@ const enterpriseUserSchema = new mongoose.Schema(
       required: true,
     },
     password: {
-      type: String,
-      required: true,
+      type: String
     },
     isSubscribed: {
       type: Boolean,
@@ -37,7 +36,6 @@ const enterpriseUserSchema = new mongoose.Schema(
     },
     phnNumber: {
       type: String,
-      required: true,
     },
     referralCode: {
       type: String,

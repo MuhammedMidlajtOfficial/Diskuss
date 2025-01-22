@@ -4,8 +4,12 @@ const authIndividualController = require('../../Controller/Individual/authIndivi
 const authIndividualRouter = express.Router()
 
 authIndividualRouter.post('/login',authIndividualController.postIndividualLogin)
+authIndividualRouter.post('/loginwithphnnumber',authIndividualController.postIndividualLoginUsingPhnNumber)
+authIndividualRouter.post('/loginotp',authIndividualController.sendOTPForPhnNumber)
+
 authIndividualRouter.post('/signup',authIndividualController.postIndividualSignup)
 authIndividualRouter.post('/sendotp',authIndividualController.sendOTP)
+
 authIndividualRouter.post('/sendForgotPasswordOtp',authIndividualController.sendForgotPasswordOTP)
 authIndividualRouter.post('/validateotp',authIndividualController.OtpValidate)
 authIndividualRouter.post('/forgotpassword',authIndividualController.postforgotPassword)

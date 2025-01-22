@@ -19,7 +19,6 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     },
     password: {
       type: String,
-      required: true,
     },
     isSubscribed: {
       type: Boolean,
@@ -44,7 +43,6 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     },
     phnNumber: {
       type:String,
-      required:true,
     },
     address: {
       type:String,

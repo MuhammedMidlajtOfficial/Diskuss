@@ -123,3 +123,23 @@ async function isValidUserId(userId) {
     return false;
   }
 }
+
+module.exports.getCardsByNum = async (req, res) => {
+  try {
+    const { phnNumber } = req.params;
+console.log("ph:",phnNumber);
+
+    if (!phnNumber) {
+      return res.status(400).json({ message: "Phone number is required" });
+    }
+
+    // Fetch cards using phone number
+    const cards = await cardService.getCardsByNum(phnNumber);
+
+    // Return cards
+    return res.status(200).json(cards);
+  } catch (error) {
+    console.error("Error fetching cards:", error);
+    res.status(500).json({ message: "Failed to get cards", error });
+  }
+};

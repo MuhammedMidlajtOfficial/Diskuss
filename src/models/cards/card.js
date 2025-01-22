@@ -56,7 +56,8 @@ const cardSchema = new mongoose.Schema({
   },
   website:  {
     type:String,
-    required : true
+    // required : true
+    default:''
   },
   theme:{
     type:String,
