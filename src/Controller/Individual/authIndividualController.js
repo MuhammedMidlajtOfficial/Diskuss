@@ -131,7 +131,7 @@ module.exports.postIndividualSignup = async (req, res) => {
 
   try {
     // Check for missing fields
-    if (!username || !email || !passwordRaw || !otp || !phnNumber) {
+    if (!username || !email || !otp || !phnNumber) {
       return res.status(400).json({ message :"All fields are required"}); // Correct response handling
     }
     // Check if email exists
