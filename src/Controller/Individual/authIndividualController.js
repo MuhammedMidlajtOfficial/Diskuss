@@ -127,7 +127,7 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
 
 module.exports.postIndividualSignup = async (req, res) => {
   const { username, email, phnNumber, otp, referralCode } = req.body;
-  const passwordRaw = req.body.password;
+  // const passwordRaw = req.body.password;
 
   try {
     // Check for missing fields
