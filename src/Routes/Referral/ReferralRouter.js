@@ -13,8 +13,9 @@ router.get('/code-check/:referralCode', ReferralController.checkReferralCode);
 
 // Incentive Routes
 router.get('/withdraw', WithdrawalController.getAllWithdrawalDetails);
-router.get('/withdraw/:id', WithdrawalController.getWithdrawalRequestByUserId);
+router.get('/withdraw/:userId', WithdrawalController.getWithdrawalRequestByUserId);
 router.post('/withdraw', WithdrawalController.createWithdrawalRequest);
+router.put('/withdraw/:id', WithdrawalController.updateWithdrawalRequest);
 
 
 // Dashboard Routes

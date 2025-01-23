@@ -178,9 +178,9 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
 module.exports.postEnterpriseSignup = async (req,res)=>{
   try {
     const {username, companyName, industryType, phnNumber, email, otp, referralCode } = req.body
-    const passwordRaw = req.body.password
+    // const passwordRaw = req.body.password
 
-    if (!username || !companyName || !email || !industryType || !passwordRaw || !otp || !phnNumber) {
+    if (!username || !companyName || !email || !industryType || !otp || !phnNumber) {
       return res.status(400).json({message:"All fields are required"}); // Correct response handling
     }
     // Check if email exists
@@ -202,7 +202,7 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
       return res.status(400).json({ success: false, message: 'The OTP is not valid' }); // Correct response handling
     }
     // Hash password
-    const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+    // const hashedPassword = await bcrypt.hash(passwordRaw, 10);
 
     const newUser = await enterpriseUser.create({
       username,
@@ -210,7 +210,7 @@ module.exports.postEnterpriseSignup = async (req,res)=>{
       industryType,
       email,
       phnNumber,
-      password: hashedPassword,
+      // password: hashedPassword,
       referralCodeUsed : referralCode || ""
     });
     console.log(newUser);

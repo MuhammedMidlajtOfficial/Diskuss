@@ -127,11 +127,11 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
 
 module.exports.postIndividualSignup = async (req, res) => {
   const { username, email, phnNumber, otp, referralCode } = req.body;
-  const passwordRaw = req.body.password;
+  // const passwordRaw = req.body.password;
 
   try {
     // Check for missing fields
-    if (!username || !email || !passwordRaw || !otp || !phnNumber) {
+    if (!username || !email || !otp || !phnNumber) {
       return res.status(400).json({ message :"All fields are required"}); // Correct response handling
     }
     // Check if email exists
@@ -154,13 +154,13 @@ module.exports.postIndividualSignup = async (req, res) => {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+    // const hashedPassword = await bcrypt.hash(passwordRaw, 10);
     // Create a new user
     const newUser = await individualUserCollection.create({
       username,
       email,
       phnNumber,
-      password: hashedPassword,
+      // password: hashedPassword,
       referralCodeUsed : referralCode || "",
       // cardNo: 0,
     });
