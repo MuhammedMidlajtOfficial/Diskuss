@@ -154,13 +154,13 @@ module.exports.postIndividualSignup = async (req, res) => {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+    // const hashedPassword = await bcrypt.hash(passwordRaw, 10);
     // Create a new user
     const newUser = await individualUserCollection.create({
       username,
       email,
       phnNumber,
-      password: hashedPassword,
+      // password: hashedPassword,
       referralCodeUsed : referralCode || "",
       // cardNo: 0,
     });
