@@ -472,6 +472,7 @@ const getContactsByOwnerUserId = async (req, res) => {
               notes: individualContact.notes,
               userId: individualContact.userId,
               isDiskussUser: individualContact.isDiskussUser,
+              cardImage: individualContact.cardImage,
               image: userWithImage?.image || null, // Include the image or null if not found
             };
           })
