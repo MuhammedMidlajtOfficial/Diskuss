@@ -310,9 +310,13 @@ const createFreeSubscription = async (req, res) => {
     const existingSubscription = await UserSubscriptionService.findOneById(userId);
     console.log("sub:", existingSubscription);
 
-    if (existingSubscription.length > 0 && existingSubscription[0] !== "Not subscribed") {
+    if (
+      existingSubscription.length > 0 &&
+      existingSubscription[0].status !== "Not subscribed"
+    ) {
       return res.status(400).json({ message: "User already has an active or free subscription." });
     }
+    
 
     // Fetch the config data to get the free trial period
     const configResponse = await axios.get('http://13.203.24.247:9000/api/v1/config');
