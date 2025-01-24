@@ -38,8 +38,8 @@ const findAll = async () => {
       
       const noSubResponse = {
         "_id": "",
-        "userId": null,
-        "planId": null,
+        "userId": "",
+        "planId": "",
         "razorpayOrderId": "",
         "startDate": "N/A",
         "payment": [
