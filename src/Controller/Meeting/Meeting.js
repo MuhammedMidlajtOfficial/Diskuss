@@ -376,7 +376,11 @@ const getMeetingsByIds = async (req, res) => {
     const meetings = await MeetingBase.find({
       _id: { $in: meetingIds },
       selectedDate: { $gte: today },
-    });
+    }).sort({ selectedDate: 1 }); // Ascending order based on selectedDate
+    
+  
+    const meeting_date = meetings.map((meeting) => meeting.selectedDate);
+    console.log(meeting_date);    
 
     if (meetings.length === 0) {
       return res.status(200).json({ meetings: [] });
@@ -447,7 +451,7 @@ const getMeetingsByIds = async (req, res) => {
       };
     });
 
-    return res.status(200).json({ meetings: enrichedMeetings.reverse() });
+    return res.status(200).json({ meetings: enrichedMeetings });
   } catch (error) {
     console.error("Error fetching meetings by IDs:", error);
     return res.status(500).json({ message: "Internal server error." });

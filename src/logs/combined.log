@@ -1,0 +1,9 @@
+[2025-01-27T09:33:01.089Z] info: Server connected on http://localhost:3000
+[2025-01-27T09:33:07.740Z] info: GET /api/v1/enterpriseMeeting/get-meeting/6796ffef0524d8232fe5f81a 200 - 942.842 ms
+[2025-01-27T09:35:41.621Z] info: Server connected on http://localhost:3000
+[2025-01-27T09:35:59.403Z] info: Server connected on http://localhost:3000
+[2025-01-27T09:36:35.012Z] info: Server connected on http://localhost:3000
+[2025-01-27T09:36:46.235Z] info: Server connected on http://localhost:3000
+[2025-01-27T09:36:49.792Z] info: GET /api/v1/enterpriseMeeting/get-meeting/6796ffef0524d8232fe5f81a 200 - 1727.252 ms
+[2025-01-27T09:37:15.421Z] info: Server connected on http://localhost:3000
+[2025-01-27T09:37:19.229Z] info: GET /api/v1/enterpriseMeeting/get-meeting/6796ffef0524d8232fe5f81a 200 - 2492.891 ms
