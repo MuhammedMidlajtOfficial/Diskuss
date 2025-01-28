@@ -546,3 +546,78 @@ module.exports.getProfile = async (req, res ) => {
     return res.status(500).json({ message: 'An unexpected error occurred. Please try again later' });
   }
 }
+
+module.exports.getUserByPhone = async (req, res) => {
+  try {
+    const { phnNumber } = req.params;
+
+    if (!phnNumber) {
+      return res.status(400).json({ 
+        message: 'Phone number is required' 
+      });
+    }
+
+    // First, fetch the results from all collections
+    const results = await Promise.all([
+      individualUserCollection.findOne({ phnNumber }).lean(),
+      enterpriseUser.findOne({ phnNumber }).lean(),
+      EnterpriseEmployee.findOne({ phnNumber }).lean()
+    ]);
+
+    // Then destructure the results after they're fetched
+    const [individualUserResult, enterpriseUserResult, enterpriseEmployeeResult] = results;
+
+    // Initialize variables
+    let userDetails = null;
+    let userType = null;
+
+    // Check which type of user was found
+    if (individualUserResult) {
+      userDetails = {
+        ...individualUserResult,
+        userType: 'individual'
+      };
+      userType = 'individual';
+    } else if (enterpriseUserResult) {
+      userDetails = {
+        ...enterpriseUserResult,
+        userType: 'enterprise'
+      };
+      userType = 'enterprise';
+    } else if (enterpriseEmployeeResult) {
+      userDetails = {
+        ...enterpriseEmployeeResult,
+        userType: 'employee'
+      };
+      userType = 'employee';
+    }
+
+    if (!userDetails) {
+      return res.status(404).json({
+        message: 'No user found with the provided phone number'
+      });
+    }
+
+    // Format the response
+    const response = {
+      user: {
+        ...userDetails,
+        _id: userDetails._id,
+        name: userType === 'enterprise' ? userDetails.companyName : userDetails.name,
+        email: userDetails.email,
+        phnNumber: userDetails.phnNumber,
+        image: userDetails.image || null,
+        address: userDetails.address || null,
+        userType
+      }
+    };
+
+    return res.status(200).json(response);
+
+  } catch (error) {
+    console.error('Error in getUserByPhone:', error);
+    return res.status(500).json({ 
+      message: 'An unexpected error occurred. Please try again later'
+    });
+  }
+};
