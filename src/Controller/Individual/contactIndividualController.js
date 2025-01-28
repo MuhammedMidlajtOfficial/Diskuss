@@ -59,7 +59,8 @@ const createContact = async (req, res) => {
       scheduled,
       scheduledTime,
       notes,
-      cardImage,
+      cardFrontImage,
+      cardBackImage,
       contactOwnerId,
     } = req.body;
 
@@ -96,24 +97,48 @@ const createContact = async (req, res) => {
     }
 
     console.log("userId-", userId);
-    let imageUrl = cardImage; // Default to provided image URL
+    const cardImage = {
+      front: '',
+      back: '',
+    };
 
-    // Upload image to S3 if provided
-    if (cardImage) {
-      const imageBuffer = Buffer.from(
-        cardImage.replace(/^data:image\/\w+;base64,/, ""),
+    // Upload card front image to S3 if provided
+    if (cardFrontImage) {
+      const frontImageBuffer = Buffer.from(
+        cardFrontImage.replace(/^data:image\/\w+;base64,/, ""),
         "base64"
       );
-      const fileName = `${contactOwnerId}-${Date.now()}-businessCard.jpg`; // Unique file name
+      const frontFileName = `${contactOwnerId}-${Date.now()}-cardFront.jpg`;
 
       try {
-        const uploadResult = await uploadImageToS3ForContact(imageBuffer, fileName);
-        imageUrl = uploadResult.Location; // S3 image URL
+        const frontUploadResult = await uploadImageToS3ForContact(
+          frontImageBuffer,
+          frontFileName
+        );
+        cardImage.front = frontUploadResult.Location; // S3 front image URL
       } catch (uploadError) {
-        throw new Error(`Failed to upload image: ${uploadError.message}`);
+        throw new Error(`Failed to upload front card image: ${uploadError.message}`);
       }
     }
-    let newContact;
+
+    // Upload card back image to S3 if provided
+    if (cardBackImage) {
+      const backImageBuffer = Buffer.from(
+        cardBackImage.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      );
+      const backFileName = `${contactOwnerId}-${Date.now()}-cardBack.jpg`;
+
+      try {
+        const backUploadResult = await uploadImageToS3ForContact(
+          backImageBuffer,
+          backFileName
+        );
+        cardImage.back = backUploadResult.Location; // S3 back image URL
+      } catch (uploadError) {
+        throw new Error(`Failed to upload back card image: ${uploadError.message}`);
+      }
+    }
 
     const contactDetails = {
       contactOwnerId,
@@ -130,7 +155,7 @@ const createContact = async (req, res) => {
           scheduled,
           scheduledTime,
           notes,
-          cardImage: imageUrl,
+          cardImage, // Assign the cardImage object here
           userId: userId, // Set the userId based on the type of user
           isDiskussUser: isDiskussUser,
         },
@@ -138,7 +163,7 @@ const createContact = async (req, res) => {
     };
 
     // Create the new contact
-    newContact = await Contact.create(contactDetails);
+    const newContact = await Contact.create(contactDetails);
 
     const existIndividualUser = await individualUserCollection.findOne({
       _id: contactOwnerId,

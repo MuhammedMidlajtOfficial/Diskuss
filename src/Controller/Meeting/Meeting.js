@@ -110,7 +110,20 @@ const CreateMeeting = async (req, res) => {
 
     const ownerName =
       ownerProfile.username || ownerProfile.companyName || "Unknown";
-    const notificationContent = `You have been invited to a meeting titled "${meetingTitle}" on ${formattedDate} Sheduled on ${startTime}, created by ${ownerName}.`;
+     
+      const notificationContent = `
+  <h3>
+    You have been invited to a meeting titled 
+    <strong>"${meetingTitle}"</strong> on 
+    <strong>${formattedDate}</strong>, Scheduled at 
+    <strong>${startTime}</strong>, created by 
+    <strong>${ownerName}</strong>.
+  </h3>
+`;
+      
+  
+     console.log(notificationContent);
+  
 
     console.log("invitedPeople-", invitedPeople);
 
@@ -234,7 +247,14 @@ const updateMeetingStatus = async (req, res) => {
     const meetingOwner = updatedMeeting.meetingOwner;
     const meetingTitle = updatedMeeting.meetingTitle;
     const decision = status === "accepted" ? "accepted" : "rejected";
-    const notificationContent = `${username} has ${decision} your meeting titled "${meetingTitle}".`;
+    const notificationContent = `
+    <h3>
+      <strong>${username}</strong> has 
+      <strong>${decision}</strong> your meeting titled 
+      <strong>"${meetingTitle}"</strong>.
+    </h3>
+  `;
+  
 
     try {
       if (meetingOwner.length != 0) {
@@ -376,7 +396,11 @@ const getMeetingsByIds = async (req, res) => {
     const meetings = await MeetingBase.find({
       _id: { $in: meetingIds },
       selectedDate: { $gte: today },
-    });
+    }).sort({ selectedDate: 1 }); // Ascending order based on selectedDate
+    
+  
+    const meeting_date = meetings.map((meeting) => meeting.selectedDate);
+    console.log(meeting_date);    
 
     if (meetings.length === 0) {
       return res.status(200).json({ meetings: [] });
@@ -447,7 +471,7 @@ const getMeetingsByIds = async (req, res) => {
       };
     });
 
-    return res.status(200).json({ meetings: enrichedMeetings.reverse() });
+    return res.status(200).json({ meetings: enrichedMeetings });
   } catch (error) {
     console.error("Error fetching meetings by IDs:", error);
     return res.status(500).json({ message: "Internal server error." });
@@ -506,7 +530,15 @@ const deleteMeeting = async (req, res) => {
 
     const ownerName =
       ownerUpdated.username || ownerUpdated.companyName || "Unknown";
-    const notificationContent = `The meeting titled '${meetingToDelete.meetingTitle}' on ${formattedDate} Sheduled on ${meetingToDelete.startTime}  , created by ${ownerName}, has been cancelled.`;
+      const notificationContent = `
+      <h3>
+        The meeting titled <strong>'${meetingToDelete.meetingTitle}'</strong> on 
+        <strong>${formattedDate}</strong>, Scheduled at 
+        <strong>${meetingToDelete.startTime}</strong>, created by 
+        <strong>${ownerName}</strong>, has been cancelled.
+      </h3>
+    `;
+    
 
     // console.log(invitedPeople);
 
@@ -668,7 +700,15 @@ const UpdateMeeting = async (req, res) => {
     const formattedDate = `${day}/${month}/${year}`;
 
     if (newInvitedPeople.length != 0) {
-      const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime} , created by ${Ownername}.`;
+      const notificationContent = `
+  <h3>
+    You have been invited to a meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
+    <strong>${formattedDate}</strong>, Scheduled at 
+    <strong>${updatedMeeting.startTime}</strong>, created by 
+    <strong>${Ownername}</strong>.
+  </h3>
+`;
+
 
       const repose = await axios.post(
         "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
@@ -685,7 +725,14 @@ const UpdateMeeting = async (req, res) => {
     }
 
     if (removedPeople.length != 0) {
-      const notificationContentRemove = `You have been removed from the meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime} , created by ${Ownername}.`;
+      const notificationContent = `
+      <h3>
+        You have been invited to a meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
+        <strong>${formattedDate}</strong>, Scheduled at 
+        <strong>${updatedMeeting.startTime}</strong>, created by 
+        <strong>${Ownername}</strong>.
+      </h3>
+    `;
 
       const reposed = await axios.post(
         "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
@@ -721,7 +768,15 @@ const UpdateMeeting = async (req, res) => {
             );
           }
 
-          const notificationContent = `You have been removed from the meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime} , created by ${Ownername}.`;
+          const notificationContent = `
+          <h3>
+            You have been removed from the meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
+            <strong>${formattedDate}</strong>, Scheduled at 
+            <strong>${updatedMeeting.startTime}</strong>, created by 
+            <strong>${Ownername}</strong>.
+          </h3>
+        `;
+        
 
           const notification = new Notification({
             sender: ownerId,
@@ -763,7 +818,17 @@ const UpdateMeeting = async (req, res) => {
             );
           }
 
-          const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate} Sheduled on ${updatedMeeting.startTime}  , created by ${Ownername}.`;
+    
+
+          const notificationContent = `
+  <h3>
+    You have been invited to a meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
+    <strong>${formattedDate}</strong>, Scheduled at 
+    <strong>${updatedMeeting.startTime}</strong>, created by 
+    <strong>${Ownername}</strong>.
+  </h3>
+`;
+
 
           const notification = new Notification({
             sender: ownerId,
