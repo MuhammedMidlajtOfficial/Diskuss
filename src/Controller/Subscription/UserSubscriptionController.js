@@ -150,6 +150,8 @@ const verifyPayment = async (req, res) => {
   if (isProcessing) {
     return res.status(429).json({ message: "Payment verification already in process. Please wait." });
   }
+  console.log('payment verification started');
+  console.log('verifyPayment - body - ',req.body);
 
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
   try {
