@@ -29,7 +29,7 @@ module.exports.getCard = async (userId) => {
   if (isEnterpriseUserExist) {
     // Fetch enterprise user cards
     const enterpriseCardsFromEmpCards = isEnterpriseUserExist.empCards
-      .filter(empCard => empCard.status === "active")
+      // .filter(empCard => empCard.status === "active")
       .map(empCard => empCard.empCardId); // Extract empCardId
 
     const enterpriseCardsFromCardCollection = await Card.find({ userId });
