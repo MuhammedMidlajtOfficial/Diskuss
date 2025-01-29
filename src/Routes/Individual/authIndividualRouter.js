@@ -16,5 +16,6 @@ authIndividualRouter.post('/forgotpassword',authIndividualController.postforgotP
 authIndividualRouter.post('/resetpassword',authIndividualController.resetPassword)
 authIndividualRouter.get('/getProfile/:id',authIndividualController.getProfile)
 authIndividualRouter.patch('/updateProfile',authIndividualController.updateProfile)
+authIndividualRouter.get('/:phnNumber',authIndividualController.getUserByPhone)
 
 module.exports = authIndividualRouter
