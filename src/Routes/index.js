@@ -27,10 +27,11 @@ const analyticRouter = require("./Analytic/analyticRouter.js")
 const ticketRouter = require('./Ticket/ticketRouter.js')
 const ticketCategoryRouter = require('./Ticket/ticketCategoryRouter.js')
 const ticketReplyRouter = require('./Ticket/ticketReplyRouter.js')
-const logController = require('./logRouter.js')
+const logRouter = require('./logRouter.js')
 // const contactRouter = require("./contactRouter.js")
 const uploadVCard = require("./VCard/VCardRoute.js")
 const settingsRouter = require('./settingsRoutes.js'); 
+const urlShortnerRouter = require('./UrlShortener/urlShortnerRouter.js');
 const { validateJwtToken } = require('../Middleware/validateJwtToken.js');
 
 
@@ -172,7 +173,11 @@ const defaultRoutes = [
   },
   {
     path: '/logs',
-    route: logController
+    route: logRouter
+  },
+  {
+    path : '/urlShortner',
+    route : urlShortnerRouter
   }
 ];
 

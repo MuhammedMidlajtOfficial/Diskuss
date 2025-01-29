@@ -6,7 +6,7 @@ exports.logShare = async (req, res) => {
         await analyticsService.logShare(cardId, userId);
         res.json({ message: 'Share logged successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'Error logging share' });
+        rBusyes.status(500).json({ error: 'Error logging share' });
     }
 };
 
