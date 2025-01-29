@@ -556,6 +556,159 @@ const getSearchedContact = async (req, res) => {
   }
 };
 
+const createPhoneContacts = async (req, res) => {
+  try {
+    const { contactOwnerId, contacts } = req.body;
+
+    if (!contactOwnerId || !Array.isArray(contacts)) {
+      return res.status(400).json({ 
+        message: "Contact owner ID and contacts array are required" 
+      });
+    }
+
+    // Array to store valid contacts that match with database users
+    const validContacts = [];
+    const invalidContacts = [];
+
+    // Check each contact's phone number against all collections
+    for (const contact of contacts) {
+      const { phnNumber, name } = contact;
+      
+      if (!phnNumber || !name) {
+        invalidContacts.push({ phnNumber, name, reason: "Missing required fields" });
+        continue;
+      }
+
+      // Check phone number across all collections
+      const existIndividualUserNumber = await individualUserCollection.findOne({ phnNumber });
+      const existEnterpriseUserNumber = await enterpriseUser.findOne({ phnNumber });
+      const existEnterpriseEmployeNumber = await enterpriseEmployeModel.findOne({ phnNumber });
+
+      let userId = null;
+      let isDiskussUser = false;
+
+      // Determine the user ID based on the type of user
+      if (existIndividualUserNumber) {
+        userId = existIndividualUserNumber._id;
+        isDiskussUser = true;
+      } else if (existEnterpriseUserNumber) {
+        userId = existEnterpriseUserNumber._id;
+        isDiskussUser = true;
+      } else if (existEnterpriseEmployeNumber) {
+        userId = existEnterpriseEmployeNumber._id;
+        isDiskussUser = true;
+      }
+
+      // If phone number exists in any collection, add to valid contacts
+      if (isDiskussUser) {
+        validContacts.push({
+          name,
+          phnNumber,
+          userId,
+          isDiskussUser,
+          // Add default empty values for other fields
+          companyName: '',
+          designation: '',
+          email: '',
+          website: '',
+          businessCategory: '',
+          location: '',
+          scheduled: false,
+          scheduledTime: null,
+          notes: '',
+          cardImage: {
+            front: '',
+            back: ''
+          }
+        });
+      } else {
+        invalidContacts.push({ 
+          phnNumber, 
+          name, 
+          reason: "Phone number not found in any collection" 
+        });
+      }
+    }
+
+    if (validContacts.length === 0) {
+      return res.status(400).json({ 
+        message: "No valid contacts found",
+        invalidContacts 
+      });
+    }
+
+    // Create contact document with all valid contacts
+    const contactDetails = {
+      contactOwnerId,
+      contacts: validContacts
+    };
+
+    // Create the new contacts
+    const newContact = await Contact.create(contactDetails);
+
+    // Update the appropriate collection based on contact owner type
+    const existIndividualUser = await individualUserCollection.findOne({
+      _id: contactOwnerId
+    });
+    const existEnterpriseUser = await enterpriseUser.findOne({
+      _id: contactOwnerId
+    });
+    const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({
+      _id: contactOwnerId
+    });
+
+    if (existIndividualUser) {
+      await individualUserCollection.updateOne(
+        { _id: contactOwnerId },
+        { $push: { contacts: newContact._id } }
+      );
+    } else if (existEnterpriseUser) {
+      await enterpriseUser.updateOne(
+        { _id: contactOwnerId },
+        { $push: { contacts: newContact._id } }
+      );
+    } else if (existEnterpriseEmploye) {
+      // Update enterprise employee
+      await enterpriseEmployeModel.updateOne(
+        { _id: contactOwnerId },
+        { $push: { contacts: newContact._id } }
+      );
+
+      // Also update the enterprise user
+      const enterpriseUserId = await enterpriseUser
+        .findOne({ "empIds.empId": contactOwnerId })
+        .select("_id");
+        
+      if (enterpriseUserId) {
+        contactDetails.contactOwnerId = enterpriseUserId._id;
+        const newContactOfEnterprise = await Contact.create(contactDetails);
+        
+        if (newContactOfEnterprise) {
+          await enterpriseUser.updateOne(
+            { _id: enterpriseUserId._id },
+            { $push: { contacts: newContactOfEnterprise._id } }
+          );
+        }
+      }
+    }
+
+    return res.status(201).json({
+      message: "Contacts created successfully",
+      contact: newContact,
+      summary: {
+        totalSubmitted: contacts.length,
+        validContacts: validContacts.length,
+        invalidContacts: invalidContacts
+      }
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      message: "An unexpected error occurred. Please try again later."
+    });
+  }
+};
+
 module.exports = {
   getAllContacts,
   getContactById,
@@ -564,4 +717,5 @@ module.exports = {
   deleteContact,
   getContactsByOwnerUserId,
   getSearchedContact,
+  createPhoneContacts
 };
