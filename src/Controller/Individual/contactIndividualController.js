@@ -235,132 +235,151 @@ const createContact = async (req, res) => {
  * @returns {Promise<Response>}
  */
 const updateContact = async (req, res) => {
-    try {
-        const { contact_id } = req.params;
-        const {
-            name,
-            companyName,
-            designation,
-            phnNumber,
-            email,
-            website,
-            location,
-            businessCategory,
-            scheduled,
-            scheduledTime,
-            cardImage,
-            notes,
-            contactOwnerId,
-        } = req.body;
+  try {
+      const { contact_id } = req.params;
+      const {
+          name,
+          companyName,
+          designation,
+          phnNumber,
+          email,
+          website,
+          location,
+          businessCategory,
+          scheduled,
+          scheduledTime,
+          cardFrontImage,
+          cardBackImage,
+          notes,
+          contactOwnerId,
+      } = req.body;
 
-        // Validate required fields
-        if (!contactOwnerId || !name || !phnNumber) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-        // Check if the contact exists
-        const contact = await Contact.findOne({_id:contact_id});
-        if (!contact) {
-            return res.status(404).json({ message: "Contact not found" });
-        }
+      // Validate required fields
+      if (!contactOwnerId || !name || !phnNumber) {
+          return res.status(400).json({ message: "All fields are required" });
+      }
 
-        // Check if the phone number exists in any user
-        const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
-        const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
-        const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
+      // Check if the contact exists
+      const contact = await Contact.findOne({ _id: contact_id });
+      if (!contact) {
+          return res.status(404).json({ message: "Contact not found" });
+      }
 
-        let userId = null;
-        let isDiskussUser = false;
+      // Check if the phone number exists in any user
+      const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
+      const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+      const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
 
-        if (existIndividualUser) {
-            userId = existIndividualUser._id;
-            isDiskussUser = true;
-        } else if (existEnterpriseUser) {
-            userId = existEnterpriseUser._id;
-            isDiskussUser = true;
-        } else if (existEnterpriseEmploye) {
-            userId = existEnterpriseEmploye._id;
-            isDiskussUser = true;
-        }
+      let userId = null;
+      let isDiskussUser = false;
 
-        let imageUrl = contact?.cardImage || null; // Default to provided image URL or null
+      if (existIndividualUser) {
+          userId = existIndividualUser._id;
+          isDiskussUser = true;
+      } else if (existEnterpriseUser) {
+          userId = existEnterpriseUser._id;
+          isDiskussUser = true;
+      } else if (existEnterpriseEmploye) {
+          userId = existEnterpriseEmploye._id;
+          isDiskussUser = true;
+      }
 
-        // Upload image to S3 if provided
-        if (cardImage) {
-          if (contact.cardImage) {
-            await deleteImageFromS3ForContact(contact.cardImage)
+      let cardImage = {
+          front: contact?.cardImage?.front || "",
+          back: contact?.cardImage?.back || "",
+      };
+
+      // Upload front image to S3 if provided
+      if (cardFrontImage) {
+          if (contact.cardImage?.front) {
+              await deleteImageFromS3ForContact(contact.cardImage.front);
           }
 
-          const imageBuffer = Buffer.from(
-            cardImage.replace(/^data:image\/\w+;base64,/, ""),
-            "base64"
+          const frontImageBuffer = Buffer.from(
+              cardFrontImage.replace(/^data:image\/\w+;base64,/, ""),
+              "base64"
           );
-          const fileName = `${contactOwnerId}-${Date.now()}-businessCard.jpg`; // Unique file name
+          const frontFileName = `${contactOwnerId}-${Date.now()}-cardFront.jpg`;
 
           try {
-            const uploadResult = await uploadImageToS3ForContact(imageBuffer, fileName);
-            imageUrl = uploadResult.Location; // S3 image URL
+              const frontUploadResult = await uploadImageToS3ForContact(frontImageBuffer, frontFileName);
+              cardImage.front = frontUploadResult.Location;
           } catch (uploadError) {
-            throw new Error(`Failed to upload image: ${uploadError.message}`);
+              throw new Error(`Failed to upload front card image: ${uploadError.message}`);
           }
-        }
+      }
 
-        const updatedContact = await Contact.updateOne(
-            {
-                _id: contact_id,
-                "contacts._id": contact.contacts[0]._id
-            },
-            {
-                $set: {
-                    "contacts.$.name": name,
-                    "contacts.$.companyName": companyName,
-                    "contacts.$.designation": designation,
-                    "contacts.$.phnNumber": phnNumber,
-                    "contacts.$.email": email,
-                    "contacts.$.website": website,
-                    "contacts.$.location": location,
-                    "contacts.$.businessCategory": businessCategory,
-                    "contacts.$.scheduled": scheduled,
-                    "contacts.$.scheduledTime": scheduledTime,
-                    "contacts.$.notes": notes,
-                    "contacts.$.userId": userId,
-                    "contacts.$.isDiskussUser": isDiskussUser,
-                },
-            }
-        );
-            console.log(updatedContact);
-        if (updatedContact.matchedCount === 0) {
-            return res.status(404).json({ message: "No contact found to update" });
-        }
+      // Upload back image to S3 if provided
+      if (cardBackImage) {
+          if (contact.cardImage?.back) {
+              await deleteImageFromS3ForContact(contact.cardImage.back);
+          }
 
-        // Depending on the user type, update the contact in the relevant collection
-        if (existIndividualUser) {
-            await individualUserCollection.updateOne(
-                { _id: contactOwnerId },
-                { $set: { "contacts.$[contact].phnNumber": phnNumber } },
-                { arrayFilters: [{ "contact._id": contact_id }] }
-            );
-        } else if (existEnterpriseUser) {
-            await enterpriseUser.updateOne(
-                { _id: contactOwnerId },
-                { $set: { "contacts.$[contact].phnNumber": phnNumber } },
-                { arrayFilters: [{ "contact._id": contact_id }] }
-            );
-        } else if (existEnterpriseEmploye) {
-            await enterpriseEmployeModel.updateOne(
-                { _id: contactOwnerId },
-                { $set: { "contacts.$[contact].phnNumber": phnNumber } },
-                { arrayFilters: [{ "contact._id": contact_id }] }
-            );
-        }
+          const backImageBuffer = Buffer.from(
+              cardBackImage.replace(/^data:image\/\w+;base64,/, ""),
+              "base64"
+          );
+          const backFileName = `${contactOwnerId}-${Date.now()}-cardBack.jpg`;
 
-        return res.status(200).json({
-            message: "Contact updated successfully",
-        });
-    } catch (error) {
-        console.error("Error updating Contact:", error.message);
-        return res.status(500).json({ error: "Internal Server Error" });
-    }
-}
+          try {
+              const backUploadResult = await uploadImageToS3ForContact(backImageBuffer, backFileName);
+              cardImage.back = backUploadResult.Location;
+          } catch (uploadError) {
+              throw new Error(`Failed to upload back card image: ${uploadError.message}`);
+          }
+      }
+
+      // Update contact details
+      const updatedContact = await Contact.updateOne(
+          {
+              _id: contact_id,
+              "contacts._id": contact.contacts[0]._id,
+          },
+          {
+              $set: {
+                  "contacts.$.name": name,
+                  "contacts.$.companyName": companyName,
+                  "contacts.$.designation": designation,
+                  "contacts.$.phnNumber": phnNumber,
+                  "contacts.$.email": email,
+                  "contacts.$.website": website,
+                  "contacts.$.location": location,
+                  "contacts.$.businessCategory": businessCategory,
+                  "contacts.$.scheduled": scheduled,
+                  "contacts.$.scheduledTime": scheduledTime,
+                  "contacts.$.notes": notes,
+                  "contacts.$.cardImage": cardImage,
+                  "contacts.$.userId": userId,
+                  "contacts.$.isDiskussUser": isDiskussUser,
+              },
+          }
+      );
+
+      if (updatedContact.matchedCount === 0) {
+          return res.status(404).json({ message: "No contact found to update" });
+      }
+
+      // Depending on the user type, update the contact in the relevant collection
+      const updateQuery = { _id: contactOwnerId };
+      const updateData = { $set: { "contacts.$[contact].phnNumber": phnNumber } };
+      const arrayFilters = [{ "contact._id": contact_id }];
+
+      if (existIndividualUser) {
+          await individualUserCollection.updateOne(updateQuery, updateData, { arrayFilters });
+      } else if (existEnterpriseUser) {
+          await enterpriseUser.updateOne(updateQuery, updateData, { arrayFilters });
+      } else if (existEnterpriseEmploye) {
+          await enterpriseEmployeModel.updateOne(updateQuery, updateData, { arrayFilters });
+      }
+
+      return res.status(200).json({ message: "Contact updated successfully" });
+
+  } catch (error) {
+      console.error("Error updating Contact:", error.message);
+      return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 
 /**
  * Delete a Contact
