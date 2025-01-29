@@ -116,3 +116,17 @@
 [2025-01-22T14:01:24.547Z] [31merror[39m: POST /api/v1/referral/withdraw 500 - 617.060 ms - message: -
 [2025-01-22T14:01:38.902Z] [31merror[39m: POST /api/v1/referral/withdraw 500 - 2095.742 ms - message: -
 [2025-01-22T14:08:08.411Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 140.522 ms - message: -
+[2025-01-29T10:15:45.241Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?cardId=12345&period=week 500 - 6.016 ms - message: -
+[2025-01-29T10:15:47.569Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?cardId=12345&period=week 500 - 3.377 ms - message: -
+[2025-01-29T10:15:57.042Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=%22today%22&cardId=12345&period=week 500 - 3.371 ms - message: -
+[2025-01-29T10:15:57.565Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=%22today%22&cardId=12345&period=week 500 - 1.206 ms - message: -
+[2025-01-29T10:15:58.058Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=%22today%22&cardId=12345&period=week 500 - 1.199 ms - message: -
+[2025-01-29T10:15:58.412Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=%22today%22&cardId=12345&period=week 500 - 1.246 ms - message: -
+[2025-01-29T10:15:58.801Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=%22today%22&cardId=12345&period=week 500 - 1.982 ms - message: -
+[2025-01-29T10:15:59.179Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=%22today%22&cardId=12345&period=week 500 - 0.979 ms - message: -
+[2025-01-29T10:16:48.483Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?cardId=12345&period=week 500 - 1.556 ms - message: -
+[2025-01-29T10:17:34.404Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?cardId=12345 500 - 1.621 ms - message: -
+[2025-01-29T10:17:43.582Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 1.472 ms - message: -
+[2025-01-29T10:28:31.615Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 8.039 ms - message: -
+[2025-01-29T10:29:56.001Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 9.503 ms - message: -
+[2025-01-29T10:30:43.629Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 8.518 ms - message: -
