@@ -23,6 +23,7 @@ const CreateMeeting = async (req, res) => {
       startTime,
       endTime,
       invitedPeople, // Array of invited users
+      ListOfInvitedPeopleViaSms,
       description,
       isRemind,
       meetingPlatform, // Only for online
@@ -53,6 +54,7 @@ const CreateMeeting = async (req, res) => {
       selectedDate,
       startTime,
       endTime,
+      ListOfInvitedPeopleViaSms,
       invitedPeople: invitedPeople.map((user) => ({ user, status: "pending" })),
       description,
       isRemind,
