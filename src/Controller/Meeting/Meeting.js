@@ -208,10 +208,10 @@ const updateMeetingStatus = async (req, res) => {
         .json({ message: "Meeting ID, User ID, and status are required." });
     }
 
-    if (!["pending", "accepted", "rejected"].includes(status)) {
+    if (!["pending", "accepted", "denied"].includes(status)) {
       return res.status(400).json({
         message:
-          "Invalid status. Valid options are 'pending', 'accepted', or 'rejected'.",
+          "Invalid status. Valid options are 'pending', 'accepted', or 'denied'.",
       });
     }
 
@@ -220,12 +220,11 @@ const updateMeetingStatus = async (req, res) => {
     // }
 
     // Update the meeting status for the user
-    const updatedMeeting = await MeetingBase.findOneAndUpdate(
-      { _id: meetingId, "invitedPeople.user": userId },
+    const updatedMeeting = await MeetingBase.findOneAndUpdate({ _id: meetingId, "invitedPeople.user": userId },
       {
         $set: {
           "invitedPeople.$.status": status,
-          ...(status === "rejected" || (status === "accepted" && reason)
+          ...(status === "denied" || (status === "accepted" && reason)
             ? { "invitedPeople.$.reason": reason }
             : {}),
         },
@@ -250,7 +249,7 @@ const updateMeetingStatus = async (req, res) => {
     // Notify the meeting owner about the user's decision
     const meetingOwner = updatedMeeting.meetingOwner;
     const meetingTitle = updatedMeeting.meetingTitle;
-    const decision = status === "accepted" ? "accepted" : "rejected";
+    const decision = status === "accepted" ? "accepted" : "denied";
 
   const notificationContent = `${username} has ${decision} your meeting titled "${meetingTitle}".`;
 
