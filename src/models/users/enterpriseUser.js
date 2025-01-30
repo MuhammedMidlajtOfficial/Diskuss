@@ -1,5 +1,5 @@
-const { string } = require("joi");
 const mongoose = require("mongoose");
+const crypto = require('crypto');
 
 const enterpriseUserSchema = new mongoose.Schema(
   {
@@ -113,10 +113,6 @@ const enterpriseUserSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// module.exports.enterpriseUserCollection = mongoose.model('EnterpriseUser',enterpriseUserSchema)
-module.exports = mongoose.model("EnterpriseUser", enterpriseUserSchema);
-
 // Generate a unique referral code using crypto or any other method
 enterpriseUserSchema.pre("save", async function (next) {
   if (!this.referralCode) {
@@ -147,3 +143,6 @@ enterpriseUserSchema.pre("save", async function (next) {
 
   next();
 });
+
+// module.exports.enterpriseUserCollection = mongoose.model('EnterpriseUser',enterpriseUserSchema)
+module.exports = mongoose.model("EnterpriseUser", enterpriseUserSchema);
