@@ -23,7 +23,7 @@ module.exports.postIndividualLogin = async (req, res) => {
 
     const user = await individualUserCollection.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'No account found with this email address' });
+      return res.status(404).json({ message: "" });
     }
     // Check password match
     const passwordMatch = await bcrypt.compare(password, user.password);

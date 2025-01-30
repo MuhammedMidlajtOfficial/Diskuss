@@ -19,7 +19,7 @@ module.exports.postEnterpriseLogin = async (req, res) => {
 
     // Check if neither user is found
     if (!enterprise && !enterpriseEmp) {
-      return res.status(404).json({ message: 'No account associated with the provided email address.' });
+      return res.status(404).json({ message:  });
     }
 
     if (enterpriseEmp?.status === 'inactive') {
