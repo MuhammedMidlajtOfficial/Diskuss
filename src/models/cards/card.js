@@ -85,6 +85,10 @@ const cardSchema = new mongoose.Schema({
       type: String,
       default: "",
     },
+    status:{
+      type:String,
+      default : 'active'
+    },
 },{ timestamps:true });
 
 module.exports = mongoose.model("Card", cardSchema);
