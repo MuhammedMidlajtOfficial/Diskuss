@@ -106,7 +106,7 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
     // Check if phnNumber exists
     const user = await individualUserCollection.findOne({ phnNumber });
     if (!user) {
-      return res.status(404).json({ message: 'No account found with this phone number' });
+      return res.status(404).json({ message: 'Seems like you are new to DISKUSS, register now to Login' });
     }
     
     if(!user){
