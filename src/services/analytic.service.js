@@ -76,6 +76,45 @@ exports.getAnalytics = async (cardId, period) => {
     };
 };
 
+exports.getCardAnalytics = async (cardId, period = "") => {
+    console.log( "cardId : ", cardId, "period : ", period)
+    const now = new Date();
+    let startDate;
+    
+    
+    switch (period) {
+        case 'today':
+            startDate = new Date(now.setHours(0, 0, 0, 0));
+            break;
+        case 'week':
+            startDate = new Date(now.setDate(now.getDate() - 7));
+            break;
+        case 'month':
+            startDate = new Date(now.setMonth(now.getMonth() - 1));
+            break;
+        default:
+            startDate = new Date(0);
+    }
+
+    console.log("startDate : ", startDate);    
+    const viewsCount = await Analytic.View.countDocuments({ cardId, viewedAt: { $gte: startDate } });
+    const uniqueVisitorsCount = await Analytic.Visitor.countDocuments({ cardId, firstVisit: { $gte: startDate } });
+    const totalShares = await Analytic.Share.countDocuments({ cardId, sharedAt: { $gte: startDate } });
+    const viewedShares = await Analytic.Share.countDocuments({ cardId, sharedAt: { $gte: startDate }, isViewed: true });
+    const unviewedShares = totalShares - viewedShares;
+    const clicksCount = await Analytic.Click.countDocuments({ cardId, clickedAt: { $gte: startDate } });
+    const clickThroughRate = viewsCount > 0 ? (clicksCount / viewsCount) * 100 : 0;
+
+    return {
+        views: viewsCount,
+        uniqueVisitors: uniqueVisitorsCount,
+        shares: { total: totalShares, viewed: viewedShares, unviewed: unviewedShares },
+        clicks: clicksCount,
+        clickThroughRate: clickThroughRate.toFixed(2),
+    };
+};
+
+
 exports.getAllAnalytics = async (userId, period) => {
     console.log("userId ", userId,"Period :", period)
 

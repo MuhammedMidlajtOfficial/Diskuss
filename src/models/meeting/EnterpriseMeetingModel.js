@@ -37,6 +37,14 @@ const meetingSchema = new mongoose.Schema({
       reason: { type: String, default: '' }
     }
   ],
+  ListOfInvitedPeopleViaSms: [  
+    {
+      Name: { type: String, required: true },
+      PhonNumber: { type: String, required: true },
+      status:{type:String,default:'Invited Via SMS'}
+      
+    }
+  ],
 
   description: { type: String }, // Description for the meeting
   isRemind: { type: Boolean, default: false }, // Reminder option
