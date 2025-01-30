@@ -82,7 +82,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
 
     // Check if neither user is found
     if (!enterprise && !enterpriseEmp) {
-      return res.status(404).json({ message: 'No account associated with the provided phnNumber.' });
+      return res.status(404).json({ message: 'Seems like you are new to DISKUSS, register now to Login' });
     }
 
     if (enterpriseEmp?.status === 'inactive') {
@@ -144,7 +144,7 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
     const enterpriseEmp = await enterpriseEmployeModel.findOne({ phnNumber });
     // Check if neither user is found
     if (!enterprise && !enterpriseEmp) {
-      return res.status(404).json({ message: 'No account associated with the provided phnNumber.' });
+      return res.status(404).json({ message: 'Seems like you are new to DISKUSS, register now to Login' });
     }
 
     if (enterpriseEmp?.status === 'inactive') {
