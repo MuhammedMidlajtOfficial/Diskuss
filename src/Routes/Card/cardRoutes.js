@@ -8,7 +8,7 @@ router.get("/:id", cardController.getCards);
 router.post("/", cardController.createCard);
 router.patch("/", cardController.updateCard);
 router.delete("/", cardController.deleteCard);
-// router.patch("/changeStatus", cardController.changeStatus);
+router.patch("/changeStatus", cardController.changeStatus);
 router.patch("/updateLogo", cardController.updateLogo);
 router.get("/pn/:phnNumber", cardController.getCardsByNum);
 

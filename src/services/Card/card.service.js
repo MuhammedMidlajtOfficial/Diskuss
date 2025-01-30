@@ -514,3 +514,89 @@ module.exports.getCardsByNum = async (phnNumber) => {
   return cards;
 };
 
+module.exports.changeStatus = async (cardId) => {
+  try {
+    const card = await Card.findOne({ _id: cardId });
+    const employeeCard = await EnterpriseEmployeeCard.findOne({ _id: cardId });
+    if (!card && !employeeCard) {
+      throw new Error("Card not found");
+    }
+    let userId;
+    let enterpriseId;
+
+    if (employeeCard) {
+      userId = employeeCard.userId;
+      enterpriseId = employeeCard.enterpriseId;
+    } else {
+      userId = card.userId;
+    }
+
+    const isIndividualUser = await individualUserCollection.findOne({ _id: userId });
+    const isEnterpriseUser = await enterpriseUser.findOne({ _id: userId });
+    const isEnterpriseEmployee = await enterpriseEmployee.findOne({ _id: userId });
+
+    if (!isIndividualUser && !isEnterpriseUser && !isEnterpriseEmployee) {
+      throw new Error("Invalid user ID associated with the card");
+    }
+
+    if (isEnterpriseEmployee) {
+      // Get the current status of the employee card
+      const card = await EnterpriseEmployeeCard.findOne({ _id: cardId });
+      if (!card) {
+        throw new Error("Employee card not found");
+      }
+    
+      const newStatus = card.status === "active" ? "inactive" : "active";
+    
+      // Update the status of the employee card
+      await EnterpriseEmployeeCard.updateOne(
+        { _id: cardId },
+        { $set: { status: newStatus } }
+      );
+    
+      // Update the status of the employee in the EnterpriseEmployee model
+      const employeeExists = await enterpriseEmployee.updateOne(
+        { _id: userId },
+        { $set: { status: newStatus } }
+      );
+      if (!employeeExists.modifiedCount) {
+        throw new Error("Employee not found in EnterpriseEmployee model");
+      }
+    
+      // Update the status of the empCards and empIds in the EnterpriseUser model
+      await enterpriseUser.updateOne(
+        { _id: enterpriseId }, // Filter to find the correct enterprise user
+        {
+          $set: {
+            "empCards.$[card].status": newStatus, // Update the status of a specific empCard
+            "empIds.$[emp].status": newStatus,   // Update the status of a specific empId
+          },
+        },
+        {
+          arrayFilters: [
+            { "card.empCardId": cardId }, // Condition to match the empCard with the given cardId
+            { "emp.empId": userId },      // Condition to match the empId with the given userId
+          ],
+        }
+      );
+    
+      return { message: `Employee card status updated to ${newStatus} successfully` };
+    }
+
+    if (card) {
+      const newStatus = card.status === "active" ? "inactive" : "active";
+
+      // Update the card status
+      await Card.updateOne(
+        { _id: cardId },
+        { $set: { status: newStatus } }
+      );
+
+      return { message: `Card status updated to ${newStatus} successfully` };
+    }
+
+    throw new Error("Card Status change failed");
+  } catch (error) {
+    throw error;
+  }
+}
