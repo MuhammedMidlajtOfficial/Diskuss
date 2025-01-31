@@ -31,6 +31,7 @@ const logController = require('./logRouter.js')
 // const contactRouter = require("./contactRouter.js")
 const uploadVCard = require("./VCard/VCardRoute.js")
 const settingsRouter = require('./settingsRoutes.js'); 
+const urlShortnerRouter = require('./urlShortner/urlShortnerRouter.js');
 const { validateJwtToken } = require('../Middleware/validateJwtToken.js');
 
 
@@ -173,6 +174,10 @@ const defaultRoutes = [
   {
     path: '/logs',
     route: logController
+  },
+  {
+    path: '/urlShortner',
+    route: urlShortnerRouter,
   }
 ];
 

@@ -69,3 +69,11 @@ W[2025-01-29T09:17:54.351Z] [32minfo[39m: Server connected on http://localhost
 [2025-01-29T10:32:46.178Z] [32minfo[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=year 200 - 252.700 ms
 [2025-01-29T12:59:30.386Z] [32minfo[39m: Server connected on http://localhost:3000
 [2025-01-29T13:24:17.783Z] [32minfo[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=year 200 - 356.212 ms
+[2025-01-31T13:30:36.863Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:32:23.234Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:33:05.303Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:33:13.973Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:34:09.510Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:38:00.399Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:38:04.110Z] [32minfo[39m: GET /api/v1/urlShortner/AzHbjNrf2 302 - 34.515 ms
+[2025-01-31T13:38:08.010Z] [32minfo[39m: POST /api/v1/urlShortner 201 - 586.666 ms
