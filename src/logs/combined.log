@@ -69,3 +69,51 @@ W[2025-01-29T09:17:54.351Z] [32minfo[39m: Server connected on http://localhost
 [2025-01-29T10:32:46.178Z] [32minfo[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=year 200 - 252.700 ms
 [2025-01-29T12:59:30.386Z] [32minfo[39m: Server connected on http://localhost:3000
 [2025-01-29T13:24:17.783Z] [32minfo[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=year 200 - 356.212 ms
+[2025-01-31T12:51:29.713Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T12:51:51.767Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 6.018 ms - message: -
+[2025-01-31T12:51:52.768Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 2.414 ms - message: -
+[2025-01-31T12:53:18.769Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T12:53:22.280Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 4.749 ms - message: -
+[2025-01-31T12:53:40.588Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T12:53:43.705Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 5.258 ms - message: -
+[2025-01-31T12:53:56.604Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 2.654 ms - message: -
+[2025-01-31T12:54:57.205Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T12:55:19.063Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 404 - 35.507 ms - message: -
+[2025-01-31T12:56:03.873Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T12:56:08.398Z] [32minfo[39m: GET /api/v1/urlShortner/QmuwxAfs1 302 - 47.966 ms
+[2025-01-31T13:05:20.523Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:09:27.004Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:09:45.283Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:09:47.825Z] [31merror[39m: POST /api/v1/urlShortner 500 - 47.850 ms - message: -
+[2025-01-31T13:10:16.968Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:10:20.622Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:10:23.590Z] [31merror[39m: POST /api/v1/urlShortner 500 - 235.097 ms - message: -
+[2025-01-31T13:10:38.833Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:10:48.126Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:11:06.165Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:11:12.672Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:11:16.118Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:11:19.905Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:11:23.041Z] [31merror[39m: POST /api/v1/urlShortner 500 - 198.456 ms - message: -
+[2025-01-31T13:11:58.833Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:12:02.653Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:12:35.463Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:12:38.659Z] [31merror[39m: POST /api/v1/urlShortner 500 - 173.930 ms - message: -
+[2025-01-31T13:15:52.075Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:16:16.553Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:16:22.258Z] [31merror[39m: POST /api/v1/urlShortner 500 - 67.143 ms - message: -
+[2025-01-31T13:17:47.659Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:18:08.107Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:18:31.005Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:18:39.899Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:18:43.708Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:18:45.577Z] [31merror[39m: POST /api/v1/urlShortner 500 - 1788.586 ms - message: -
+[2025-01-31T13:21:22.925Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:25:23.110Z] [31merror[39m: POST /api/v1/urlShortner 500 - 957.671 ms - message: -
+[2025-01-31T13:26:31.323Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:26:35.744Z] [32minfo[39m: POST /api/v1/urlShortner 201 - 498.890 ms
+[2025-01-31T13:26:52.894Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:26:57.925Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:27:00.670Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:27:04.462Z] [32minfo[39m: Server connected on http://localhost:3000
+[2025-01-31T13:27:09.770Z] [32minfo[39m: Server connected on http://localhost:3000
