@@ -19,9 +19,9 @@ const UserSubscriptionSchema = new mongoose.Schema({
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'SubscriptionPlan',default:null},
     planName: { type: String ,default:""},
     razorpayOrderId: { type:String ,default:"" },
-    startDate: { type: String, default: () => new Date().toISOString() },
+    startDate: { type: Date, default: Date.now },
     payment: { type: [PaymentSchema], default: [] },
-    endDate: { type: String },
+    endDate: { type: Date },
     status: { type: String, enum: ['active', 'inactive', 'canceled', 'pending', 'failed', "free"], default: 'active' },
 }, { timestamps: true });
 
