@@ -32,7 +32,7 @@ const meetingSchema = new mongoose.Schema({
   invitedPeople: [
     {
       user: { type: String , required: true },
-      status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+      status: { type: String, enum: ['pending', 'accepted', 'denied'], default: 'pending' },
       // reason: { type: String, required: function() { return this.status === 'rejected'; } }
       reason: { type: String, default: '' }
     }
