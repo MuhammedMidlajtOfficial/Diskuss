@@ -62,6 +62,7 @@ const createContact = async (req, res) => {
       cardFrontImage,
       cardBackImage,
       contactOwnerId,
+      contactOwnerName
     } = req.body;
 
     console.log("body:", req.body);
@@ -142,6 +143,7 @@ const createContact = async (req, res) => {
 
     const contactDetails = {
       contactOwnerId,
+      contactOwnerName,
       contacts: [
         {
           name,
@@ -252,6 +254,7 @@ const updateContact = async (req, res) => {
           cardBackImage,
           notes,
           contactOwnerId,
+          contactOwnerName
       } = req.body;
 
       // Validate required fields
@@ -334,6 +337,7 @@ const updateContact = async (req, res) => {
           {
               _id: contact_id,
               "contacts._id": contact.contacts[0]._id,
+              "contacts.$.contactOwnerName":contactOwnerName,
           },
           {
               $set: {
@@ -558,7 +562,7 @@ const getSearchedContact = async (req, res) => {
 
 const createPhoneContacts = async (req, res) => {
   try {
-    const { contactOwnerId, contacts } = req.body;
+    const { contactOwnerName,contactOwnerId, contacts } = req.body;
 
     if (!contactOwnerId || !Array.isArray(contacts)) {
       return res.status(400).json({ 
@@ -639,6 +643,7 @@ const createPhoneContacts = async (req, res) => {
 
     // Create contact document with all valid contacts
     const contactDetails = {
+      contactOwnerName,
       contactOwnerId,
       contacts: validContacts
     };
@@ -709,6 +714,94 @@ const createPhoneContacts = async (req, res) => {
   }
 };
 
+const getNetworkById = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    // Find contacts where either contactOwnerId matches or userId in contacts array matches
+    const contacts = await Contact.find({
+      $or: [
+        { contactOwnerId: user_id },
+        { 'contacts.userId': user_id }
+      ]
+    }).exec();
+
+    // Helper function to fetch user image
+    const fetchUserImage = async (userId) => {
+      if (!userId) return null;
+      
+      const userWithImage = await individualUserCollection.findById(userId, "image") ||
+                          await enterpriseUser.findById(userId, "image") ||
+                          await enterpriseEmployeModel.findById(userId, "image");
+      
+      return userWithImage?.image || null;
+    };
+
+    // Process and transform the contacts based on the match type
+    const processedContacts = await Promise.all(
+      contacts.map(async (contact) => {
+        // Case 1: If the user is the contact owner
+        if (contact.contactOwnerId.toString() === user_id) {
+          // Fetch owner's image
+          const ownerImage = await fetchUserImage(user_id);
+
+          return {
+            type: 'owner',
+            name: contact.contactOwnerName,
+            userId: contact.contactOwnerId,
+            image: ownerImage,
+            contacts: contact.contacts // Include the full contacts array
+          };
+        }
+        // Case 2: If the user appears in the contacts array
+        else {
+          // Find the specific contact entry where userId matches
+          const matchingContact = contact.contacts.find(
+            c => c.userId?.toString() === user_id
+          );
+
+          if (matchingContact) {
+            // Fetch both owner's and contact's images
+            const [ownerImage, contactImage] = await Promise.all([
+              fetchUserImage(contact.contactOwnerId),
+              fetchUserImage(user_id)
+            ]);
+
+            return {
+              type: 'contact',
+              contactOwnerId: contact.contactOwnerId,
+              contactOwnerName: contact.contactOwnerName,
+              contactOwnerImage: ownerImage,
+              tag: 'Need to save this contact',
+              matchingContactDetails: {
+                name: matchingContact.name,
+                userId: matchingContact.userId,
+                image: contactImage,
+                email: matchingContact.email,
+                phnNumber: matchingContact.phnNumber,
+                // Add other relevant fields from matchingContact as needed
+              }
+            };
+          }
+        }
+      })
+    );
+
+    // Filter out any undefined entries and clean up the response
+    const cleanedContacts = processedContacts.filter(contact => contact !== undefined);
+
+    // If no contacts found after processing
+    if (cleanedContacts.length === 0) {
+      return res.status(404).json({ message: 'No matching contacts found' });
+    }
+
+    return res.status(200).json(cleanedContacts);
+  } catch (error) {
+    console.error("Error fetching contacts:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAllContacts,
   getContactById,
@@ -717,5 +810,6 @@ module.exports = {
   deleteContact,
   getContactsByOwnerUserId,
   getSearchedContact,
-  createPhoneContacts
+  createPhoneContacts,
+  getNetworkById
 };

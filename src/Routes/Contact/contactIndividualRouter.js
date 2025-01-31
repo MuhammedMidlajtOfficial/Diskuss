@@ -12,5 +12,6 @@ router.delete('/:contact_id',controller.deleteContact)
 router.get('/user/:user_id',controller.getContactsByOwnerUserId)
 router.get('/search', controller.getSearchedContact);
 router.post('/phone', controller.createPhoneContacts);
+router.get('/network/:user_id', controller.getNetworkById);
 
 module.exports = router;
