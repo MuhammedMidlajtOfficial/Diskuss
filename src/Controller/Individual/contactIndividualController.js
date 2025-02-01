@@ -752,7 +752,7 @@ const getNetworkById = async (req, res) => {
     }).exec();
 
     const fetchUserImage = async (userId) => {
-      if (!userId) return 'Not Added';
+      if (!userId) return '';
 
       try {
         const objectId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
@@ -767,10 +767,10 @@ const getNetworkById = async (req, res) => {
         const employeeUsers = await enterpriseEmployeModel.findOne({ _id: objectId }).select("image");
         if (employeeUsers?.image) return employeeUsers.image;
 
-        return 'Not Added';
+        return '';
       } catch (error) {
         console.error(`Error fetching image for user ${userId}:`, error);
-        return 'Not Added';
+        return '';
       }
     };
     console.log("image");
