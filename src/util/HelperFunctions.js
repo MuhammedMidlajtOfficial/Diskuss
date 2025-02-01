@@ -1,5 +1,6 @@
 const EnterpriseUser = require('../models/users/enterpriseUser');
 const { individualUserCollection: IndividualUser } = require('../DBConfig');
+const EnterpriseEmployeeUser = require('../models/users/enterpriseEmploye.model');
 
 const  convertToMonthlyCounts = (year, data) => {
     year = parseInt(year);
@@ -37,13 +38,20 @@ const  convertToMonthlyCounts = (year, data) => {
 const checkUserType = async (userId) => {
     const individualUser = await IndividualUser.findById(userId).exec();
     const enterpriseUser = await EnterpriseUser.findById(userId).exec();
-    if (!individualUser && !enterpriseUser) {
+    const enterpriseEmployeeUser = await EnterpriseEmployeeUser.findById(userId).exec();
+
+    if (!individualUser && !enterpriseUser && !enterpriseEmployeeUser) {
         throw new Error('Invalid user');
     }
-    if (individualUser) {
+    else if (individualUser) {
         return { userType : 'individual', data : individualUser};
     }
-    return {userType : 'enterprise', data : enterpriseUser};
+    else if (enterpriseUser) {
+        return {userType : 'enterprise', data : enterpriseUser};
+    }
+    else if (enterpriseEmployeeUser) {
+        return {userType : 'enterpriseEmployee', data : enterpriseEmployeeUser};
+    }
 }
 
 module.exports = {
