@@ -562,7 +562,7 @@ const getSearchedContact = async (req, res) => {
 
 const createPhoneContacts = async (req, res) => {
   try {
-    const { contactOwnerName,contactOwnerId, contacts } = req.body;
+    const { contactOwnerName, contactOwnerId, contacts } = req.body;
 
     if (!contactOwnerId || !Array.isArray(contacts)) {
       return res.status(400).json({ 
@@ -570,20 +570,46 @@ const createPhoneContacts = async (req, res) => {
       });
     }
 
-    // Array to store valid contacts that match with database users
+    const formatPhoneNumber = (number) => {
+      if (!number) return '';
+      return number.replace(/\s+/g, '').replace(/-/g, '').replace(/^\+91/, '');
+    };
+
     const validContacts = [];
     const invalidContacts = [];
+    const createdContacts = [];
 
-    // Check each contact's phone number against all collections
+    // Validate and process contacts
     for (const contact of contacts) {
-      const { phnNumber, name } = contact;
+      let { phnNumber, name } = contact;
       
       if (!phnNumber || !name) {
         invalidContacts.push({ phnNumber, name, reason: "Missing required fields" });
         continue;
       }
 
-      // Check phone number across all collections
+      phnNumber = formatPhoneNumber(phnNumber);
+
+      // Check for existing contact with same name and number
+      const existingContact = await Contact.findOne({
+        contactOwnerId,
+        'contacts': {
+          $elemMatch: {
+            name: name,
+            phnNumber: phnNumber
+          }
+        }
+      });
+
+      if (existingContact) {
+        invalidContacts.push({ 
+          phnNumber, 
+          name, 
+          reason: "Contact with same name and number already exists" 
+        });
+        continue;
+      }
+
       const existIndividualUserNumber = await individualUserCollection.findOne({ phnNumber });
       const existEnterpriseUserNumber = await enterpriseUser.findOne({ phnNumber });
       const existEnterpriseEmployeNumber = await enterpriseEmployeModel.findOne({ phnNumber });
@@ -591,7 +617,6 @@ const createPhoneContacts = async (req, res) => {
       let userId = null;
       let isDiskussUser = false;
 
-      // Determine the user ID based on the type of user
       if (existIndividualUserNumber) {
         userId = existIndividualUserNumber._id;
         isDiskussUser = true;
@@ -603,14 +628,12 @@ const createPhoneContacts = async (req, res) => {
         isDiskussUser = true;
       }
 
-      // If phone number exists in any collection, add to valid contacts
       if (isDiskussUser) {
         validContacts.push({
           name,
           phnNumber,
           userId,
           isDiskussUser,
-          // Add default empty values for other fields
           companyName: '',
           designation: '',
           email: '',
@@ -641,65 +664,67 @@ const createPhoneContacts = async (req, res) => {
       });
     }
 
-    // Create contact document with all valid contacts
-    const contactDetails = {
-      contactOwnerName,
-      contactOwnerId,
-      contacts: validContacts
-    };
+    // Create separate document for each valid contact
+    for (const validContact of validContacts) {
+      const contactDetails = {
+        contactOwnerName,
+        contactOwnerId,
+        contacts: [validContact] // Single contact in array
+      };
 
-    // Create the new contacts
-    const newContact = await Contact.create(contactDetails);
+      const newContact = await Contact.create(contactDetails);
+      createdContacts.push(newContact);
 
-    // Update the appropriate collection based on contact owner type
-    const existIndividualUser = await individualUserCollection.findOne({
-      _id: contactOwnerId
-    });
-    const existEnterpriseUser = await enterpriseUser.findOne({
-      _id: contactOwnerId
-    });
-    const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({
-      _id: contactOwnerId
-    });
+      // Update the appropriate collection based on contact owner type
+      const existIndividualUser = await individualUserCollection.findOne({
+        _id: contactOwnerId
+      });
+      const existEnterpriseUser = await enterpriseUser.findOne({
+        _id: contactOwnerId
+      });
+      const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({
+        _id: contactOwnerId
+      });
 
-    if (existIndividualUser) {
-      await individualUserCollection.updateOne(
-        { _id: contactOwnerId },
-        { $push: { contacts: newContact._id } }
-      );
-    } else if (existEnterpriseUser) {
-      await enterpriseUser.updateOne(
-        { _id: contactOwnerId },
-        { $push: { contacts: newContact._id } }
-      );
-    } else if (existEnterpriseEmploye) {
-      // Update enterprise employee
-      await enterpriseEmployeModel.updateOne(
-        { _id: contactOwnerId },
-        { $push: { contacts: newContact._id } }
-      );
+      if (existIndividualUser) {
+        await individualUserCollection.updateOne(
+          { _id: contactOwnerId },
+          { $push: { contacts: newContact._id } }
+        );
+      } else if (existEnterpriseUser) {
+        await enterpriseUser.updateOne(
+          { _id: contactOwnerId },
+          { $push: { contacts: newContact._id } }
+        );
+      } else if (existEnterpriseEmploye) {
+        // Update enterprise employee
+        await enterpriseEmployeModel.updateOne(
+          { _id: contactOwnerId },
+          { $push: { contacts: newContact._id } }
+        );
 
-      // Also update the enterprise user
-      const enterpriseUserId = await enterpriseUser
-        .findOne({ "empIds.empId": contactOwnerId })
-        .select("_id");
-        
-      if (enterpriseUserId) {
-        contactDetails.contactOwnerId = enterpriseUserId._id;
-        const newContactOfEnterprise = await Contact.create(contactDetails);
-        
-        if (newContactOfEnterprise) {
-          await enterpriseUser.updateOne(
-            { _id: enterpriseUserId._id },
-            { $push: { contacts: newContactOfEnterprise._id } }
-          );
+        // Also update the enterprise user
+        const enterpriseUserId = await enterpriseUser
+          .findOne({ "empIds.empId": contactOwnerId })
+          .select("_id");
+          
+        if (enterpriseUserId) {
+          contactDetails.contactOwnerId = enterpriseUserId._id;
+          const newContactOfEnterprise = await Contact.create(contactDetails);
+          
+          if (newContactOfEnterprise) {
+            await enterpriseUser.updateOne(
+              { _id: enterpriseUserId._id },
+              { $push: { contacts: newContactOfEnterprise._id } }
+            );
+          }
         }
       }
     }
 
     return res.status(201).json({
       message: "Contacts created successfully",
-      contact: newContact,
+      contacts: createdContacts,
       summary: {
         totalSubmitted: contacts.length,
         validContacts: validContacts.length,
@@ -730,11 +755,21 @@ const getNetworkById = async (req, res) => {
     const fetchUserImage = async (userId) => {
       if (!userId) return 'Not Added';
       
-      const userWithImage = await individualUserCollection.findById(userId, "image") ||
-                          await enterpriseUser.findById(userId, "image") ||
-                          await enterpriseEmployeModel.findById(userId, "image");
-      
-      return userWithImage?.image || 'Not Added';
+      try {
+        const individualUser = await individualUserCollection.findById(userId).select("image");
+        if (individualUser?.image) return individualUser.image;
+
+        const enterpriseUserResult = await enterpriseUser.findById(userId).select("image");
+        if (enterpriseUserResult?.image) return enterpriseUserResult.image;
+
+        const employeeResult = await enterpriseEmployeModel.findById(userId).select("image");
+        if (employeeResult?.image) return employeeResult.image;
+
+        return 'Not Added';
+      } catch (error) {
+        console.error(`Error fetching image for user ${userId}:`, error);
+        return 'Not Added';
+      }
     };
 
     // Process and transform the contacts based on the match type
@@ -742,28 +777,37 @@ const getNetworkById = async (req, res) => {
       contacts.map(async (contact) => {
         // Case 1: If the user is the contact owner
         if (contact.contactOwnerId.toString() === user_id) {
-          // Fetch owner's image
+          // Fetch both owner's and contacts' images
           const ownerImage = await fetchUserImage(user_id);
+          
+          // Process each contact in the array with their images
+          const processedContactList = await Promise.all(
+            contact.contacts.map(async (c) => {
+              const contactImage = await fetchUserImage(c.userId);
+              return {
+                name: c.name || 'Not Added',
+                companyName: c.companyName || '',
+                designation: c.designation || '',
+                phnNumber: c.phnNumber || '',
+                image: contactImage,
+                email: c.email || '',
+                website: c.website || '',
+                location: c.location || '',
+                userId: c.userId
+              };
+            })
+          );
 
           return {
             type: 'owner',
             name: contact.contactOwnerName || 'Not Added',
             userId: contact.contactOwnerId,
             image: ownerImage,
-            contacts: contact.contacts.map(c => ({
-              name: c.name || 'Not Added',
-              companyName: c.companyName || '',
-              designation: c.designation || '',
-              phnNumber: c.phnNumber || '',
-              email: c.email || '',
-              website: c.website || '',
-              location: c.location || ''
-            }))
+            contacts: processedContactList
           };
         }
         // Case 2: If the user appears in the contacts array
         else {
-          // Find the specific contact entry where userId matches
           const matchingContact = contact.contacts.find(
             c => c.userId?.toString() === user_id
           );
@@ -795,19 +839,25 @@ const getNetworkById = async (req, res) => {
     );
 
     // Remove duplicates and undefined entries
-    const uniqueContacts = Array.from(new Set(processedContacts.filter(contact => contact !== undefined)
-      .map(contact => JSON.stringify(contact))))
-      .map(contact => JSON.parse(contact));
+    const uniqueContacts = Array.from(new Set(
+      processedContacts
+        .filter(contact => contact !== undefined)
+        .map(contact => JSON.stringify(contact))
+    )).map(contact => JSON.parse(contact));
 
     // If no contacts Added after processing
     if (uniqueContacts.length === 0) {
-      return res.status(404).json({ message: 'No matching contacts Added' });
+      return res.status(404).json({ 
+        message: 'No matching contacts Added' 
+      });
     }
 
     return res.status(200).json(uniqueContacts);
   } catch (error) {
     console.error("Error fetching contacts:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ 
+      error: error.message 
+    });
   }
 };
 
