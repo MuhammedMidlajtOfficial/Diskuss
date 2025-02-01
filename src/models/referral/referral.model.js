@@ -2,9 +2,11 @@ const mongoose = require("mongoose");
 
 
 const ReferralSchema = new mongoose.Schema({
-    referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
+    // referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },  // Reference to the referrer (user_id)
+    referrer: { type: String, required: true },  // Reference to the referrer (user_id)
     inviteePhoneNo: { type: String, required: true }, 
-    invitee: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Reference to the referred user (user_id)
+    referralCode: { type: String, required: true },
+    invitee: { type: String },  // Reference to the referred user (user_id)
     status: { type: String, enum: ['Invited', 'Registered', 'Card Created'], default: 'Invited' },
     rewardsEarned: { type: Number, default: 0 },
     registeredAt: { type: Date },
@@ -13,7 +15,7 @@ const ReferralSchema = new mongoose.Schema({
 
 
 const rewardSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  userId: { type: String },
   totalCoins: { type: Number, default: 0 },
   milestonesAchieved: { type: Array, default: [] }
 });
@@ -38,7 +40,7 @@ const rewardSchema = new mongoose.Schema({
 
 // Withdrwal Request Schema
 const WithdrawalRequestSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user requesting withdrawal
+    userId: { type: String, required: true }, // Reference to the user requesting withdrawal
     amount: { type: mongoose.Types.Decimal128, required: true }, // Amount requested for withdrawal
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, // Status of the withdrawal request
     upiId : { type: String, required: true }, // UPI ID of the user
@@ -47,7 +49,7 @@ const WithdrawalRequestSchema = new mongoose.Schema({
 
 const IncentiveSchema = new mongoose.Schema({
     amount: { type: mongoose.Types.Decimal128, required: true }, // Amount of incentive earned
-    userId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Reference to the user who earned the incentive
+    userId: { type: String, required: true }, // Reference to the user who earned the incentive
     type: { type: String, required: true },                      // Type of incentive (e.g., cash, discount)
     status: { type: String, enum: ['pending', 'paid'], default: 'pending' }, // Status of the incentive
     transactionId: { type: String },                              // Transaction ID of the incentive
