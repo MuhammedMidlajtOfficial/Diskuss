@@ -13,10 +13,11 @@ const configId = "67988e04e60b8e8d6f248e07"
 
 
 // Send Invite
-const sendInvite = async (referrerId, inviteePhoneNo) => {
+const sendInvite = async (referrerId, inviteePhoneNo,referralCode ) => {
     const referral = new Referral({
         referrer: referrerId,
         inviteePhoneNo,
+        referralCode,
         status: "Invited",
         rewardsEarned: 0
     });
