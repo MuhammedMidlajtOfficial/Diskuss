@@ -590,6 +590,26 @@ const createPhoneContacts = async (req, res) => {
 
       phnNumber = formatPhoneNumber(phnNumber);
 
+      // Check for existing contact with same name and number
+      const existingContact = await Contact.findOne({
+        contactOwnerId,
+        'contacts': {
+          $elemMatch: {
+            name: name,
+            phnNumber: phnNumber
+          }
+        }
+      });
+
+      if (existingContact) {
+        invalidContacts.push({ 
+          phnNumber, 
+          name, 
+          reason: "Contact with same name and number already exists" 
+        });
+        continue;
+      }
+
       const existIndividualUserNumber = await individualUserCollection.findOne({ phnNumber });
       const existEnterpriseUserNumber = await enterpriseUser.findOne({ phnNumber });
       const existEnterpriseEmployeNumber = await enterpriseEmployeModel.findOne({ phnNumber });
@@ -735,11 +755,21 @@ const getNetworkById = async (req, res) => {
     const fetchUserImage = async (userId) => {
       if (!userId) return 'Not Added';
       
-      const userWithImage = await individualUserCollection.findById(userId, "image") ||
-                          await enterpriseUser.findById(userId, "image") ||
-                          await enterpriseEmployeModel.findById(userId, "image");
-      
-      return userWithImage?.image || 'Not Added';
+      try {
+        const individualUser = await individualUserCollection.findById(userId).select("image");
+        if (individualUser?.image) return individualUser.image;
+
+        const enterpriseUserResult = await enterpriseUser.findById(userId).select("image");
+        if (enterpriseUserResult?.image) return enterpriseUserResult.image;
+
+        const employeeResult = await enterpriseEmployeModel.findById(userId).select("image");
+        if (employeeResult?.image) return employeeResult.image;
+
+        return 'Not Added';
+      } catch (error) {
+        console.error(`Error fetching image for user ${userId}:`, error);
+        return 'Not Added';
+      }
     };
 
     // Process and transform the contacts based on the match type
@@ -747,28 +777,37 @@ const getNetworkById = async (req, res) => {
       contacts.map(async (contact) => {
         // Case 1: If the user is the contact owner
         if (contact.contactOwnerId.toString() === user_id) {
-          // Fetch owner's image
+          // Fetch both owner's and contacts' images
           const ownerImage = await fetchUserImage(user_id);
+          
+          // Process each contact in the array with their images
+          const processedContactList = await Promise.all(
+            contact.contacts.map(async (c) => {
+              const contactImage = await fetchUserImage(c.userId);
+              return {
+                name: c.name || 'Not Added',
+                companyName: c.companyName || '',
+                designation: c.designation || '',
+                phnNumber: c.phnNumber || '',
+                image: contactImage,
+                email: c.email || '',
+                website: c.website || '',
+                location: c.location || '',
+                userId: c.userId
+              };
+            })
+          );
 
           return {
             type: 'owner',
             name: contact.contactOwnerName || 'Not Added',
             userId: contact.contactOwnerId,
             image: ownerImage,
-            contacts: contact.contacts.map(c => ({
-              name: c.name || 'Not Added',
-              companyName: c.companyName || '',
-              designation: c.designation || '',
-              phnNumber: c.phnNumber || '',
-              email: c.email || '',
-              website: c.website || '',
-              location: c.location || ''
-            }))
+            contacts: processedContactList
           };
         }
         // Case 2: If the user appears in the contacts array
         else {
-          // Find the specific contact entry where userId matches
           const matchingContact = contact.contacts.find(
             c => c.userId?.toString() === user_id
           );
@@ -800,19 +839,25 @@ const getNetworkById = async (req, res) => {
     );
 
     // Remove duplicates and undefined entries
-    const uniqueContacts = Array.from(new Set(processedContacts.filter(contact => contact !== undefined)
-      .map(contact => JSON.stringify(contact))))
-      .map(contact => JSON.parse(contact));
+    const uniqueContacts = Array.from(new Set(
+      processedContacts
+        .filter(contact => contact !== undefined)
+        .map(contact => JSON.stringify(contact))
+    )).map(contact => JSON.parse(contact));
 
     // If no contacts Added after processing
     if (uniqueContacts.length === 0) {
-      return res.status(404).json({ message: 'No matching contacts Added' });
+      return res.status(404).json({ 
+        message: 'No matching contacts Added' 
+      });
     }
 
     return res.status(200).json(uniqueContacts);
   } catch (error) {
     console.error("Error fetching contacts:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ 
+      error: error.message 
+    });
   }
 };
 
