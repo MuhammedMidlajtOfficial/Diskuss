@@ -32,18 +32,18 @@ const createUrl = async (req, res) => {
         }
         shortCode = shortId.generate(); // Generate a new ID if the ID already exists
     }
-    // console.log("id ", shortCode);
+    console.log("id ", shortCode);
 
-    const shortUrl = `${process.env.SHORT_BASE_URL}/${shortCode}`; // Create the short URL
+    const shortUrl = `${process.env.SHORT_BASE_URL || 'http://diskuss.in/vcard'}/${shortCode}`; // Create the short URL
     // Create a new URL document
     const newUrl = new Url({ originalUrl, shortCode, shortUrl });
-    // console.log("newUrl ", newUrl);
+    console.log("newUrl ", newUrl);
     
     try {
         await newUrl.save(); // Save the document to the database
         res.status(201).json(newUrl);// Send back the shortened URL
     } catch (error) {
-        // console.log("error ", error);
+        console.log("error ", error);
         res.status(500).send('Error saving URL');
     }
 };

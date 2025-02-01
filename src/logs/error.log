@@ -602,6 +602,7 @@
 [2025-01-29T10:29:56.001Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 9.503 ms - message: -
 [2025-01-29T10:30:43.629Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 8.518 ms - message: -
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> f5a8e2b70d7a1149bb457cdfbdcfde22235a91f9
 [2025-01-30T13:16:12.014Z] error: GET /api/v1/card/679b73081db0952fa7e35c72 500 - 14.349 ms - message: -
 [2025-01-30T13:16:28.904Z] error: GET /api/v1/card/679b73081db0952fa7e35c72 500 - 12.367 ms - message: -
@@ -899,3 +900,18 @@
 =======
 >>>>>>> d90cf6bfbd74fe74371bebfdcd3599840c370c83
 >>>>>>> 77583411197ee3fef0520b75fde6be86d25e82d2
+=======
+[2025-01-31T12:51:51.767Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 6.018 ms - message: -
+[2025-01-31T12:51:52.768Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 2.414 ms - message: -
+[2025-01-31T12:53:22.280Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 4.749 ms - message: -
+[2025-01-31T12:53:43.705Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 5.258 ms - message: -
+[2025-01-31T12:53:56.604Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 2.654 ms - message: -
+[2025-01-31T12:55:19.063Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 404 - 35.507 ms - message: -
+[2025-01-31T13:09:47.825Z] [31merror[39m: POST /api/v1/urlShortner 500 - 47.850 ms - message: -
+[2025-01-31T13:10:23.590Z] [31merror[39m: POST /api/v1/urlShortner 500 - 235.097 ms - message: -
+[2025-01-31T13:11:23.041Z] [31merror[39m: POST /api/v1/urlShortner 500 - 198.456 ms - message: -
+[2025-01-31T13:12:38.659Z] [31merror[39m: POST /api/v1/urlShortner 500 - 173.930 ms - message: -
+[2025-01-31T13:16:22.258Z] [31merror[39m: POST /api/v1/urlShortner 500 - 67.143 ms - message: -
+[2025-01-31T13:18:45.577Z] [31merror[39m: POST /api/v1/urlShortner 500 - 1788.586 ms - message: -
+[2025-01-31T13:25:23.110Z] [31merror[39m: POST /api/v1/urlShortner 500 - 957.671 ms - message: -
+>>>>>>> a6237fbccb6a14a7ba5db036289e7ffa775cf34b
