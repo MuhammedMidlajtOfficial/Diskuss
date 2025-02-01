@@ -4,8 +4,8 @@ const referralService = require('../../services/Referral/referral.service');
 // Send Invite
 const sendInvite = async (req, res) => {
     try {
-        const { referrerId, inviteePhoneNo } = req.body;
-        const referral = await referralService.sendInvite(referrerId, inviteePhoneNo);
+        const { referrerId, inviteePhoneNo, referralCode } = req.body;
+        const referral = await referralService.sendInvite(referrerId, inviteePhoneNo, referralCode);
         res.status(201).json({ message: "Invite sent", referral });
     } catch (error) {
         res.status(500).json({ error: error.message });
