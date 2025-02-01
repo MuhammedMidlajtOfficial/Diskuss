@@ -182,82 +182,101 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
   }
 };
 
-module.exports.postEnterpriseSignup = async (req,res)=>{
+module.exports.postEnterpriseSignup = async (req, res) => {
   try {
-    const {username, companyName, industryType, phnNumber, email, otp, referralCode } = req.body
-    // const passwordRaw = req.body.password
+    const { username, companyName, industryType, phnNumber, email, otp, referralCode } = req.body;
 
+    // ✅ 1. Validate required fields
     if (!username || !companyName || !email || !industryType || !otp || !phnNumber) {
-      return res.status(400).json({message:"All fields are required"}); // Correct response handling
+      return res.status(400).json({ message: "All fields are required" });
     }
-    // Check if email exists
+
+    // ✅ 2. Check if email already exists
     const isEmailExist = await enterpriseUser.findOne({ email }).exec();
     if (isEmailExist) {
-      return res.status(409).json({message:"A user with this email address already exists. Please login instead"}); // Correct response handling
+      return res.status(409).json({ message: "A user with this email address already exists. Please login instead" });
     }
-    
-    if (referralCode) {
-    const referralCodeValid = await enterpriseUser.findOne({ referralCode}).exec();
-    if (!referralCodeValid) {
-      return res.status(409).json({message:"Invalid referral code"}); // Correct response handling
-    }
-  }
 
-    // Validate OTP
+    // ✅ 3. Validate referral code (if provided)
+    if (referralCode) {
+      const referralCodeValid = await enterpriseUser.findOne({ referralCode }).exec();
+      if (!referralCodeValid) {
+        return res.status(409).json({ message: "Invalid referral code" });
+      }
+    }
+
+    // ✅ 4. Validate OTP
     const response = await otpCollection.find({ phnNumber }).sort({ createdAt: -1 }).limit(1);
     if (response.length === 0 || otp !== response[0].otp) {
-      return res.status(400).json({ success: false, message: 'The OTP is not valid' }); // Correct response handling
+      return res.status(400).json({ success: false, message: "The OTP is not valid" });
     }
-    // Hash password
-    // const hashedPassword = await bcrypt.hash(passwordRaw, 10);
 
+    // ✅ 6. Create a new user
     const newUser = await enterpriseUser.create({
       username,
       companyName,
       industryType,
       email,
       phnNumber,
-      // password: hashedPassword,
-      referralCodeUsed : referralCode || ""
+      referralCodeUsed: referralCode || "",
     });
+
     console.log(newUser);
 
-     // Set jwt token
-     const payload = { id: newUser._id, email: newUser.email };
-     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
-     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
-    
-    if (newUser) {
-      const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });
-      if (existingContact) {
-        const contact = await Contact.updateOne(
-          { 'contacts.phnNumber': newUser.phnNumber },
-          {
-            $set: { 
-              'contacts.$.isDiskussUser': true,  // Update the contact's `isDiskussUser` field
-              'contacts.$.userId': newUser._id // Update the `userId` field for the contact
-            }
-          }
-        );
-        if (contact.modifiedCount > 0) {
-          console.log("Contact updated successfully, Profile updated successfully");
-          return res.status(201).json({ Contact_message: "Contact updated successfully.", message: "User created", user: newUser, accessToken, refreshToken });
-        } else {
-          console.log(" Contact not updated , Profile updated successfully");
-          return res.status(201).json({ Contact_message: "Contact not updated ", message: "User created", user: newUser, accessToken, refreshToken });
+    // ✅ 7. Generate JWT tokens
+    const payload = { id: newUser._id, email: newUser.email };
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
+
+    // ✅ 8. Check and update contacts if they exist
+    const existingContact = await Contact.findOne({ "contacts.phnNumber": newUser.phnNumber });
+
+    if (existingContact) {
+      const contactUpdate = await Contact.updateOne(
+        { "contacts.phnNumber": newUser.phnNumber },
+        {
+          $set: {
+            "contacts.$.isDiskussUser": true, // Mark as a Diskuss user
+            "contacts.$.userId": newUser._id, // Assign userId
+          },
         }
+      );
+
+      if (contactUpdate.modifiedCount > 0) {
+        console.log("Contact updated successfully, Profile updated successfully");
+        return res.status(201).json({
+          Contact_message: "Contact updated successfully.",
+          message: "User created",
+          user: newUser,
+          accessToken,
+          refreshToken,
+        });
       } else {
-        console.log("Error: Contact not found.");
-        return res.status(404).json({ Contact_message: "Error: Contact not found." });
+        console.log("Contact not updated, Profile updated successfully");
+        return res.status(201).json({
+          Contact_message: "Contact not updated",
+          message: "User created",
+          user: newUser,
+          accessToken,
+          refreshToken,
+        });
       }
     } else {
-      return res.status(400).json({ message: "Error: User creation failed." });
+      console.log("Error: Contact not found.");
+      return res.status(201).json({
+        Contact_message: "Error: Contact not found.",
+        message: "User created",
+        user: newUser,
+        accessToken,
+        refreshToken,
+      });
     }
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+    console.error("Error in postEnterpriseSignup:", err);
+    return res.status(500).json({ message: "An unexpected error occurred. Please try again later." });
   }
-}
+};
+
 
 module.exports.postforgotPassword = async (req, res ) => {
   try {
