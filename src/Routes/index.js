@@ -173,7 +173,7 @@ const defaultRoutes = [
   },
   {
     path: '/logs',
-    route: logController
+    route: logRouter
   },
   {
     path : '/urlShortner',
