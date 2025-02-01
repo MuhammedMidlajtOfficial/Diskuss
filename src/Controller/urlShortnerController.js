@@ -34,7 +34,7 @@ const createUrl = async (req, res) => {
     }
     // console.log("id ", shortCode);
 
-    const shortUrl = `${process.env.SHORT_BASE_URL || 'http://diskuss.in/vcard'}/${shortCode}`; // Create the short URL
+    const shortUrl = `${process.env.SHORT_BASE_URL}/${shortCode}`; // Create the short URL
     // Create a new URL document
     const newUrl = new Url({ originalUrl, shortCode, shortUrl });
     // console.log("newUrl ", newUrl);
