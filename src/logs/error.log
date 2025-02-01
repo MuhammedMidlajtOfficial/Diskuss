@@ -117,6 +117,7 @@
 [2025-01-22T14:01:38.902Z] [31merror[39m: POST /api/v1/referral/withdraw 500 - 2095.742 ms - message: -
 [2025-01-22T14:08:08.411Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 140.522 ms - message: -
 <<<<<<< HEAD
+<<<<<<< HEAD
 [2025-01-23T10:15:51.075Z] error: POST /api/v1/individual/signup 409 - 45.776 ms - message: -
 [2025-01-23T10:16:11.853Z] error: POST /api/v1/subscription/free 400 - 12.982 ms - message: -
 [2025-01-23T10:16:55.959Z] error: POST /api/v1/subscription/free 400 - 27.420 ms - message: -
@@ -531,6 +532,61 @@
 [2025-01-28T05:08:24.011Z] error: GET /api/v1/meeting/get-meeting/6731e3ad3d4a18b80fbf06f4 404 - 8.586 ms - message: -
 [2025-01-28T05:08:24.660Z] error: GET /api/v1/meeting/get-meeting/6731e3ad3d4a18b80fbf06f4 404 - 10.666 ms - message: -
 =======
+[2025-01-27T10:24:48.601Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 171.309 ms - message: -
+[2025-01-27T11:15:11.237Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 190.705 ms - message: -
+[2025-01-27T11:15:12.471Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 249.235 ms - message: -
+[2025-01-27T11:16:41.627Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 130.744 ms - message: -
+[2025-01-27T11:16:43.059Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 120.427 ms - message: -
+[2025-01-27T11:18:57.122Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 125.042 ms - message: -
+[2025-01-27T12:04:27.254Z] [31merror[39m: GET /api/v1/referral/details/67922043d0e7d110bc5d93fb 500 - 142.388 ms - message: -
+[2025-01-27T12:09:39.772Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 262.397 ms - message: -
+[2025-01-28T07:23:52.607Z] [31merror[39m: POST /api/v1/urlShortner 500 - 511.917 ms - message: -
+[2025-01-28T09:45:34.905Z] [31merror[39m: POST /api/v1/referral/register 400 - 428.947 ms - message: -
+[2025-01-28T09:45:38.461Z] [31merror[39m: POST /api/v1/referral/register 500 - 9.655 ms - message: -
+[2025-01-28T10:36:55.606Z] [31merror[39m: POST /api/v1/referral/register 500 - 2762.103 ms - message: -
+[2025-01-28T10:37:49.074Z] [31merror[39m: POST /api/v1/referral/register 500 - 139.056 ms - message: -
+[2025-01-28T10:38:42.511Z] [31merror[39m: POST /api/v1/referral/register 500 - 323.135 ms - message: -
+[2025-01-28T10:39:23.698Z] [31merror[39m: POST /api/v1/referral/register 500 - 199.314 ms - message: -
+[2025-01-28T10:40:01.262Z] [31merror[39m: POST /api/v1/referral/register 500 - 308.174 ms - message: -
+[2025-01-28T10:40:18.329Z] [31merror[39m: POST /api/v1/referral/register 500 - 2138.064 ms - message: -
+[2025-01-28T10:41:11.492Z] [31merror[39m: POST /api/v1/referral/register 500 - 359.691 ms - message: -
+[2025-01-28T10:41:35.268Z] [31merror[39m: POST /api/v1/referral/register 500 - 168.234 ms - message: -
+[2025-01-28T11:18:47.476Z] [31merror[39m: POST /api/v1/referral/register 500 - 11672.208 ms - message: -
+[2025-01-28T11:20:07.470Z] [31merror[39m: POST /api/v1/referral/register 500 - 394.079 ms - message: -
+[2025-01-28T11:20:25.018Z] [31merror[39m: POST /api/v1/referral/register 500 - 2011.815 ms - message: -
+[2025-01-28T11:20:52.181Z] [31merror[39m: POST /api/v1/referral/register 500 - 310.378 ms - message: -
+[2025-01-28T11:33:28.618Z] [31merror[39m: POST /api/v1/referral/register 500 - 1673.082 ms - message: -
+[2025-01-28T11:33:44.238Z] [31merror[39m: POST /api/v1/referral/register 500 - 236.940 ms - message: -
+[2025-01-28T11:38:04.087Z] [31merror[39m: POST /api/v1/referral/register 500 - 414.534 ms - message: -
+[2025-01-28T11:43:12.113Z] [31merror[39m: POST /api/v1/referral/register 500 - 227.577 ms - message: -
+[2025-01-28T11:44:37.016Z] [31merror[39m: POST /api/v1/referral/register 500 - 323.270 ms - message: -
+[2025-01-28T11:45:10.795Z] [31merror[39m: POST /api/v1/referral/register 500 - 785.007 ms - message: -
+[2025-01-28T11:46:07.959Z] [31merror[39m: POST /api/v1/referral/register 500 - 297.874 ms - message: -
+[2025-01-28T11:46:09.588Z] [31merror[39m: POST /api/v1/referral/register 500 - 270.047 ms - message: -
+[2025-01-28T11:46:27.559Z] [31merror[39m: POST /api/v1/referral/register 500 - 1330.545 ms - message: -
+[2025-01-28T11:46:51.112Z] [31merror[39m: POST /api/v1/referral/register 500 - 240.311 ms - message: -
+[2025-01-28T11:53:04.316Z] [31merror[39m: POST /api/v1/referral/register 400 - 332.532 ms - message: -
+[2025-01-28T11:55:14.243Z] [31merror[39m: POST /api/v1/referral/register 400 - 226.204 ms - message: -
+[2025-01-28T11:59:21.460Z] [31merror[39m: POST /api/v1/referral/register 400 - 273.890 ms - message: -
+[2025-01-28T12:02:22.714Z] [31merror[39m: POST /api/v1/referral/register 400 - 404.107 ms - message: -
+[2025-01-28T12:02:24.498Z] [31merror[39m: POST /api/v1/referral/register 400 - 275.683 ms - message: -
+[2025-01-28T12:05:29.298Z] [31merror[39m: POST /api/v1/referral/register 500 - 448.308 ms - message: -
+[2025-01-28T12:12:41.516Z] [31merror[39m: POST /api/v1/referral/register 404 - 682.446 ms - message: -
+[2025-01-28T12:13:02.597Z] [31merror[39m: POST /api/v1/referral/register 500 - 748.365 ms - message: -
+[2025-01-28T12:14:12.120Z] [31merror[39m: POST /api/v1/referral/register 500 - 718.097 ms - message: -
+[2025-01-28T12:15:39.845Z] [31merror[39m: POST /api/v1/referral/register 500 - 757.606 ms - message: -
+[2025-01-28T12:17:47.692Z] [31merror[39m: POST /api/v1/referral/register 500 - 554.038 ms - message: -
+[2025-01-28T12:18:07.255Z] [31merror[39m: POST /api/v1/referral/register 500 - 718.231 ms - message: -
+[2025-01-28T12:20:39.652Z] [31merror[39m: POST /api/v1/referral/register 500 - 877.875 ms - message: -
+[2025-01-28T12:21:38.582Z] [31merror[39m: POST /api/v1/referral/register 500 - 610.965 ms - message: -
+[2025-01-28T12:26:57.919Z] [31merror[39m: POST /api/v1/referral/register 400 - 224.006 ms - message: -
+[2025-01-28T13:33:01.324Z] [31merror[39m: POST /api/v1/referral/register 400 - 100.945 ms - message: -
+[2025-01-29T09:04:44.860Z] [31merror[39m: POST /api/v1/referral/register 500 - 621.830 ms - message: -
+[2025-01-29T09:06:46.051Z] [31merror[39m: POST /api/v1/referral/register 500 - 7643.362 ms - message: -
+[2025-01-29T09:07:42.703Z] [31merror[39m: POST /api/v1/referral/register 400 - 219.895 ms - message: -
+[2025-01-29T09:08:02.376Z] [31merror[39m: POST /api/v1/referral/card 500 - 1.577 ms - message: -
+>>>>>>> 77583411197ee3fef0520b75fde6be86d25e82d2
+=======
 [2025-01-29T10:15:45.241Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?cardId=12345&period=week 500 - 6.016 ms - message: -
 [2025-01-29T10:15:47.569Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?cardId=12345&period=week 500 - 3.377 ms - message: -
 [2025-01-29T10:15:57.042Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=%22today%22&cardId=12345&period=week 500 - 3.371 ms - message: -
@@ -545,6 +601,7 @@
 [2025-01-29T10:28:31.615Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 8.039 ms - message: -
 [2025-01-29T10:29:56.001Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 9.503 ms - message: -
 [2025-01-29T10:30:43.629Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 8.518 ms - message: -
+<<<<<<< HEAD
 >>>>>>> f5a8e2b70d7a1149bb457cdfbdcfde22235a91f9
 [2025-01-30T13:16:12.014Z] error: GET /api/v1/card/679b73081db0952fa7e35c72 500 - 14.349 ms - message: -
 [2025-01-30T13:16:28.904Z] error: GET /api/v1/card/679b73081db0952fa7e35c72 500 - 12.367 ms - message: -
@@ -839,3 +896,6 @@
 [2025-02-01T07:19:00.314Z] error: PATCH /api/v1/meeting/update-meeting-status 400 - 0.989 ms - message: -
 [2025-02-01T07:27:35.842Z] error: GET /api/v1/controller/urlShortner/vpKd6ZD2p 404 - 1.493 ms - message: -
 [2025-02-01T07:29:43.769Z] error: GET /api/v1/urlShortner 404 - 1.899 ms - message: -
+=======
+>>>>>>> d90cf6bfbd74fe74371bebfdcd3599840c370c83
+>>>>>>> 77583411197ee3fef0520b75fde6be86d25e82d2

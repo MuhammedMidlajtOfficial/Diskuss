@@ -107,12 +107,21 @@ IndividualUserSchema.pre('save', async function(next) {
     // Ensure the referral code is unique
     let isUnique = false;
     while (!isUnique) {
-      const existingUser = await mongoose.model('User').findOne({ 'referralCode': referralCode });
-      if (!existingUser) {
-        isUnique = true;
-      } else {
-        referralCode = generateReferralCode(); // Generate a new code if it's not unique
-      }
+          const existingUser = await mongoose
+            .model("User")
+            .findOne({ referralCode: referralCode });
+          const existingEnterpriseUser = await mongoose
+            .model("EnterpriseUser")
+            .findOne({ referralCode: referralCode });
+          const existingEnterpriseEmployeeUser = await mongoose
+            .model("EnterpriseEmployee")
+            .findOne({ referralCode: referralCode });
+    
+          if (!existingUser && !existingEnterpriseUser && !existingEnterpriseEmployeeUser) {
+            isUnique = true;
+          } else {
+            referralCode = generateReferralCode(); // Generate a new code if it's not unique
+          }
     }
 
     this.referralCode = referralCode;

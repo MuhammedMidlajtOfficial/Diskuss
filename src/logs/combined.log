@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 [2025-01-23T10:15:48.233Z] info: Server connected on http://localhost:2000
 [2025-01-23T10:15:51.075Z] error: POST /api/v1/individual/signup 409 - 45.776 ms - message: -
 [2025-01-23T10:16:03.951Z] info: POST /api/v1/individual/sendotp 200 - 431.236 ms
@@ -23047,3 +23048,5 @@ W[2025-01-29T09:17:54.351Z] [32minfo[39m: Server connected on http://localhost
 [2025-02-01T07:30:16.699Z] info: GET /api/v1/message?userId=679dc430dac5b3af0f4406fb 200 - 3.921 ms
 [2025-02-01T07:30:26.773Z] info: GET /api/v1/message?userId=679dc430dac5b3af0f4406fb 200 - 7.584 ms
 [2025-02-01T07:30:36.726Z] info: GET /api/v1/message?userId=679dc430dac5b3af0f4406fb 200 - 4.643 ms
+=======
+>>>>>>> 77583411197ee3fef0520b75fde6be86d25e82d2

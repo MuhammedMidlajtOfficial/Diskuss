@@ -15,10 +15,18 @@ const sendInvite = async (req, res) => {
 // Register Invitee
 const registerInvitee = async (req, res) => {
     try {
-        const { referralId, inviteeId } = req.body;
-        const updatedReferral = await referralService.registerInvitee(referralId, inviteeId);
+        const { referralCode, inviteePhoneNo, inviteeId } = req.body;
+        const updatedReferral = await referralService.registerInviteeByReferralCode(referralCode, inviteePhoneNo, inviteeId);
         res.status(200).json({ message: "Invitee registered, coins awarded", updatedReferral });
     } catch (error) {
+        if (error.message === "Referral not found") {
+            return res.status(404).json({ error: error.message });
+        } else if (error.message === "Invitee already registered or card created") {
+            return res.status(400).json({ error: error.message });
+        } else if (error.message === "Invalid referral code") {
+            return res.status(400).json({ error: error.message });
+        } 
+        console.log("error : ", error)
         res.status(500).json({ error: error.message });
     }
 };
@@ -26,8 +34,8 @@ const registerInvitee = async (req, res) => {
 // Create Card by Invitee
 const createCardByInvitee = async (req, res) => {
     try {
-        const { referralId } = req.body;
-        const updatedReferral = await referralService.createCardByInvitee(referralId);
+        const { referralCode, inviteePhoneNo } = req.body;
+        const updatedReferral = await referralService.createCardByReferralCode(referralCode, inviteePhoneNo);
         res.status(200).json({ message: "Card created, coins awarded", updatedReferral });
     } catch (error) {
         res.status(500).json({ error: error.message });
