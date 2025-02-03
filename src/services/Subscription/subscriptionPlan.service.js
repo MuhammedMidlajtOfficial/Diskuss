@@ -5,10 +5,15 @@ const SubscriptionPlan = require('../../models/subscription/subscriptionPlan.mod
  * Find all Subscsriptions
  * @returns {Promise<SubscriptionPlan[]>}
  */
-const findAll = async () => {
+const findAll = async (page = null, limit = null) => {
   try {
-    const subscriptionPlans = await SubscriptionPlan.find().exec();
-    // console.log(SubscriptionPlans);
+    let subscriptionPlans = await SubscriptionPlan.find().exec();
+
+    // Apply pagination if page and limit are provided
+  if (page !== null && limit !== null) {
+    const startIndex = (page - 1) * limit;
+    subscriptionPlans = subscriptionPlans.slice(startIndex, startIndex + limit);
+  }
     return subscriptionPlans;
   } catch (error) {
     console.error("Error fetching SubscriptionPlans plan:", error);
