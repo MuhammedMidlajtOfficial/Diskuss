@@ -16,16 +16,21 @@ const { mongoose } = require("mongoose");
 module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id;
+    let { page, limit } = req.query;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid user ID format" });
     }
 
+    // Convert page and limit to numbers, use default behavior if not provided
+    page = page ? parseInt(page, 10) : null;
+    limit = limit ? parseInt(limit, 10) : null;
+
     // Fetch cards
-    const card = await cardService.getCard(userId);
+    const cards = await cardService.getCard(userId, page, limit);
 
     // Return cards
-    return res.status(200).json(card);
+    return res.status(200).json(cards);
   } catch (error) {
     console.error("Error fetching cards:", error);
     res.status(500).json({ message: "Failed to get cards", error });
@@ -127,14 +132,21 @@ async function isValidUserId(userId) {
 module.exports.getCardsByNum = async (req, res) => {
   try {
     const { phnNumber } = req.params;
-console.log("ph:",phnNumber);
+    console.log("ph:",phnNumber);
+
+    let { page, limit } = req.query;
 
     if (!phnNumber) {
       return res.status(400).json({ message: "Phone number is required" });
     }
 
+    
+    // Convert page and limit to numbers, use default behavior if not provided
+    page = page ? parseInt(page, 10) : null;
+    limit = limit ? parseInt(limit, 10) : null;
+
     // Fetch cards using phone number
-    const cards = await cardService.getCardsByNum(phnNumber);
+    const cards = await cardService.getCardsByNum(phnNumber, page, limit);
 
     // Return cards
     return res.status(200).json(cards);
