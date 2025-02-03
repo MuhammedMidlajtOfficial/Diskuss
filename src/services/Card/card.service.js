@@ -12,7 +12,7 @@ const {
 const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
 const { Types } = require("mongoose");
 
-module.exports.getCard = async (userId) => {
+module.exports.getCard = async (userId, page = null, limit = null) => {
   // Check user existence in collections
   const [isIndividualUserExist, isEnterpriseUserExist, isEmployeeUserExist] = await Promise.all([
     individualUserCollection.findOne({ _id: userId }).lean(),
@@ -28,12 +28,8 @@ module.exports.getCard = async (userId) => {
 
   if (isEnterpriseUserExist) {
     // Fetch enterprise user cards
-    const enterpriseCardsFromEmpCards = isEnterpriseUserExist.empCards
-      // .filter(empCard => empCard.status === "active")
-      .map(empCard => empCard.empCardId); // Extract empCardId
-
+    const enterpriseCardsFromEmpCards = isEnterpriseUserExist.empCards.map(empCard => empCard.empCardId);
     const enterpriseCardsFromCardCollection = await Card.find({ userId });
-
     cards = [...enterpriseCardsFromCardCollection, ...enterpriseCardsFromEmpCards];
   } else if (isIndividualUserExist) {
     // Fetch individual user cards
@@ -45,6 +41,12 @@ module.exports.getCard = async (userId) => {
       throw new Error("Card not found for employee");
     }
     cards = [employeeCard];
+  }
+
+  // Apply pagination if page and limit are provided
+  if (page !== null && limit !== null) {
+    const startIndex = (page - 1) * limit;
+    cards = cards.slice(startIndex, startIndex + limit);
   }
 
   return cards;
@@ -488,7 +490,7 @@ module.exports.deleteCard = async (cardId) => {
   }
 };
 
-module.exports.getCardsByNum = async (phnNumber) => {
+module.exports.getCardsByNum = async (phnNumber, page = null, limit = null) => {
   // Check if a card exists in either Card or EnterpriseEmployeeCard collections
   const [cardsFromCardCollection, employeeCard] = await Promise.all([
     Card.find({ mobile: phnNumber }).lean(), // Find all cards with matching phone number
@@ -509,6 +511,12 @@ module.exports.getCardsByNum = async (phnNumber) => {
   // Add employee card if found
   if (employeeCard) {
     cards.push(employeeCard);
+  }
+
+  // Apply pagination if page and limit are provided
+  if (page !== null && limit !== null) {
+    const startIndex = (page - 1) * limit;
+    cards = cards.slice(startIndex, startIndex + limit);
   }
 
   return cards;
