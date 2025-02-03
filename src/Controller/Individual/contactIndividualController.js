@@ -4,6 +4,7 @@ const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.mod
 const enterpriseUser = require("../../models/users/enterpriseUser");
 const ContactService = require("../../services/contact.Individual.service");
 const { uploadImageToS3ForContact, deleteImageFromS3ForContact } = require("../../services/AWS/s3Bucket");
+const mongoose = require ('mongoose')
 
 /**
  * Get all Contacts
@@ -590,6 +591,26 @@ const createPhoneContacts = async (req, res) => {
 
       phnNumber = formatPhoneNumber(phnNumber);
 
+      // Check for existing contact with same name and number
+      const existingContact = await Contact.findOne({
+        contactOwnerId,
+        'contacts': {
+          $elemMatch: {
+            name: name,
+            phnNumber: phnNumber
+          }
+        }
+      });
+
+      if (existingContact) {
+        invalidContacts.push({ 
+          phnNumber, 
+          name, 
+          reason: "Contact with same name and number already exists" 
+        });
+        continue;
+      }
+
       const existIndividualUserNumber = await individualUserCollection.findOne({ phnNumber });
       const existEnterpriseUserNumber = await enterpriseUser.findOne({ phnNumber });
       const existEnterpriseEmployeNumber = await enterpriseEmployeModel.findOne({ phnNumber });
@@ -723,7 +744,6 @@ const getNetworkById = async (req, res) => {
   try {
     const { user_id } = req.params;
 
-    // Find contacts where either contactOwnerId matches or userId in contacts array matches
     const contacts = await Contact.find({
       $or: [
         { contactOwnerId: user_id },
@@ -731,90 +751,115 @@ const getNetworkById = async (req, res) => {
       ]
     }).exec();
 
-    // Helper function to fetch user image
     const fetchUserImage = async (userId) => {
-      if (!userId) return 'Not Added';
-      
-      const userWithImage = await individualUserCollection.findById(userId, "image") ||
-                          await enterpriseUser.findById(userId, "image") ||
-                          await enterpriseEmployeModel.findById(userId, "image");
-      
-      return userWithImage?.image || 'Not Added';
-    };
+      if (!userId) return '';
 
-    // Process and transform the contacts based on the match type
+      try {
+        const objectId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
+
+        // Check each collection sequentially for the user
+        const individualUser = await individualUserCollection.findOne({ _id: objectId }).select("image");
+        if (individualUser?.image) return individualUser.image;
+
+        const enterpriseUsers = await enterpriseUser.findOne({ _id: objectId }).select("image");
+        if (enterpriseUsers?.image) return enterpriseUsers.image;
+
+        const employeeUsers = await enterpriseEmployeModel.findOne({ _id: objectId }).select("image");
+        if (employeeUsers?.image) return employeeUsers.image;
+
+        return '';
+      } catch (error) {
+        console.error(`Error fetching image for user ${userId}:`, error);
+        return '';
+      }
+    };
+    console.log("image");
+    
     const processedContacts = await Promise.all(
       contacts.map(async (contact) => {
-        // Case 1: If the user is the contact owner
+        // Case 1: User is the contact owner
         if (contact.contactOwnerId.toString() === user_id) {
-          // Fetch owner's image
           const ownerImage = await fetchUserImage(user_id);
+          
+          // Process each contact in the contacts array
+          const processedContactList = await Promise.all(
+            contact.contacts.map(async (c) => {
+              const contactImage = await fetchUserImage(c.userId);
+              return {
+                userId: c.userId,
+                name: c.name || 'Not Added',
+                companyName: c.companyName || '',
+                designation: c.designation || '',
+                phnNumber: c.phnNumber || '',
+                email: c.email || '',
+                website: c.website || '',
+                location: c.location || '',
+                image: contactImage  // Fetched from user collections
+              };
+            })
+          );
 
           return {
             type: 'owner',
-            name: contact.contactOwnerName || 'Not Added',
             userId: contact.contactOwnerId,
-            image: ownerImage,
-            contacts: contact.contacts.map(c => ({
-              name: c.name || 'Not Added',
-              companyName: c.companyName || '',
-              designation: c.designation || '',
-              phnNumber: c.phnNumber || '',
-              email: c.email || '',
-              website: c.website || '',
-              location: c.location || ''
-            }))
+            name: contact.contactOwnerName || 'Not Added',
+            image: ownerImage,  // Fetched from user collections
+            contacts: processedContactList
           };
         }
-        // Case 2: If the user appears in the contacts array
+        // Case 2: User is in the contacts array
         else {
-          // Find the specific contact entry where userId matches
           const matchingContact = contact.contacts.find(
             c => c.userId?.toString() === user_id
           );
 
           if (matchingContact) {
-            // Fetch both owner's and contact's images
-            const [ownerImage, contactImage] = await Promise.all([
-              fetchUserImage(contact.contactOwnerId),
-              fetchUserImage(user_id)
-            ]);
+            const ownerImage = await fetchUserImage(contact.contactOwnerId);
+            const userImage = await fetchUserImage(user_id);
 
             return {
               type: 'contact',
               contactOwnerId: contact.contactOwnerId,
               contactOwnerName: contact.contactOwnerName || 'Not Added',
-              contactOwnerImage: ownerImage,
+              ownerImage: ownerImage,  // Fetched from user collections
               tag: contact.tag || 'Need to save this contact',
               matchingContactDetails: {
-                name: matchingContact.name || 'Not Added',
                 userId: matchingContact.userId,
-                image: contactImage,
+                name: matchingContact.name || 'Not Added',
                 email: matchingContact.email || '',
-                phnNumber: matchingContact.phnNumber || ''
+                phnNumber: matchingContact.phnNumber || '',
+                image: userImage  // Fetched from user collections
               }
             };
           }
         }
+        return null;
       })
     );
 
-    // Remove duplicates and undefined entries
-    const uniqueContacts = Array.from(new Set(processedContacts.filter(contact => contact !== undefined)
-      .map(contact => JSON.stringify(contact))))
-      .map(contact => JSON.parse(contact));
+    // Filter out null values and remove duplicates
+    const uniqueContacts = Array.from(new Set(
+      processedContacts
+        .filter(Boolean)
+        .map(contact => JSON.stringify(contact))
+    )).map(contact => JSON.parse(contact));
 
-    // If no contacts Added after processing
     if (uniqueContacts.length === 0) {
-      return res.status(404).json({ message: 'No matching contacts Added' });
+      return res.status(404).json({ 
+        message: 'No matching contacts found' 
+      });
     }
 
     return res.status(200).json(uniqueContacts);
   } catch (error) {
     console.error("Error fetching contacts:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ 
+      error: error.message 
+    });
   }
 };
+
+module.exports = getNetworkById;
 
 module.exports = {
   getAllContacts,
