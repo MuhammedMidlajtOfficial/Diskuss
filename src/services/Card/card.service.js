@@ -238,12 +238,36 @@ module.exports.updateCard = async (updateData) => {
     }
   );
 
-  if(cardCollection === EnterpriseEmployeeCard){
-    await enterpriseEmployeModel.updateOne({ _id:userId },{ theme })
-  }
-
   if (result.modifiedCount === 0) {
     throw new Error("Card not found or no changes detected");
+  }
+
+  // If the card belongs to an enterprise employee, update EnterpriseEmployeeModel
+  if (cardCollection === EnterpriseEmployeeCard) {
+    const updateEnterpriseEmployee = await enterpriseEmployeModel.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          companyName: businessName,
+          email,
+          website,
+          phnNumber: mobile,
+          address: location,
+          role: designation,
+          theme,
+          socialMedia: {
+            whatsappNo,
+            facebookLink,
+            instagramLink,
+            twitterLink,
+          },
+        },
+      }
+    );
+
+    if (updateEnterpriseEmployee.modifiedCount === 0) {
+      throw new Error("Failed to update Enterprise Employee details");
+    }
   }
 
   return result;
@@ -308,7 +332,6 @@ module.exports.updateLogo = async (cardId, image) => {
 
   return result;
 };
-
 
 // module.exports.deleteCard = async (cardId) => {
 //   try {
