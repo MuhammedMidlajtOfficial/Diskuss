@@ -16,8 +16,10 @@ const mongoose = require('mongoose');
  */
 const getUserSubscriptions = async (req, res) => {
     try {
-        const userSubscriptions = await UserSubscriptionService.findAll();
-        return res.status(200).json({ userSubscriptions });
+      let { page, limit } = req.query;
+
+      const userSubscriptions = await UserSubscriptionService.findAll( page, limit);
+      return res.status(200).json({ userSubscriptions });
     } catch (e) {
         return res.status(500).json({ error: e.message });
     }

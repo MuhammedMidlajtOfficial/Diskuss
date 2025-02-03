@@ -11,6 +11,8 @@ module.exports.getCards = async (req, res) => {
   try {
     const userId = req.params.id;
 
+    let { page, limit } = req.query;
+
     const isUserExist = enterpriseUser.find({ _id: userId });
     if (!isUserExist) {
       return res.status(400).json({ message: "Invalid user ID" });
@@ -21,6 +23,13 @@ module.exports.getCards = async (req, res) => {
     //   console.log(Error('Error:Card not found'));
     //   return res.status(404).json({ message: 'Card not found' });
     // }
+
+    // Apply pagination if page and limit are provided
+    if (page !== null && limit !== null) {
+      const startIndex = (page - 1) * limit;
+      card = card.slice(startIndex, startIndex + limit);
+    }
+
     console.log(card);
     return res.status(200).json(card);
   } catch (error) {
