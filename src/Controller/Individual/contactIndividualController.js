@@ -343,7 +343,7 @@ const updateContact = async (req, res) => {
         },
         {
             $set: {
-                "contacts.$.contactOwnerName": contactOwnerName,  // Move this inside $set
+                contactOwnerName: contactOwnerName,
                 "contacts.$.name": name,
                 "contacts.$.companyName": companyName,
                 "contacts.$.designation": designation,
