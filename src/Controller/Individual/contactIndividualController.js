@@ -268,7 +268,7 @@ const updateContact = async (req, res) => {
       // Check if the contact exists
       const contact = await Contact.findOne({ _id: contact_id });
       if (!contact) {
-          return res.status(404).json({ message: "Contact not Added" });
+          return res.status(404).json({ message: "Contact not found using this contact id" });
       }
 
       // Check if the phone number exists in any user
