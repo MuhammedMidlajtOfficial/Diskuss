@@ -268,7 +268,7 @@ const updateContact = async (req, res) => {
       // Check if the contact exists
       const contact = await Contact.findOne({ _id: contact_id });
       if (!contact) {
-          return res.status(404).json({ message: "Contact not Added" });
+          return res.status(404).json({ message: "Contact not found using this contact id" });
       }
 
       // Check if the phone number exists in any user
@@ -337,49 +337,49 @@ const updateContact = async (req, res) => {
 
       // Update contact details
       const updatedContact = await Contact.updateOne(
-          {
-              _id: contact_id,
-              "contacts._id": contact.contacts[0]._id,
-              "contacts.$.contactOwnerName":contactOwnerName,
-          },
-          {
-              $set: {
-                  "contacts.$.name": name,
-                  "contacts.$.companyName": companyName,
-                  "contacts.$.designation": designation,
-                  "contacts.$.phnNumber": phnNumber,
-                  "contacts.$.email": email,
-                  "contacts.$.website": website,
-                  "contacts.$.location": location,
-                  "contacts.$.businessCategory": businessCategory,
-                  "contacts.$.scheduled": scheduled,
-                  "contacts.$.scheduledTime": scheduledTime,
-                  "contacts.$.notes": notes,
-                  "contacts.$.cardImage": cardImage,
-                  "contacts.$.userId": userId,
-                  "contacts.$.isDiskussUser": isDiskussUser,
-              },
-          }
-      );
+        {
+            _id: contact_id,
+            "contacts._id": contact.contacts[0]._id
+        },
+        {
+            $set: {
+                "contacts.$.contactOwnerName": contactOwnerName,  // Move this inside $set
+                "contacts.$.name": name,
+                "contacts.$.companyName": companyName,
+                "contacts.$.designation": designation,
+                "contacts.$.phnNumber": phnNumber,
+                "contacts.$.email": email,
+                "contacts.$.website": website,
+                "contacts.$.location": location,
+                "contacts.$.businessCategory": businessCategory,
+                "contacts.$.scheduled": scheduled,
+                "contacts.$.scheduledTime": scheduledTime,
+                "contacts.$.notes": notes,
+                "contacts.$.cardImage": cardImage,
+                "contacts.$.userId": userId,
+                "contacts.$.isDiskussUser": isDiskussUser
+            }
+        }
+    );
+    
+    if (updatedContact.matchedCount === 0) {
+        return res.status(404).json({ message: "No contact Added to update" });
+    }      
 
-      if (updatedContact.matchedCount === 0) {
-          return res.status(404).json({ message: "No contact Added to update" });
-      }
+    // Depending on the user type, update the contact in the relevant collection
+    const updateQuery = { _id: contactOwnerId };
+    const updateData = { $set: { "contacts.$[contact].phnNumber": phnNumber } };
+    const arrayFilters = [{ "contact._id": contact_id }];
 
-      // Depending on the user type, update the contact in the relevant collection
-      const updateQuery = { _id: contactOwnerId };
-      const updateData = { $set: { "contacts.$[contact].phnNumber": phnNumber } };
-      const arrayFilters = [{ "contact._id": contact_id }];
+    if (existIndividualUser) {
+        await individualUserCollection.updateOne(updateQuery, updateData, { arrayFilters });
+    } else if (existEnterpriseUser) {
+        await enterpriseUser.updateOne(updateQuery, updateData, { arrayFilters });
+    } else if (existEnterpriseEmploye) {
+        await enterpriseEmployeModel.updateOne(updateQuery, updateData, { arrayFilters });
+    }
 
-      if (existIndividualUser) {
-          await individualUserCollection.updateOne(updateQuery, updateData, { arrayFilters });
-      } else if (existEnterpriseUser) {
-          await enterpriseUser.updateOne(updateQuery, updateData, { arrayFilters });
-      } else if (existEnterpriseEmploye) {
-          await enterpriseEmployeModel.updateOne(updateQuery, updateData, { arrayFilters });
-      }
-
-      return res.status(200).json({ message: "Contact updated successfully" });
+    return res.status(200).json({ message: "Contact updated successfully" });
 
   } catch (error) {
       console.error("Error updating Contact:", error.message);
