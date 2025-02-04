@@ -341,13 +341,14 @@ const updateMeetingStatus = async (req, res) => {
 
 const getUpcomingMeetings = async (req, res) => {
   const { userId } = req.params; // Get the user ID from the request parameters
+  let { page = null, limit = null } = req.query;
 
   try {
     // Get the current date and time
     const currentDateTime = moment();
 
     // Find all upcoming meetings organized by the user
-    const upcomingMeetings = await MeetingBase.find({
+    let upcomingMeetings = await MeetingBase.find({
       meetingOwner: userId, // Filter by user ID
       selectedDate: { $gte: currentDateTime.toDate() }, // Filter for upcoming meetings for today
     }).exec();
@@ -355,6 +356,12 @@ const getUpcomingMeetings = async (req, res) => {
     // Check if there are no upcoming meetings
     if (upcomingMeetings.length === 0) {
       return res.status(404).json({ message: "No upcoming meetings found." });
+    }
+
+     // Apply pagination if page and limit are provided
+     if (page !== null && limit !== null) {
+      const startIndex = (page - 1) * limit;
+      upcomingMeetings = upcomingMeetings.slice(startIndex, startIndex + limit);
     }
 
     return res.status(200).json(upcomingMeetings);
