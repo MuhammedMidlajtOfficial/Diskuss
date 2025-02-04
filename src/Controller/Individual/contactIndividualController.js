@@ -14,7 +14,9 @@ const mongoose = require ('mongoose')
  */
 const getAllContacts = async (req, res) => {
   try {
-    const contacts = await ContactService.findAllContacts();
+    let { page, limit } = req.query;
+
+    const contacts = await ContactService.findAllContacts(page, limit);
     return res.status(200).json({ contacts });
   } catch (e) {
     return res.status(500).json({ error: e.message });
@@ -546,6 +548,7 @@ const getContactsByOwnerUserId = async (req, res) => {
  */
 const getSearchedContact = async (req, res) => {
   const { number } = req.query;
+  let { page, limit } = req.query;
 
   if (!number) {
     return res
@@ -553,7 +556,7 @@ const getSearchedContact = async (req, res) => {
       .json({ message: "Number query parameter is required." });
   }
   try {
-    const results = await ContactService.findContactsByNumberSearch(number);
+    const results = await ContactService.findContactsByNumberSearch(number, page, limit);
     res.status(200).json(results);
   } catch (error) {
     console.error("Error fetching contacts by search query");

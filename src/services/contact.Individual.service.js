@@ -4,9 +4,15 @@ const Contact = require('../models/contacts/contact.individual.model');
  * Find all Contacts
  * @returns {Promise<Contact[]>}
  */
-const findAllContacts = async () => {
+const findAllContacts = async (page = null, limit = null) => {
     try {
-        const contacts = await Contact.find().exec();
+        let contacts = await Contact.find().exec();
+
+         // Apply pagination if page and limit are provided
+        if (page !== null && limit !== null) {
+            const startIndex = (page - 1) * limit;
+            contacts = contacts.slice(startIndex, startIndex + limit);
+        }
         return contacts;
     } catch (error) {
         console.error("Error fetching Contacts:", error);
@@ -149,15 +155,21 @@ const findContactsByOwnerUserId = async (userId) => {
  * @param {String} number - The phone number to search.
  * @returns {Promise<Object[]>} - Returns contacts matching the search.
  */
-const findContactsByNumberSearch = async (number) => {
+const findContactsByNumberSearch = async (number, page = null, limit = null) => {
     try {
         const regex = new RegExp(number, 'i'); // 'i' for case-insensitive search
         const contactOwners = await Contact.find({ "contacts.phnNumber": regex }).populate('contactOwnerId').exec();
         
         // Flatten results to just matching contacts
-        const matchingContacts = contactOwners.flatMap(contactOwner => 
+        let matchingContacts = contactOwners.flatMap(contactOwner => 
             contactOwner.contacts.filter(contact => regex.test(contact.phnNumber))
         );
+
+        // Apply pagination if page and limit are provided
+        if (page !== null && limit !== null) {
+            const startIndex = (page - 1) * limit;
+            matchingContacts = matchingContacts.slice(startIndex, startIndex + limit);
+        }
 
         return matchingContacts;
     } catch (error) {

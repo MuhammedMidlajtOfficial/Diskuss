@@ -128,10 +128,11 @@ exports.markMessagesAsRead = async (req, res) => {
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
   const { chatId, userId } = req.query;
+  let { page = null, limit = null } = req.query;
 
   try {
     if (chatId) {
-      const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+      let messages = await Message.find({ chatId }).sort({ timestamp: 1 });
 
       // Get unread messages count for the current user in this chat
       const unreadCount = await Message.countDocuments({
@@ -139,6 +140,12 @@ exports.getMessages = async (req, res) => {
         receiverId: userId,
         isRead: false,
       });
+
+       // Apply pagination if page and limit are provided
+      if (page !== null && limit !== null) {
+        const startIndex = (page - 1) * limit;
+        messages = messages.slice(startIndex, startIndex + limit);
+      }
 
       return res.status(200).json({
         messages: messages.map((message) => ({
@@ -161,10 +168,10 @@ exports.getMessages = async (req, res) => {
           lastMessagesMap.set(message.chatId, message);
         }
       }
-      const lastMessages = Array.from(lastMessagesMap.values());
+      let lastMessages = Array.from(lastMessagesMap.values());
   
       // Enrich each last message with additional information
-      const enrichedMessages = await Promise.all(
+      let enrichedMessages = await Promise.all(
         lastMessages.map(async (lastMessage) => {
           // Fetch sender info
           const senderUserInfo = await User.findById(lastMessage.senderId);
@@ -216,8 +223,8 @@ exports.getMessages = async (req, res) => {
             });
           }
           
-          console.log("Sender Name:", senderName);
-          console.log("Receiver Name:", receiverName);       
+          // console.log("Sender Name:", senderName);
+          // console.log("Receiver Name:", receiverName);       
   
           // Add all enriched fields
           return {
@@ -238,6 +245,12 @@ exports.getMessages = async (req, res) => {
           };
         })
       );
+      
+      // Apply pagination if page and limit are provided
+      if (page !== null && limit !== null) {
+        const startIndex = (page - 1) * limit;
+        enrichedMessages = enrichedMessages.slice(startIndex, startIndex + limit);
+      }
   
       return res.status(200).json(enrichedMessages);
     }  else {
