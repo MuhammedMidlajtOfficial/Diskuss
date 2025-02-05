@@ -130,3 +130,6 @@
 [2025-01-29T10:28:31.615Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 8.039 ms - message: -
 [2025-01-29T10:29:56.001Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 9.503 ms - message: -
 [2025-01-29T10:30:43.629Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 8.518 ms - message: -
+[2025-02-05T05:49:37.483Z] [31merror[39m: GET / 404 - 3.164 ms - message: -
+[2025-02-05T05:49:45.088Z] [31merror[39m: GET /PI/V1 404 - 1.351 ms - message: -
+[2025-02-05T05:49:52.968Z] [31merror[39m: GET /favicon.ico 404 - 0.884 ms - message: -
