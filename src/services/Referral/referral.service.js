@@ -175,7 +175,7 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
         throw new Error('Invitee already created card once');
     }
 
-    newReferral = await Referral.findOne({ referrer: referrerId, inviteePhoneNo}).exec(); 
+    let newReferral = await Referral.findOne({ referrer: referrerId, inviteePhoneNo}).exec(); 
 
     if(!newReferral) {
         return new Error('Invitee not registered');
@@ -206,7 +206,7 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
     }
     return newReferral;
 };
-    
+
 // Create Card by Invitee
 const createCardByInvitee = async (referralId) => {
     const referral = await Referral.findById(referralId);
