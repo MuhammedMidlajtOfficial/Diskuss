@@ -69,7 +69,7 @@ exports.getCardAnalyticsByDateFrame = async (req, res) => {
     const { startDate, endDate } = req.query;
     console.log("cardId ", cardId,"& startDate :", startDate, " & endDate :", endDate )
     try {
-        const data = await analyticsService.getCardAnalytics(cardId, startDate, endDate);
+        const data = await analyticsService.getAllAnalyticsByDateFrame(cardId, startDate, endDate);
         res.json(data);
     } catch (error) {
         console.log(error);
