@@ -10,6 +10,11 @@ const enterpriseUserSchema = new mongoose.Schema(
     password: { type: String },
     isSubscribed: { type: Boolean, default: false },
     cardNo: { type: Number, default: 0 },
+    firstCardCreated: {
+      type: Boolean,
+      required: true,
+      default : false
+    },
     image: { type: String, default: "" },
     phnNumber: { type: String },
 
