@@ -132,6 +132,15 @@ module.exports.createCard = async (req, res) => {
           { $inc: { cardNo: 1 } } // Increment cardNo by 1
         );
       }
+
+      // Update firstCardCreated
+      if (isEmailExistInEnterpriseUser?.cardNo === 0 && isEmailExistInEnterpriseUser?.firstCardCreated === false) {
+        await enterpriseUser.updateOne(
+          { _id: userId },
+          { $set: { firstCardCreated: true } } // Use $set to update the field
+        );
+      }
+      
       return res.status(201).json({
         message: "Card added for enterprise successfully",
         entryId: result._id,
