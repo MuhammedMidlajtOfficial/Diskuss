@@ -217,7 +217,7 @@ const createCardByInvitee = async (referralId) => {
 
     referral.status = 'Card Created';
     referral.cardCreatedAt = new Date();
-    referral.rewardsEarned += settings.cardCreationReward; // Award 50 coins for card creation
+    referral.rewardsEarned += parseInt(settings.cardCreationReward); // Award 50 coins for card creation
     // await referral.save();
 
     // Update invitee's coin balance
