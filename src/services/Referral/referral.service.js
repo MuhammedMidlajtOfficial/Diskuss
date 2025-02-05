@@ -73,7 +73,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
         status : { $ne : "Invited" }
  }).exec();
 
-    console.log("alreadyRegistered : ", alreadyRegistered);
+    // console.log("alreadyRegistered : ", alreadyRegistered);
     if (alreadyRegistered) {
         throw new Error('Invitee already registered or card created');
     }
@@ -291,7 +291,7 @@ const getReferralDetails = async (userId) => {
     }
 
     const userReferralRequired = parseInt((settings.LevelOneReward)/(parseInt(settings.RegistrationReward) + parseInt(settings.CardCreationReward)));
-    console.log("userReferralRequired : ", userReferralRequired);
+    // console.log("userReferralRequired : ", userReferralRequired);
 
  
 
@@ -353,7 +353,7 @@ const findAllReferrals = async (page, limit) => {
 
 const findMonthlyReferralsCounts = async (year) => {
     try {
-        console.log("year : ", year);
+        // console.log("year : ", year);
         const monthlyReferrals = await Referral.aggregate([
             // Step 1: Match documents for the specified year
             {
@@ -387,7 +387,7 @@ const findMonthlyReferralsCounts = async (year) => {
             },
         ]);
 
-        console.log("monthlyReferrals : ", monthlyReferrals);
+        // console.log("monthlyReferrals : ", monthlyReferrals);
         // Convert the data to an array of 12 months
         const monthlyCounts = convertToMonthlyCounts( year, monthlyReferrals);
 
@@ -478,7 +478,7 @@ const updateWithdrawalRequest = async (id, status, transactionId) => {
             withdrawalRequest.status = 'approved';
             withdrawalRequest.transactionId = transactionId;
             await withdrawalRequest.save();
-            console.log("withdrawalRequest : ", withdrawalRequest   );
+            // console.log("withdrawalRequest : ", withdrawalRequest   );
 
         } else if (userType === 'enterprise') {
             await EnterpriseUser.findByIdAndUpdate(withdrawalRequest.userId, { $inc: { coinsWithdrawn:  withdrawalRequest.amount } });
