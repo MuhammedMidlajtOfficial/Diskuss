@@ -75,6 +75,11 @@ connectDB();
       required: true,
       default : 0
     },
+    firstCardCreated: {
+      type: Boolean,
+      required: true,
+      default : false
+    },
     image: {
       type:String,
       default : ''

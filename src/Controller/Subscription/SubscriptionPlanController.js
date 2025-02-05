@@ -9,8 +9,11 @@ const SubscriptionPlanService = require('../../services/Subscription/subscriptio
  */
 const getSubscriptionPlans = async (req, res) => {
     try {
-        const SubscriptionPlans = await SubscriptionPlanService.findAll();
-        return res.status(200).json({ SubscriptionPlans });
+      let { page, limit } = req.query;
+      console.log('herrerereer');
+      
+      const SubscriptionPlans = await SubscriptionPlanService.findAll( page, limit );
+      return res.status(200).json({ SubscriptionPlans });
     } catch (e) {
       const getSubscriptionPlanByPlanId = async (req, res) => {
       try { 

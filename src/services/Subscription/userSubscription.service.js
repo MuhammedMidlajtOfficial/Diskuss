@@ -11,10 +11,16 @@ const { sendSubscriptionSuccessFast2SMS, sendSubscriptionFailedFast2SMS } = requ
  * Find all Subscsriptions
  * @returns {Promise<UserSubscription[]>}
  */
-const findAll = async () => {
+const findAll = async (page = null, limit = null) => {
   try {
-    const userSubscriptions = await UserSubscription.find().exec();
-    // console.log(UserSubscriptions);
+    let userSubscriptions = await UserSubscription.find().exec();
+    
+    // Apply pagination if page and limit are provided
+    if (page !== null && limit !== null) {
+      const startIndex = (page - 1) * limit;
+      userSubscriptions = userSubscriptions.slice(startIndex, startIndex + limit);
+    }
+    
     return userSubscriptions;
   } catch (error) {
     console.error("Error fetching UserSubscriptions plan:", error);
