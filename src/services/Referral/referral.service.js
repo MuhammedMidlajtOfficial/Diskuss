@@ -187,7 +187,7 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
     const settings = referalConfig.config;
     newReferral.status = 'Card Created';
     newReferral.registeredAt = new Date();
-    newReferral.rewardsEarned += settings.CardCreationReward; // Award 50 coins for registration
+    newReferral.rewardsEarned += parseInt(settings.CardCreationReward); // Award 50 coins for registration
     await newReferral.save();
 
     // Update invitee's coin balance
