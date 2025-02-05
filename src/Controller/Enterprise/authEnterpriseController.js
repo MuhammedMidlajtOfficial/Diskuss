@@ -8,6 +8,7 @@ const { uploadImageToS3, deleteImageFromS3 } = require('../../services/AWS/s3Buc
 const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
 const Contact  = require('../../models/contacts/contact.individual.model');
 const enterpriseUser = require('../../models/users/enterpriseUser');
+const { checkReferralCodeValid } = require('../../helper/validateReferralCode');
 
 module.exports.postEnterpriseLogin = async (req, res) => {
   try {
@@ -199,7 +200,8 @@ module.exports.postEnterpriseSignup = async (req, res) => {
 
     // ✅ 3. Validate referral code (if provided)
     if (referralCode) {
-      const referralCodeValid = await enterpriseUser.findOne({ referralCode }).exec();
+      // const referralCodeValid = await enterpriseUser.findOne({ referralCode }).exec();
+      const referralCodeValid = await checkReferralCodeValid(referralCode);
       if (!referralCodeValid) {
         return res.status(409).json({ message: "Invalid referral code" });
       }

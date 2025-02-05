@@ -11,6 +11,7 @@ const Contact  = require('../../models/contacts/contact.individual.model');
 const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
 const referralService = require('../../services/Referral/referral.service');
 const { sendOtpFast2SMS } = require('../../util/Fast2SMS/fast2SMSSender');
+const { checkReferralCodeValid } = require('../../helper/validateReferralCode');
 
 
 module.exports.postIndividualLogin = async (req, res) => {
@@ -154,7 +155,8 @@ module.exports.postIndividualSignup = async (req, res) => {
     
     if(referralCode){
       // check if referral code is valid
-      const isReferralCodeValid = await individualUserCollection.findOne({ referralCode}).exec();
+      // const isReferralCodeValid = await individualUserCollection.findOne({ referralCode}).exec();
+      const isReferralCodeValid = await checkReferralCodeValid(referralCode);
       if (!isReferralCodeValid) {
         return res.status(400).json({ message: "The referral code is invalid" });
       }
