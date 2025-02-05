@@ -129,6 +129,14 @@ module.exports.createCard = async (cardData) => {
     twitterLink,
   });
 
+  // Update firstCardCreated
+  if (isUserExist?.cardNo === 0 && isUserExist?.firstCardCreated === false) {
+    await individualUserCollection.updateOne(
+      { _id: userId },
+      { $set: { firstCardCreated: true } } // Use $set to update the field
+    );
+  }
+
   try {
     // Save card to the database
     const result = await newCard.save();
