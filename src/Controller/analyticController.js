@@ -11,9 +11,9 @@ exports.logShare = async (req, res) => {
 };
 
 exports.logView = async (req, res) => {
-    const { cardId, visitorId } = req.body;
+    const { cardId, visitorId, viewedAt } = req.body;
     try {
-        await analyticsService.logView(cardId, visitorId);
+        await analyticsService.logView(cardId, visitorId, viewedAt);
         res.json({ message: 'View logged successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Error logging view' });
