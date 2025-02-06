@@ -195,14 +195,42 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
         { $match: { referrer: newReferral.referrer } },
         { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
 
+      const withDrawn = await WithdrawalRequest.aggregate([
+            {
+                $match: {
+                    userId: newReferral.referrer,
+                    status: "approved",
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    coinsRedeemed: { $sum: '$amount' },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    total: '$coinsRedeemed',
+                },
+            },
+        ]).exec();-
+    
+        console.log("withDrawn : ", withDrawn);
+    
+        if (withDrawn.length === 0) {
+            withDrawn.push({ total: 0 });
+        }
+        const coinsBalance = parseInt(totalCoins[0].total || 0) - parseInt(withDrawn[0].total);
+
     const userType = (await checkUserType(newReferral.referrer)).userType;
     // Update referrerId's coin balance
     if (userType === 'individual') {
-        await IndividualUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total } );
+        await IndividualUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsBalance } );
     } else if (userType === 'enterprise') {
-        await EnterpriseUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total } );
+        await EnterpriseUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsBalance } );
     } else if (userType === 'enterpriseEmployee') {
-        await EnterpriseEmployeeUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total } );
+        await EnterpriseEmployeeUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsBalance } );
     }
     return newReferral;
 };
