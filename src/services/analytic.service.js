@@ -195,6 +195,10 @@ exports.getAllAnalytics = async (userId, period) => {
 
 // Function to aggregate analytics data by day
 exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
+    startDate = new Date(startDate);
+    endDate = new Date(endDate);
+
+    console.log("startDateObj : ", startDate, "endDateObj : ", endDate)
     try {
         // Aggregate shares
         const shares = await Analytic.Share.aggregate([
@@ -249,7 +253,15 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$firstVisit" } },
-                    totalVisitors: { $sum: 1 }
+                    totalVisitors: { $sum: 1 },
+                    uniqueVisitors: { $addToSet: "$visitorId" }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    totalVisitors: 1,
+                    uniqueVisitorsCount: { $size: "$uniqueVisitors" }
                 }
             },
             { $sort: { _id: 1 } }
@@ -271,6 +283,7 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
             },
             { $sort: { _id: 1 } }
         ]);
+
 
         // Combine results into a single object
         return {
