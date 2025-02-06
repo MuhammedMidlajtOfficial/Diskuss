@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const contactSchema = new mongoose.Schema({
   contactOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the owner of the contact
   contactOwnerName: {type:String, required:true},
+  contactOwnerPhnNumber: {type:String, required:false},
   contacts: [ {
     name: { type: String, required: true },
     companyName: { type: String, required: true },

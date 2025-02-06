@@ -65,7 +65,8 @@ const createContact = async (req, res) => {
       cardFrontImage,
       cardBackImage,
       contactOwnerId,
-      contactOwnerName
+      contactOwnerName,
+      contactOwnerPhnNumber
     } = req.body;
 
     console.log("body:", req.body);
@@ -147,6 +148,7 @@ const createContact = async (req, res) => {
     const contactDetails = {
       contactOwnerId,
       contactOwnerName,
+      contactOwnerPhnNumber,
       contacts: [
         {
           name,

@@ -5,7 +5,7 @@ const EnterpriseEmployee = require('../models/users/enterpriseEmploye.model');
 const checkReferralCodeValid = async (referralCode) => {
 // First, fetch the results from all collections
  const results = await Promise.all([
-    individualUserCollectionfindOne({ referralCode }).lean(),
+    individualUserCollection.findOne({ referralCode }).lean(),
     enterpriseUser.findOne({ referralCode }).lean(),
     EnterpriseEmployee.findOne({ referralCode }).lean()
   ]);
@@ -13,7 +13,7 @@ const checkReferralCodeValid = async (referralCode) => {
   // Then destructure the results after they're fetched
   const [individualUserResult, enterpriseUserResult, enterpriseEmployeeResult] = results;
 
-if (!individualUser && !enterpriseUser && !enterpriseEmployeeUser) {
+if (!individualUserResult && !enterpriseUserResult && !enterpriseEmployeeResult) {
   return false;
 }
 return true;
