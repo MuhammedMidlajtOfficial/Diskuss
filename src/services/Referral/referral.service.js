@@ -132,7 +132,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
         },
     ]).exec();
 
-    console.log("withDrawn : ", withDrawn);
+    // console.log("withDrawn : ", withDrawn);
 
     if (withDrawn.length === 0) {
         withDrawn.push({ total: 0 });
@@ -214,9 +214,9 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
                     total: '$coinsRedeemed',
                 },
             },
-        ]).exec();-
+        ]).exec();
     
-        console.log("withDrawn : ", withDrawn);
+        // console.log("withDrawn : ", withDrawn);
     
         if (withDrawn.length === 0) {
             withDrawn.push({ total: 0 });
