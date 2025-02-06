@@ -193,6 +193,98 @@ exports.getAllAnalytics = async (userId, period) => {
    
 };
 
+// Function to aggregate analytics data by day
+exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
+    try {
+        // Aggregate shares
+        const shares = await Analytic.Share.aggregate([
+            {
+                $match: {
+                    cardId,
+                    sharedAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$sharedAt" } },
+                    totalShares: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } } // Sort by date
+        ]);
+
+        // Aggregate views
+        const views = await Analytic.View.aggregate([
+            {
+                $match: {
+                    cardId,
+                    viewedAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$viewedAt" } },
+                    totalViews: { $sum: 1 },
+                    uniqueUsers: { $addToSet: "$userId" }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    totalViews: 1,
+                    uniqueViewsCount: { $size: "$uniqueUsers" }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // Aggregate visitors
+        const visitors = await Analytic.Visitor.aggregate([
+            {
+                $match: {
+                    cardId,
+                    firstVisit: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$firstVisit" } },
+                    totalVisitors: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // Aggregate clicks
+        const clicks = await Analytic.Click.aggregate([
+            {
+                $match: {
+                    cardId,
+                    clickedAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$clickedAt" } },
+                    totalClicks: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // Combine results into a single object
+        return {
+            shares,
+            views,
+            visitors,
+            clicks
+        };
+    } catch (error) {
+        console.error("Error aggregating analytics data:", error);
+    }
+}
+
+
 
 // get meeting by ids  //
 exports.getEnterpriseMeetings = async (enterpriseId) => {

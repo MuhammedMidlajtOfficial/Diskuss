@@ -118,6 +118,7 @@
 [2025-01-22T14:08:08.411Z] [31merror[39m: POST /api/v1/referral/withdraw 400 - 140.522 ms - message: -
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 [2025-01-23T10:15:51.075Z] error: POST /api/v1/individual/signup 409 - 45.776 ms - message: -
 [2025-01-23T10:16:11.853Z] error: POST /api/v1/subscription/free 400 - 12.982 ms - message: -
 [2025-01-23T10:16:55.959Z] error: POST /api/v1/subscription/free 400 - 27.420 ms - message: -
@@ -532,6 +533,8 @@
 [2025-01-28T05:08:24.011Z] error: GET /api/v1/meeting/get-meeting/6731e3ad3d4a18b80fbf06f4 404 - 8.586 ms - message: -
 [2025-01-28T05:08:24.660Z] error: GET /api/v1/meeting/get-meeting/6731e3ad3d4a18b80fbf06f4 404 - 10.666 ms - message: -
 =======
+=======
+>>>>>>> f7142b83f5c4eb976f499899b4854962ad398960
 [2025-01-27T10:24:48.601Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 171.309 ms - message: -
 [2025-01-27T11:15:11.237Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 190.705 ms - message: -
 [2025-01-27T11:15:12.471Z] [31merror[39m: GET /api/v1/referral/details/6731e31c1637d690957d8e69 500 - 249.235 ms - message: -
@@ -584,9 +587,13 @@
 [2025-01-29T09:04:44.860Z] [31merror[39m: POST /api/v1/referral/register 500 - 621.830 ms - message: -
 [2025-01-29T09:06:46.051Z] [31merror[39m: POST /api/v1/referral/register 500 - 7643.362 ms - message: -
 [2025-01-29T09:07:42.703Z] [31merror[39m: POST /api/v1/referral/register 400 - 219.895 ms - message: -
+<<<<<<< HEAD
 [2025-01-29T09:08:02.376Z] [31merror[39m: POST /api/v1/referral/card 500 - 1.577 ms - message: -
 >>>>>>> 77583411197ee3fef0520b75fde6be86d25e82d2
 =======
+=======
+[2025-01-29T09:08:02.376Z] [31merror[39m: POST /api/v1/referral/card 500 - 1.577 ms - message: -====
+>>>>>>> f7142b83f5c4eb976f499899b4854962ad398960
 [2025-01-29T10:15:45.241Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?cardId=12345&period=week 500 - 6.016 ms - message: -
 [2025-01-29T10:15:47.569Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?cardId=12345&period=week 500 - 3.377 ms - message: -
 [2025-01-29T10:15:57.042Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af?period=%22today%22&cardId=12345&period=week 500 - 3.371 ms - message: -
@@ -601,6 +608,7 @@
 [2025-01-29T10:28:31.615Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 8.039 ms - message: -
 [2025-01-29T10:29:56.001Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 9.503 ms - message: -
 [2025-01-29T10:30:43.629Z] [31merror[39m: GET /api/v1/analytic/card/6731d58cae68862f6cd0e6af 500 - 8.518 ms - message: -
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> f5a8e2b70d7a1149bb457cdfbdcfde22235a91f9
@@ -901,6 +909,11 @@
 >>>>>>> d90cf6bfbd74fe74371bebfdcd3599840c370c83
 >>>>>>> 77583411197ee3fef0520b75fde6be86d25e82d2
 =======
+=======
+[2025-02-05T05:49:37.483Z] [31merror[39m: GET / 404 - 3.164 ms - message: -
+[2025-02-05T05:49:45.088Z] [31merror[39m: GET /PI/V1 404 - 1.351 ms - message: -
+[2025-02-05T05:49:52.968Z] [31merror[39m: GET /favicon.ico 404 - 0.884 ms - message: -
+>>>>>>> f7142b83f5c4eb976f499899b4854962ad398960
 [2025-01-31T12:51:51.767Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 6.018 ms - message: -
 [2025-01-31T12:51:52.768Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 2.414 ms - message: -
 [2025-01-31T12:53:22.280Z] [31merror[39m: GET /api/v1/urlShortner/QmuwxAfs1 500 - 4.749 ms - message: -
