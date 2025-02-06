@@ -133,7 +133,8 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     ]).exec();
 
     // console.log("withDrawn : ", withDrawn);
-    if(withDrawn.length === 0) {
+
+    if (withDrawn.length === 0) {
         withDrawn.push({ total: 0 });
     }
     const coinsBalance = parseInt(totalCoins[0].total || 0) - parseInt(withDrawn[0].total);
