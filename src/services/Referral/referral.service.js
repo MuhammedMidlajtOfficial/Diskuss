@@ -130,9 +130,9 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
                 total: '$coinsRedeemed',
             },
         },
-    ]).exec();-
+    ]).exec();
 
-    console.log("withDrawn : ", withDrawn);
+    // console.log("withDrawn : ", withDrawn);
 
     if (withDrawn.length === 0) {
         withDrawn.push({ total: 0 });
@@ -188,6 +188,7 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
     newReferral.status = 'Card Created';
     newReferral.registeredAt = new Date();
     newReferral.rewardsEarned += parseInt(settings.CardCreationReward); // Award 50 coins for registration
+    // console.log("new referral : ", newReferral);
     await newReferral.save();
 
     // Update invitee's coin balance
@@ -214,9 +215,9 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
                     total: '$coinsRedeemed',
                 },
             },
-        ]).exec();-
+        ]).exec();
     
-        console.log("withDrawn : ", withDrawn);
+        // console.log("withDrawn : ", withDrawn);
     
         if (withDrawn.length === 0) {
             withDrawn.push({ total: 0 });
