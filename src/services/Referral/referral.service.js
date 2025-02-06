@@ -37,7 +37,7 @@ const registerInvitee = async (referralId, inviteePhoneNo) => {
     referral.invitee = inviteePhoneNo;
     referral.status = 'Registered';
     referral.registeredAt = new Date();
-    referral.rewardsEarned += settings.registrationReward; // Award 50 coins for registration
+    referral.rewardsEarned += parseInt(settings.registrationReward); // Award 50 coins for registration
     await referral.save();
 
     // Update invitee's coin balance
@@ -102,7 +102,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     const settings = referalConfig.config;
     newReferral.status = 'Registered';
     newReferral.registeredAt = new Date();
-    newReferral.rewardsEarned = settings.RegistrationReward ; // Award 50 coins for registration
+    newReferral.rewardsEarned = parseInt(settings.RegistrationReward) ; // Award 50 coins for registration
     // console.log("registration reward : ", settings.RegistrationReward); 
     await newReferral.save();
 
@@ -132,12 +132,11 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
         },
     ]).exec();
 
-    console.log("withDrawn : ", withDrawn);
-
-    if (withDrawn.length === 0) {
+    // console.log("withDrawn : ", withDrawn);
+    if(withDrawn.length === 0) {
         withDrawn.push({ total: 0 });
     }
-    const coinsBalance = (totalCoins[0].total || 0) - withDrawn[0].total;
+    const coinsBalance = parseInt(totalCoins[0].total || 0) - parseInt(withDrawn[0].total);
 
 
     const userType = (await checkUserType(newReferral.referrer)).userType;
@@ -188,14 +187,15 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
     newReferral.status = 'Card Created';
     newReferral.registeredAt = new Date();
     newReferral.rewardsEarned += parseInt(settings.CardCreationReward); // Award 50 coins for registration
+    // console.log("new referral : ", newReferral);
     await newReferral.save();
 
     // Update invitee's coin balance
     const totalCoins = await Referral.aggregate([
         { $match: { referrer: newReferral.referrer } },
         { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
-
-      const withDrawn = await WithdrawalRequest.aggregate([
+    
+        const withDrawn = await WithdrawalRequest.aggregate([
             {
                 $match: {
                     userId: newReferral.referrer,
@@ -214,14 +214,15 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
                     total: '$coinsRedeemed',
                 },
             },
-        ]).exec();-
+        ]).exec();
     
-        console.log("withDrawn : ", withDrawn);
+        // console.log("withDrawn : ", withDrawn);
     
         if (withDrawn.length === 0) {
             withDrawn.push({ total: 0 });
         }
         const coinsBalance = parseInt(totalCoins[0].total || 0) - parseInt(withDrawn[0].total);
+    
 
     const userType = (await checkUserType(newReferral.referrer)).userType;
     // Update referrerId's coin balance
