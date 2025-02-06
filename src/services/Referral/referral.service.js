@@ -481,9 +481,9 @@ const updateWithdrawalRequest = async (id, status, transactionId) => {
             // console.log("withdrawalRequest : ", withdrawalRequest   );
 
         } else if (userType === 'enterprise') {
-            await EnterpriseUser.findByIdAndUpdate(withdrawalRequest.userId, { $inc: { coinsWithdrawn:  withdrawalRequest.amount } });
+            await EnterpriseUser.findByIdAndUpdate(withdrawalRequest.userId, { $inc: { coinsWithdrawn:  withdrawalRequest.amount, coinsBalance: -(withdrawalRequest.amount) } });
         } else if (userType === 'enterpriseEmployee') {
-            await EnterpriseEmployeeUser.findByIdAndUpdate(withdrawalRequest.userId, { $inc: { coinsWithdrawn:  withdrawalRequest.amount } });
+            await EnterpriseEmployeeUser.findByIdAndUpdate(withdrawalRequest.userId, { $inc: { coinsWithdrawn:  withdrawalRequest.amount, coinsBalance : -(withdrawalRequest.amount) } });
         }
 
     } else if (status === 'rejected') {
