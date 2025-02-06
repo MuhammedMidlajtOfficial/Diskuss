@@ -16,21 +16,21 @@ exports.logShare = async (cardId, userId) => {
     await share.save();
 };
 
-exports.logView = async (cardId, visitorId) => {
+exports.logView = async (cardId, visitorId, viewedAt) => {
     const now = new Date();
-    let isUnique = false;
+    // let isUnique = false;
 
-    const existingVisitor = await Analytic.Visitor.findOne({ cardId, visitorId });
-    if (!existingVisitor) {
-        isUnique = true;
-        const newVisitor = new Analytic.Visitor({ cardId, visitorId, firstVisit: now, lastVisit: now });
-        await newVisitor.save();
-    } else {
-        existingVisitor.lastVisit = now;
-        await existingVisitor.save();
-    }
+    // const existingVisitor = await Analytic.Visitor.findOne({ cardId, visitorId });
+    // if (!existingVisitor) {
+    //     isUnique = true;
+    //     const newVisitor = new Analytic.Visitor({ cardId, visitorId, firstVisit: now, lastVisit: now });
+    //     await newVisitor.save();
+    // } else {
+    //     existingVisitor.lastVisit = now;
+    //     await existingVisitor.save();
+    // }
 
-    const view = new Analytic.View({ cardId, viewedAt: now, isUnique });
+    const view = new Analytic.View({ cardId, visitorId,viewedAt: viewedAt || now });
     await view.save();
 
     await Analytic.Share.updateOne({ cardId, isViewed: false }, { isViewed: true });
@@ -195,6 +195,10 @@ exports.getAllAnalytics = async (userId, period) => {
 
 // Function to aggregate analytics data by day
 exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
+    startDate = new Date(startDate);
+    endDate = new Date(endDate);
+
+    console.log("startDateObj : ", startDate, "endDateObj : ", endDate)
     try {
         // Aggregate shares
         const shares = await Analytic.Share.aggregate([
@@ -225,7 +229,7 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$viewedAt" } },
                     totalViews: { $sum: 1 },
-                    uniqueUsers: { $addToSet: "$userId" }
+                    uniqueUsers: { $addToSet: "$isUnique" }
                 }
             },
             {
@@ -238,22 +242,28 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
             { $sort: { _id: 1 } }
         ]);
 
-        // Aggregate visitors
-        const visitors = await Analytic.Visitor.aggregate([
-            {
-                $match: {
-                    cardId,
-                    firstVisit: { $gte: startDate, $lte: endDate }
-                }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$firstVisit" } },
-                    totalVisitors: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: 1 } }
-        ]);
+        // // Aggregate visitors
+        // const visitors = await Analytic.Visitor.aggregate([
+        //     {
+        //         $match: {
+        //             cardId,
+        //             firstVisit: { $gte: startDate, $lte: endDate }
+        //         }
+        //     },
+        //     {
+        //         $group: {
+        //             _id: { $dateToString: { format: "%Y-%m-%d", date: "$firstVisit" } },
+        //             totalVisitors: { $sum: 1 },
+        //         }
+        //     },
+        //     {
+        //         $project: {
+        //             _id: 1,
+        //             totalVisitors: 1,
+        //         }
+        //     },
+        //     { $sort: { _id: 1 } }
+        // ]);
 
         // Aggregate clicks
         const clicks = await Analytic.Click.aggregate([
@@ -272,11 +282,12 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
             { $sort: { _id: 1 } }
         ]);
 
+
         // Combine results into a single object
         return {
             shares,
             views,
-            visitors,
+            // visitors,
             clicks
         };
     } catch (error) {

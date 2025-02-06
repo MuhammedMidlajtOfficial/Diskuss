@@ -11,9 +11,9 @@ exports.logShare = async (req, res) => {
 };
 
 exports.logView = async (req, res) => {
-    const { cardId, visitorId } = req.body;
+    const { cardId, visitorId, viewedAt } = req.body;
     try {
-        await analyticsService.logView(cardId, visitorId);
+        await analyticsService.logView(cardId, visitorId, viewedAt);
         res.json({ message: 'View logged successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Error logging view' });
@@ -69,7 +69,7 @@ exports.getCardAnalyticsByDateFrame = async (req, res) => {
     const { startDate, endDate } = req.query;
     console.log("cardId ", cardId,"& startDate :", startDate, " & endDate :", endDate )
     try {
-        const data = await analyticsService.getCardAnalytics(cardId, startDate, endDate);
+        const data = await analyticsService.getAllAnalyticsByDateFrame(cardId, startDate, endDate);
         res.json(data);
     } catch (error) {
         console.log(error);

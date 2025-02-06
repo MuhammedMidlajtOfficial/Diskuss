@@ -5,15 +5,15 @@ const ShareSchema = new mongoose.Schema({
     userId: String, // who shared it
     sharedAt: Date,
     isViewed: { type: Boolean, default: false },
-});
+}, { timestamps: true });
 
 // View Schema
 const ViewSchema = new mongoose.Schema({
     cardId: String,
-    userId: String,
+    visitorId: String,
     viewedAt: Date,
-    isUnique: Boolean,
-});
+    // isUnique: Boolean,
+}, { timestamps: true });
 
 // Visitor Schema
 const VisitorSchema = new mongoose.Schema({
@@ -21,7 +21,7 @@ const VisitorSchema = new mongoose.Schema({
     visitorId: String, // unique identifier for visitor (e.g., IP, user token)
     firstVisit: Date,
     lastVisit: Date,
-});
+}, { timestamps: true });
 
 // Click Schema
 const ClickSchema = new mongoose.Schema({
@@ -29,7 +29,7 @@ const ClickSchema = new mongoose.Schema({
     userId: String,
     clickedAt: Date,
     link: String,
-});
+}, { timestamps: true });   
 
   // Export the model based on the schema
   module.exports = {

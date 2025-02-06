@@ -11,6 +11,7 @@ const {
 } = require("../../services/AWS/s3Bucket");
 const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
 const { Types } = require("mongoose");
+const { createCardByReferralCode } = require("../Referral/referral.service");
 
 module.exports.getCard = async (userId, page = null, limit = null) => {
   // Check user existence in collections
@@ -131,6 +132,12 @@ module.exports.createCard = async (cardData) => {
 
   // Update firstCardCreated
   if (isUserExist?.cardNo === 0 && isUserExist?.firstCardCreated === false) {
+
+    // Adding reward for user
+    if( isUserExist?.referralCodeUsed ){
+      createCardByReferralCode(isUserExist.referralCodeUsed, isUserExist.phnNumber)      
+    }
+
     await individualUserCollection.updateOne(
       { _id: userId },
       { $set: { firstCardCreated: true } } // Use $set to update the field
