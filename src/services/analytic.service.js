@@ -11,13 +11,13 @@ const Contact = require("../models/contacts/contact.enterprise.model")
 const filterByDate = require("../util/filterByDate")
 const { individualUserCollection } = require("../DBConfig")
 
-exports.logShare = async (cardId, userId) => {
-    const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
+exports.logShare = async (cardId, userId, sharedAt = new Date()) => {
+    const share = new Analytic.Share({ cardId, userId, sharedAt });
     await share.save();
 };
 
-exports.logView = async (cardId, visitorId, viewedAt) => {
-    const now = new Date();
+exports.logView = async (cardId, visitorId, viewedAt = new Date()) => {
+    // const now = new Date();
     // let isUnique = false;
 
     // const existingVisitor = await Analytic.Visitor.findOne({ cardId, visitorId });
@@ -30,14 +30,14 @@ exports.logView = async (cardId, visitorId, viewedAt) => {
     //     await existingVisitor.save();
     // }
 
-    const view = new Analytic.View({ cardId, visitorId,viewedAt: viewedAt || now });
+    const view = new Analytic.View({ cardId, visitorId,viewedAt });
     await view.save();
 
     await Analytic.Share.updateOne({ cardId, isViewed: false }, { isViewed: true });
 };
 
-exports.logClick = async (cardId, userId, link) => {
-    const click = new Analytic.Click({ cardId, userId, link, clickedAt: new Date() });
+exports.logClick = async (cardId, userId, link, clickedAt = new Date()) => {
+    const click = new Analytic.Click({ cardId, userId, link, clickedAt });
     await click.save();
 };
 
@@ -195,11 +195,11 @@ exports.getAllAnalytics = async (userId, period) => {
 
 // Function to aggregate analytics data by day
 exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
-    startDate = new Date(startDate);
-    endDate = new Date(endDate);
 
     console.log("startDateObj : ", startDate, "endDateObj : ", endDate)
     try {
+        const dateSeries = getDateSeries(startDate, endDate);
+
         // Aggregate shares
         const shares = await Analytic.Share.aggregate([
             {
@@ -229,7 +229,7 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$viewedAt" } },
                     totalViews: { $sum: 1 },
-                    uniqueUsers: { $addToSet: "$isUnique" }
+                    uniqueUsers: { $addToSet: "$visitorId" }
                 }
             },
             {
@@ -282,13 +282,22 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
             { $sort: { _id: 1 } }
         ]);
 
+        // 3. Merge and Fill Gaps
+        const sharesFilled = fillGaps(dateSeries, shares, 'totalShares');
+        const viewsFilled = fillGapsForViews(dateSeries, views); //using different fillGaps function for views, as views have uniqueViewsCount field as well
+        const clicksFilled = fillGaps(dateSeries, clicks, 'totalClicks');
+
 
         // Combine results into a single object
         return {
-            shares,
-            views,
-            // visitors,
-            clicks
+            // shares,
+            // views,
+            // // visitors,
+            // clicks,
+            shares: sharesFilled,
+            views: viewsFilled,
+            clicks: clicksFilled
+
         };
     } catch (error) {
         console.error("Error aggregating analytics data:", error);
@@ -621,3 +630,47 @@ exports.getCounts = async (enterpriseId, period) => {
       return ({ error: err.message });
     }
   };
+
+
+  // Helper function to generate a series of dates
+function getDateSeries(startDate, endDate) {
+    const dateSeries = [];
+    let currentDate = new Date(startDate); //clone startDate to avoid modifying it
+    while (currentDate <= endDate) {
+        dateSeries.push(formatDate(new Date(currentDate))); // Clone again to avoid modifying the date in the array
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return dateSeries;
+};
+
+// Helper function to format a date to YYYY-MM-DD
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+  // Helper function to merge the date series with the aggregated data and fill in any gaps
+function fillGaps(dateSeries, data, totalFieldName) {
+    const dataMap = new Map(data.map(item => [item._id, item]));
+    return dateSeries.map(date => {
+        if (dataMap.has(date)) {
+            return dataMap.get(date);
+        } else {
+            return { _id: date, [totalFieldName]: 0 };
+        }
+    });
+};
+
+// Helper function to merge the date series with the aggregated data and fill in any gaps for views (since views have uniqueViewsCount field as well)
+function fillGapsForViews(dateSeries, data) {
+    const dataMap = new Map(data.map(item => [item._id, item]));
+    return dateSeries.map(date => {
+        if (dataMap.has(date)) {
+            return dataMap.get(date);
+        } else {
+            return { _id: date, totalViews: 0, uniqueViewsCount: 0 };
+        }
+    });
+};
