@@ -1,9 +1,9 @@
 const analyticsService = require('../services/analytic.service');
 
 exports.logShare = async (req, res) => {
-    const { cardId, userId } = req.body;
+    const { cardId, userId, sharedAt } = req.body;
     try {
-        await analyticsService.logShare(cardId, userId);
+        await analyticsService.logShare(cardId, userId, sharedAt);
         res.json({ message: 'Share logged successfully' });
     } catch (error) {
         rBusyes.status(500).json({ error: 'Error logging share' });
@@ -21,9 +21,9 @@ exports.logView = async (req, res) => {
 };
 
 exports.logClick = async (req, res) => {
-    const { cardId, userId, link } = req.body;
+    const { cardId, userId, link, clickedAt } = req.body;
     try {
-        await analyticsService.logClick(cardId, userId, link);
+        await analyticsService.logClick(cardId, userId, link, clickedAt);
         res.json({ message: 'Click logged successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Error logging click' });
@@ -66,8 +66,19 @@ exports.getCardAnalytics = async (req, res) => {
 
 exports.getCardAnalyticsByDateFrame = async (req, res) => {
     const { cardId } = req.params;
-    const { startDate, endDate } = req.query;
-    console.log("cardId ", cardId,"& startDate :", startDate, " & endDate :", endDate )
+    let { startDate, endDate, days} = req.query;
+    console.log("cardId ", cardId,"& startDate :", startDate, " & endDate :", endDate, " & day", days )
+    if (!startDate || !endDate) {
+        if (!days) {
+            days = 7;
+        }
+       endDate = new Date();
+       startDate = new Date(endDate.getTime() - ((days-1) * 24 * 60 * 60 * 1000));    
+    }
+    else{
+        startDate = new Date(startDate);
+        endDate = new Date(endDate);
+    }
     try {
         const data = await analyticsService.getAllAnalyticsByDateFrame(cardId, startDate, endDate);
         res.json(data);
