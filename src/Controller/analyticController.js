@@ -73,6 +73,7 @@ exports.getCardAnalyticsByDateFrame = async (req, res) => {
             days = 7;
         }
        endDate = new Date();
+       endDate.setHours(0, 0, 0, 0);
        startDate = new Date(endDate.getTime() - ((days-1) * 24 * 60 * 60 * 1000));    
     }
     else{
