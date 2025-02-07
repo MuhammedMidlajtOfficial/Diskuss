@@ -199,7 +199,7 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
     console.log("startDateObj : ", startDate, "endDateObj : ", endDate)
     try {
         const dateSeries = getDateSeries(startDate, endDate);
-
+        
         // Aggregate shares
         const shares = await Analytic.Share.aggregate([
             {
@@ -282,6 +282,7 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
             { $sort: { _id: 1 } }
         ]);
 
+        console.log("shares : ", shares)
         // 3. Merge and Fill Gaps
         const sharesFilled = fillGaps(dateSeries, shares, 'totalShares');
         const viewsFilled = fillGapsForViews(dateSeries, views); //using different fillGaps function for views, as views have uniqueViewsCount field as well
@@ -640,6 +641,7 @@ function getDateSeries(startDate, endDate) {
         dateSeries.push(formatDate(new Date(currentDate))); // Clone again to avoid modifying the date in the array
         currentDate.setDate(currentDate.getDate() + 1);
     }
+    console.log("dateSeries : ", dateSeries)
     return dateSeries;
 };
 
