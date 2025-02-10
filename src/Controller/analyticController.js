@@ -169,7 +169,7 @@ exports.getCounts = async (req, res) => {
 exports.getMeetingsAnalytics = async (req, res) => {
     const { userId } = req.params;
     try {
-        console.log(userId)
+        // console.log(userId)
         const data = await analyticsService.getMeetingsAnalytics(userId);
         res.status(200).json(data);
     } catch (error) {
