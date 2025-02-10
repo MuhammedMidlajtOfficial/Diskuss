@@ -65,7 +65,7 @@ exports.getCardAnalytics = async (req, res) => {
 };
 
 exports.getCardAnalyticsByDateFrame = async (req, res) => {
-    const { cardId } = req.params;
+    const { cardId } = req.params;  
     let { startDate, endDate, days} = req.query;
     console.log("cardId ", cardId,"& startDate :", startDate, " & endDate :", endDate, " & day", days )
     if (!startDate || !endDate) {
@@ -166,6 +166,16 @@ exports.getCounts = async (req, res) => {
     }
   };
   
+exports.getMeetingsAnalytics = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        console.log(userId)
+        const data = await analyticsService.getMeetingsAnalytics(userId);
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching analytics data' });
+    }
+};
 
 
 // const analyticService = require("../services/analytic.service")

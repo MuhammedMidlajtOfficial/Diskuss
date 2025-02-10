@@ -1,5 +1,5 @@
 const Analytic = require("../models/analytics/analytic.model")
-
+const moment = require('moment');
 const Profile = require("../models/profile/profile")
 const enterprise = require("../models/users/enterpriseUser")
 const MeetingBase = require("../models/meeting/EnterpriseMeetingModel")
@@ -632,6 +632,43 @@ exports.getCounts = async (enterpriseId, period) => {
     }
   };
 
+exports.getMeetingsAnalytics = async (userId) => {
+    try {
+        // Count meetings
+        const meetingsCreatedCount = await MeetingBase.countDocuments({
+            meetingOwner: userId,
+        });
+
+        const meetingInvitedCount = await MeetingBase.countDocuments({
+            'invitedPeople.user': userId,
+        });
+
+        const todaySections = await countMeetingsTodayInSections(userId);
+
+        const thisMonthMeetings = await countMeetingsThisMonth(userId);
+
+        const thisYearMeetings = await countMeetingsThisYearInQuarters(userId);
+
+        const thisYearExpiredMeeting = await countMeetingsEveryMonthOfThisYear(userId);
+        
+
+        // console.log("meetingsCreatedCount : ", meetingsCreatedCount);
+        // console.log("meetingInvitedCount : ", meetingInvitedCount);
+
+        return ({
+            meetingsCreatedCount,
+            meetingInvitedCount,
+            todaySections,
+            thisMonthMeetings,
+            thisYearMeetings,
+            thisYearExpiredMeeting
+
+        });
+    } catch (err) {
+        return ({ error: err.message });
+    }
+    };
+
 
   // Helper function to generate a series of dates
 function getDateSeries(startDate, endDate) {
@@ -676,3 +713,172 @@ function fillGapsForViews(dateSeries, data) {
         }
     });
 };
+
+// Helper function to count meetings in sections of 4 hours each
+async function countMeetingsTodayInSections(userId) {
+    const now = moment();
+    const startOfDay = now.clone().startOf('day');
+    const sections = [];
+  
+    for (let i = 0; i < 6; i++) {
+      const sectionStart = startOfDay.clone().add(i * 4, 'hours');
+      const sectionEnd = sectionStart.clone().add(4, 'hours');
+  
+      const count = await MeetingBase.countDocuments({
+        $or: [
+            { 'meetingOwner': userId },
+            { 'invitedPeople.user': userId }
+            ],
+        selectedDate: {
+          $gte: sectionStart.toDate(),
+          $lt: sectionEnd.toDate()
+        }
+      });
+  
+      sections.push({
+        section: i + 1,
+        start: sectionStart.format('HH:mm'),
+        end: sectionEnd.format('HH:mm'),
+        count: count
+      });
+    }
+  
+    return sections;
+  }
+
+// Helper function to count meetings in weeks and remaining days of the month
+async function countMeetingsThisMonth(userId) {
+    const now = moment();
+    const startOfMonth = now.clone().startOf('month');
+    const endOfMonth = now.clone().endOf('month');
+    const weeks = [];
+  
+    for (let i = 0; i < 4; i++) {
+      const weekStart = startOfMonth.clone().add(i, 'weeks');
+      const weekEnd = weekStart.clone().add(1, 'week');
+  
+      const count = await MeetingBase.countDocuments({
+        $or: [
+            { 'meetingOwner': userId },
+            { 'invitedPeople.user': userId }
+            ],
+        selectedDate: {
+          $gte: weekStart.toDate(),
+          $lt: weekEnd.toDate()
+        }
+      });
+  
+      weeks.push({
+        week: i + 1,
+        start: weekStart.format('YYYY-MM-DD'),
+        end: weekEnd.format('YYYY-MM-DD'),
+        count: count
+      });
+    }
+  
+    // Remaining Days
+    const remainingStart = startOfMonth.clone().add(4, 'weeks');
+    const remainingCount = await MeetingBase.countDocuments({
+        $or: [
+            { 'meetingOwner': userId },
+            { 'invitedPeople.user': userId }
+            ],
+      selectedDate: {
+        $gte: remainingStart.toDate(),
+        $lte: endOfMonth.toDate()
+      }
+    });
+  
+    return {
+      weeks: weeks,
+      remainingDays: {
+        start: remainingStart.format('YYYY-MM-DD'),
+        end: endOfMonth.format('YYYY-MM-DD'),
+        count: remainingCount
+      }
+    };
+  }
+
+  // Helper function to count meetings in quarters of the year
+  async function countMeetingsThisYearInQuarters(userId) {
+    const now = moment();
+    const startOfYear = now.clone().startOf('year');
+    const quarters = [];
+  
+    for (let i = 0; i < 4; i++) {
+      const quarterStart = startOfYear.clone().add(i * 3, 'months');
+      const quarterEnd = quarterStart.clone().add(3, 'months');
+  
+      const count = await MeetingBase.countDocuments({
+        $or: [
+            { 'meetingOwner': userId },
+            { 'invitedPeople.user': userId }
+            ],
+        selectedDate: {
+          $gte: quarterStart.toDate(),
+          $lt: quarterEnd.toDate()
+        }
+      });
+  
+      quarters.push({
+        quarter: i + 1,
+        start: quarterStart.format('YYYY-MM-DD'),
+        end: quarterEnd.format('YYYY-MM-DD'),
+        count: count
+      });
+    }
+  
+    return quarters;
+  }
+  
+// Helper function to count meetings in every month of the year
+  async function countMeetingsEveryMonthOfThisYear(userId) {
+    const now = moment();
+    const startOfYear = now.clone().startOf('year');
+    const monthsData = [];
+    const currentMonth = now.month();
+
+    for (let i = 0; i < 12; i++) {
+        const monthStart = startOfYear.clone().add(i, 'months');
+        const monthEnd = monthStart.clone().add(1, 'month');
+        let count;
+
+        if (i === currentMonth) {
+            count = await MeetingBase.countDocuments({
+            $or: [
+                { 'meetingOwner': userId },
+                { 'invitedPeople.user': userId }
+                ],
+            selectedDate: {
+                $gte: monthStart.toDate(),
+                $lt: now.toDate()
+            }
+        });  
+        monthsData.push({
+            month: monthStart.format('MMMM'), // Month name
+            year: monthStart.format('YYYY'),
+            count: count
+        });
+        break;
+        } 
+        
+        count = await MeetingBase.countDocuments({
+            $or: [
+                { 'meetingOwner': userId },
+                { 'invitedPeople.user': userId }
+                ],
+            selectedDate: {
+                $gte: monthStart.toDate(),
+                $lt: monthEnd.toDate()
+            }
+        });
+
+        monthsData.push({
+            month: monthStart.format('MMMM'), // Month name
+            year: monthStart.format('YYYY'),
+            count: count
+        });
+    }
+
+    return monthsData;
+}
