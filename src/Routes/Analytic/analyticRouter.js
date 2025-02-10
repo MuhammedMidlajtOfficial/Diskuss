@@ -19,6 +19,8 @@ router.get('/card/:enterpriseId', controller.getCards)
 router.get('/employee/:enterpriseId', controller.getEmployees)
 router.get('/count/:enterpriseId', controller.getCounts);
 
+router.get('/meeting/:userId', controller.getMeetingsAnalytics)
+
 
 module.exports = router;
 
