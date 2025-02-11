@@ -9,7 +9,6 @@ const {
   uploadImageToS3,
   deleteImageFromS3,
 } = require("../../services/AWS/s3Bucket");
-const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
 const { Types } = require("mongoose");
 const { createCardByReferralCode } = require("../Referral/referral.service");
 
@@ -279,7 +278,7 @@ module.exports.updateCard = async (updateData) => {
 
   // If there are fields to update, update EnterpriseEmployeeModel
   if (Object.keys(enterpriseUpdateFields).length > 0 && cardCollection === EnterpriseEmployeeCard) {
-    const updateEnterpriseEmployee = await enterpriseEmployeModel.updateOne(
+    const updateEnterpriseEmployee = await enterpriseEmployee.updateOne(
       { _id: userId },
       { $set: enterpriseUpdateFields }
     );
