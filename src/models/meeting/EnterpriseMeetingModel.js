@@ -51,5 +51,12 @@ const meetingSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+
+// Setting Indexes
+meetingSchema.index({ meetingOwner: 1 });
+meetingSchema.index({ "invitedPeople.user": 1 });
+meetingSchema.index({ selectedDate: 1 });
+
 // Export the model
 module.exports = mongoose.model('EnterpriseMeeting', meetingSchema);
+
