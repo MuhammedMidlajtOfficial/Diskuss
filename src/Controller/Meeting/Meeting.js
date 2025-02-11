@@ -374,6 +374,7 @@ const getUpcomingMeetings = async (req, res) => {
 const getMeetingsByIds = async (req, res) => {
   try {
     const { userId } = req.params;
+    let { page = null, limit = null } = req.query;
 
     // Fetch user profile from Profile, Enterprise, or IndividualUserCollection
     let userInfo = await Profile.findById(userId).populate({
@@ -465,7 +466,7 @@ const getMeetingsByIds = async (req, res) => {
     }, {});
 
     // Enrich meetings with owner and invited user info
-    const enrichedMeetings = meetings.map((meeting) => {
+    let enrichedMeetings = meetings.map((meeting) => {
       const meetingOwnerInfo =
         profilesMap[meeting.meetingOwner?.toString()] || null;
 
@@ -484,6 +485,12 @@ const getMeetingsByIds = async (req, res) => {
         invitedInfo,
       };
     });
+
+      // Apply pagination if page and limit are provided
+      if (page !== null && limit !== null) {
+        const startIndex = (page - 1) * limit;
+        enrichedMeetings = enrichedMeetings.slice(startIndex, startIndex + limit);
+      }
 
     return res.status(200).json({ meetings: enrichedMeetings });
   } catch (error) {
