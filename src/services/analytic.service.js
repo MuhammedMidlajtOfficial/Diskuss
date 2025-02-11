@@ -636,7 +636,14 @@ exports.getMeetingsAnalytics = async (userId) => {
     try {
         // Count meetings
 
-        const response = await Promise.all([
+        const [meetingsCreatedCount,
+                meetingInvitedCount,
+                todaySections,
+                thisMonthMeetings,
+                thisYearMeetings,
+                thisYearExpiredMeeting,
+                upcomingMeetings
+            ] = await Promise.all([
             MeetingBase.countDocuments({ meetingOwner: userId }),
             MeetingBase.countDocuments({ 'invitedPeople.user': userId }),
             countMeetingsTodayInSections(userId),
@@ -669,15 +676,15 @@ exports.getMeetingsAnalytics = async (userId) => {
 
         // console.log("meetingsCreatedCount : ", meetingsCreatedCount);
         // console.log("meetingInvitedCount : ", meetingInvitedCount);
-        // const response = {
-        //     meetingsCreatedCount,
-        //     meetingInvitedCount,
-        //     todaySections,
-        //     thisMonthMeetings,
-        //     thisYearMeetings,
-        //     thisYearExpiredMeeting,
-        //     upcomingMeetings
-        // }
+        const response = {
+            meetingsCreatedCount,
+            meetingInvitedCount,
+            todaySections,
+            thisMonthMeetings,
+            thisYearMeetings,
+            thisYearExpiredMeeting,
+            upcomingMeetings
+        }
 
         return response;
     } catch (err) {
