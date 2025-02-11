@@ -282,6 +282,10 @@ module.exports.updateCard = async (updateData) => {
       { _id: userId },
       { $set: enterpriseUpdateFields }
     );
+    console.log('userId  - from card empl - ',userId);
+    
+    console.log('updateEnterpriseEmployee=',updateEnterpriseEmployee);
+    
 
     if (updateEnterpriseEmployee.modifiedCount === 0) {
       throw new Error("Failed to update Enterprise Employee details");
