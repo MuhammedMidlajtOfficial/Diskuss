@@ -279,7 +279,7 @@ module.exports.updateCard = async (updateData) => {
   // If there are fields to update, update EnterpriseEmployeeModel
   if (Object.keys(enterpriseUpdateFields).length > 0 && cardCollection === EnterpriseEmployeeCard) {
     const updateEnterpriseEmployee = await enterpriseEmployee.updateOne(
-      { _id: userId },
+      { _id: existingCard._id },
       { $set: enterpriseUpdateFields }
     );
     console.log('userId  - from card empl - ',userId);
