@@ -1,5 +1,5 @@
 const Analytic = require("../models/analytics/analytic.model")
-
+const moment = require('moment');
 const Profile = require("../models/profile/profile")
 const enterprise = require("../models/users/enterpriseUser")
 const MeetingBase = require("../models/meeting/EnterpriseMeetingModel")
@@ -11,33 +11,33 @@ const Contact = require("../models/contacts/contact.enterprise.model")
 const filterByDate = require("../util/filterByDate")
 const { individualUserCollection } = require("../DBConfig")
 
-exports.logShare = async (cardId, userId) => {
-    const share = new Analytic.Share({ cardId, userId, sharedAt: new Date() });
+exports.logShare = async (cardId, userId, sharedAt = new Date()) => {
+    const share = new Analytic.Share({ cardId, userId, sharedAt });
     await share.save();
 };
 
-exports.logView = async (cardId, visitorId) => {
-    const now = new Date();
-    let isUnique = false;
+exports.logView = async (cardId, visitorId, viewedAt = new Date()) => {
+    // const now = new Date();
+    // let isUnique = false;
 
-    const existingVisitor = await Analytic.Visitor.findOne({ cardId, visitorId });
-    if (!existingVisitor) {
-        isUnique = true;
-        const newVisitor = new Analytic.Visitor({ cardId, visitorId, firstVisit: now, lastVisit: now });
-        await newVisitor.save();
-    } else {
-        existingVisitor.lastVisit = now;
-        await existingVisitor.save();
-    }
+    // const existingVisitor = await Analytic.Visitor.findOne({ cardId, visitorId });
+    // if (!existingVisitor) {
+    //     isUnique = true;
+    //     const newVisitor = new Analytic.Visitor({ cardId, visitorId, firstVisit: now, lastVisit: now });
+    //     await newVisitor.save();
+    // } else {
+    //     existingVisitor.lastVisit = now;
+    //     await existingVisitor.save();
+    // }
 
-    const view = new Analytic.View({ cardId, viewedAt: now, isUnique });
+    const view = new Analytic.View({ cardId, visitorId,viewedAt });
     await view.save();
 
     await Analytic.Share.updateOne({ cardId, isViewed: false }, { isViewed: true });
 };
 
-exports.logClick = async (cardId, userId, link) => {
-    const click = new Analytic.Click({ cardId, userId, link, clickedAt: new Date() });
+exports.logClick = async (cardId, userId, link, clickedAt = new Date()) => {
+    const click = new Analytic.Click({ cardId, userId, link, clickedAt });
     await click.save();
 };
 
@@ -77,7 +77,7 @@ exports.getAnalytics = async (cardId, period) => {
 };
 
 exports.getCardAnalytics = async (cardId, period = "") => {
-    console.log( "cardId : ", cardId, "period : ", period)
+    // console.log( "cardId : ", cardId, "period : ", period)
     const now = new Date();
     let startDate;
     
@@ -96,7 +96,7 @@ exports.getCardAnalytics = async (cardId, period = "") => {
             startDate = new Date(0);
     }
 
-    console.log("startDate : ", startDate);    
+    // console.log("startDate : ", startDate);    
     const viewsCount = await Analytic.View.countDocuments({ cardId, viewedAt: { $gte: startDate } });
     const uniqueVisitorsCount = await Analytic.Visitor.countDocuments({ cardId, firstVisit: { $gte: startDate } });
     const totalShares = await Analytic.Share.countDocuments({ cardId, sharedAt: { $gte: startDate } });
@@ -116,7 +116,7 @@ exports.getCardAnalytics = async (cardId, period = "") => {
 
 
 exports.getAllAnalytics = async (userId, period) => {
-    console.log("userId ", userId,"Period :", period)
+    // console.log("userId ", userId,"Period :", period)
 
     const now = new Date();
     let startDate;
@@ -144,7 +144,7 @@ exports.getAllAnalytics = async (userId, period) => {
 
     const cardIds = await Card.find({userId : userId}).select("_id")
 
-    console.log("cardIds :", cardIds)
+    // console.log("cardIds :", cardIds)
     
     for(const card of cardIds){
         // console.log("Card : ", card)
@@ -195,11 +195,11 @@ exports.getAllAnalytics = async (userId, period) => {
 
 // Function to aggregate analytics data by day
 exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
-    startDate = new Date(startDate);
-    endDate = new Date(endDate);
 
-    console.log("startDateObj : ", startDate, "endDateObj : ", endDate)
+    // console.log("startDateObj : ", startDate, "endDateObj : ", endDate)
     try {
+        const dateSeries = getDateSeries(startDate, endDate);
+        
         // Aggregate shares
         const shares = await Analytic.Share.aggregate([
             {
@@ -229,7 +229,7 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$viewedAt" } },
                     totalViews: { $sum: 1 },
-                    uniqueUsers: { $addToSet: "$userId" }
+                    uniqueUsers: { $addToSet: "$visitorId" }
                 }
             },
             {
@@ -242,30 +242,28 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
             { $sort: { _id: 1 } }
         ]);
 
-        // Aggregate visitors
-        const visitors = await Analytic.Visitor.aggregate([
-            {
-                $match: {
-                    cardId,
-                    firstVisit: { $gte: startDate, $lte: endDate }
-                }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$firstVisit" } },
-                    totalVisitors: { $sum: 1 },
-                    uniqueVisitors: { $addToSet: "$visitorId" }
-                }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    totalVisitors: 1,
-                    uniqueVisitorsCount: { $size: "$uniqueVisitors" }
-                }
-            },
-            { $sort: { _id: 1 } }
-        ]);
+        // // Aggregate visitors
+        // const visitors = await Analytic.Visitor.aggregate([
+        //     {
+        //         $match: {
+        //             cardId,
+        //             firstVisit: { $gte: startDate, $lte: endDate }
+        //         }
+        //     },
+        //     {
+        //         $group: {
+        //             _id: { $dateToString: { format: "%Y-%m-%d", date: "$firstVisit" } },
+        //             totalVisitors: { $sum: 1 },
+        //         }
+        //     },
+        //     {
+        //         $project: {
+        //             _id: 1,
+        //             totalVisitors: 1,
+        //         }
+        //     },
+        //     { $sort: { _id: 1 } }
+        // ]);
 
         // Aggregate clicks
         const clicks = await Analytic.Click.aggregate([
@@ -284,13 +282,23 @@ exports.getAllAnalyticsByDateFrame =  async (cardId, startDate, endDate) => {
             { $sort: { _id: 1 } }
         ]);
 
+        // console.log("shares : ", shares)
+        // 3. Merge and Fill Gaps
+        const sharesFilled = fillGaps(dateSeries, shares, 'totalShares');
+        const viewsFilled = fillGapsForViews(dateSeries, views); //using different fillGaps function for views, as views have uniqueViewsCount field as well
+        const clicksFilled = fillGaps(dateSeries, clicks, 'totalClicks');
+
 
         // Combine results into a single object
         return {
-            shares,
-            views,
-            visitors,
-            clicks
+            // shares,
+            // views,
+            // // visitors,
+            // clicks,
+            shares: sharesFilled,
+            views: viewsFilled,
+            clicks: clicksFilled
+
         };
     } catch (error) {
         console.error("Error aggregating analytics data:", error);
@@ -372,7 +380,7 @@ exports.getEnterpriseMeetings = async (enterpriseId) => {
     };
 
     // Send back the enriched meetings as the response
-    console.log("Meetings:", responseMeetings);
+    // console.log("Meetings:", responseMeetings);
     
     return { meetings: responseMeetings };
 }
@@ -381,7 +389,7 @@ exports.getEnterpriseMeetings = async (enterpriseId) => {
 exports.getIndividualMeetings = async (individualId) => {
 
     const userInfo = await individualUserCollection.findOne({_id:individualId}).exec()
-    console.log("userInfo : ", userInfo)
+    // console.log("userInfo : ", userInfo)
 
 
     // If user profile not found, return an error
@@ -459,7 +467,7 @@ exports.getCardsByIds = async (enterpriseId) => {
         userInfo = await enterprise.findById(enterpriseId);
     }
     
-    console.log(userInfo)
+    // console.log(userInfo)
 
     // If user profile not found, return an error
     if (!userInfo) {
@@ -539,7 +547,7 @@ exports.getEmployeesByIds = async (enterpriseId) => {
     // const empIds = userInfo?.empCards?.map(card => card._id);
     const empIds = userInfo?.empId;
 
-    console.log("card id: ", empIds)
+    // console.log("card id: ", empIds)
 
     // Get current date for filtering
     const today = new Date();
@@ -558,20 +566,20 @@ exports.getEmployeesByIds = async (enterpriseId) => {
         createdAt: { $gte: today }
     });
 
-    console.log("employees today : ", employeesToday)
+    // console.log("employees today : ", employeesToday)
     
     const employeesThisMonth = await Employee.countDocuments({
         _id: { $in: empIds },
         createdAt: { $gte: startOfMonth, $lte: endOfMonth }
     });
-    console.log("employees month : ", employeesThisMonth)
+    // console.log("employees month : ", employeesThisMonth)
     
     const employeesThisYear = await Employee.countDocuments({
         _id: { $in: empIds },
         createdAt: { $gte: startOfYear, $lte: endOfYear }
     });
     
-    console.log("employees year : ", employeesThisYear)
+    // console.log("employees year : ", employeesThisYear)
 
     // Combine all counts into one response object
     const responseEmployees = {
@@ -581,7 +589,7 @@ exports.getEmployeesByIds = async (enterpriseId) => {
     };
 
     // Send back the enriched employees as the response
-    console.log("employees:", responseEmployees);
+    // console.log("employees:", responseEmployees);
     
     return { employees: responseEmployees };
 }
@@ -623,3 +631,269 @@ exports.getCounts = async (enterpriseId, period) => {
       return ({ error: err.message });
     }
   };
+
+exports.getMeetingsAnalytics = async (userId) => {
+    try {
+        // Count meetings
+        const meetingsCreatedCount = await MeetingBase.countDocuments({
+            meetingOwner: userId,
+        });
+
+        const meetingInvitedCount = await MeetingBase.countDocuments({
+            'invitedPeople.user': userId,
+        });
+
+        const todaySections = await countMeetingsTodayInSections(userId);
+
+        const thisMonthMeetings = await countMeetingsThisMonth(userId);
+
+        const thisYearMeetings = await countMeetingsThisYearInQuarters(userId);
+
+        const thisYearExpiredMeeting = await countMeetingsEveryMonthOfThisYear(userId);
+        
+
+        // console.log("meetingsCreatedCount : ", meetingsCreatedCount);
+        // console.log("meetingInvitedCount : ", meetingInvitedCount);
+
+        return ({
+            meetingsCreatedCount,
+            meetingInvitedCount,
+            todaySections,
+            thisMonthMeetings,
+            thisYearMeetings,
+            thisYearExpiredMeeting
+
+        });
+    } catch (err) {
+        return ({ error: err.message });
+    }
+    };
+
+
+  // Helper function to generate a series of dates
+function getDateSeries(startDate, endDate) {
+    const dateSeries = [];
+    let currentDate = new Date(startDate); //clone startDate to avoid modifying it
+    while (currentDate <= endDate) {
+        dateSeries.push(formatDate(new Date(currentDate))); // Clone again to avoid modifying the date in the array
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    // console.log("dateSeries : ", dateSeries)
+    return dateSeries;
+};
+
+// Helper function to format a date to YYYY-MM-DD
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+  // Helper function to merge the date series with the aggregated data and fill in any gaps
+function fillGaps(dateSeries, data, totalFieldName) {
+    const dataMap = new Map(data.map(item => [item._id, item]));
+    return dateSeries.map(date => {
+        if (dataMap.has(date)) {
+            return dataMap.get(date);
+        } else {
+            return { _id: date, [totalFieldName]: 0 };
+        }
+    });
+};
+
+// Helper function to merge the date series with the aggregated data and fill in any gaps for views (since views have uniqueViewsCount field as well)
+function fillGapsForViews(dateSeries, data) {
+    const dataMap = new Map(data.map(item => [item._id, item]));
+    return dateSeries.map(date => {
+        if (dataMap.has(date)) {
+            return dataMap.get(date);
+        } else {
+            return { _id: date, totalViews: 0, uniqueViewsCount: 0 };
+        }
+    });
+};
+
+// Helper function to count meetings in sections of 4 hours each
+async function countMeetingsTodayInSections(userId) {
+    const now = moment();
+    const startOfDay = now.clone().startOf('day');
+    const sections = [];
+    let totalMeetingToday = 0;
+  
+    for (let i = 0; i < 6; i++) {
+      const sectionStart = startOfDay.clone().add(i * 4, 'hours');
+      const sectionEnd = sectionStart.clone().add(4, 'hours');
+  
+      const count = await MeetingBase.countDocuments({
+        $or: [
+            { 'meetingOwner': userId },
+            { 'invitedPeople.user': userId }
+            ],
+        selectedDate: {
+          $gte: sectionStart.toDate(),
+          $lt: sectionEnd.toDate()
+        }
+      });
+
+        totalMeetingToday += count;
+  
+      sections.push({
+        section: i + 1,
+        start: sectionStart.format('HH:mm'),
+        end: sectionEnd.format('HH:mm'),
+        count: count
+      });
+    }
+  
+    return { totalMeetingToday, sections };
+  }
+
+// Helper function to count meetings in weeks and remaining days of the month
+async function countMeetingsThisMonth(userId) {
+    const now = moment();
+    const startOfMonth = now.clone().startOf('month');
+    const endOfMonth = now.clone().endOf('month');
+    const weeks = [];
+    let totalMeetingThisMonth = 0;
+  
+    for (let i = 0; i < 4; i++) {
+      const weekStart = startOfMonth.clone().add(i, 'weeks');
+      const weekEnd = weekStart.clone().add(1, 'week');
+  
+      const count = await MeetingBase.countDocuments({
+        $or: [
+            { 'meetingOwner': userId },
+            { 'invitedPeople.user': userId }
+            ],
+        selectedDate: {
+          $gte: weekStart.toDate(),
+          $lt: weekEnd.toDate()
+        }
+      });
+      totalMeetingThisMonth += count;
+  
+      weeks.push({
+        week: i + 1,
+        start: weekStart.format('YYYY-MM-DD'),
+        end: weekEnd.format('YYYY-MM-DD'),
+        count: count
+      });
+    }
+  
+    // Remaining Days
+    const remainingStart = startOfMonth.clone().add(4, 'weeks');
+    const remainingCount = await MeetingBase.countDocuments({
+        $or: [
+            { 'meetingOwner': userId },
+            { 'invitedPeople.user': userId }
+            ],
+      selectedDate: {
+        $gte: remainingStart.toDate(),
+        $lte: endOfMonth.toDate()
+      }
+    });
+
+    totalMeetingThisMonth += remainingCount;
+
+  
+    return {
+    totalMeetingThisMonth: totalMeetingThisMonth,
+      weeks: weeks,
+      remainingDays: {
+        start: remainingStart.format('YYYY-MM-DD'),
+        end: endOfMonth.format('YYYY-MM-DD'),
+        count: remainingCount
+      }
+    };
+  }
+
+  // Helper function to count meetings in quarters of the year
+  async function countMeetingsThisYearInQuarters(userId) {
+    const now = moment();
+    const startOfYear = now.clone().startOf('year');
+    const quarters = [];
+    let totalMeetingThisYear = 0;
+  
+    for (let i = 0; i < 4; i++) {
+      const quarterStart = startOfYear.clone().add(i * 3, 'months');
+      const quarterEnd = quarterStart.clone().add(3, 'months');
+  
+      const count = await MeetingBase.countDocuments({
+        $or: [
+            { 'meetingOwner': userId },
+            { 'invitedPeople.user': userId }
+            ],
+        selectedDate: {
+          $gte: quarterStart.toDate(),
+          $lt: quarterEnd.toDate()
+        }
+      });
+        totalMeetingThisYear += count
+  
+      quarters.push({
+        quarter: i + 1,
+        start: quarterStart.format('YYYY-MM-DD'),
+        end: quarterEnd.format('YYYY-MM-DD'),
+        count: count
+      });
+    }
+  
+    return { totalMeetingThisYear, quarters };
+  }
+  
+// Helper function to count meetings in every month of the year
+  async function countMeetingsEveryMonthOfThisYear(userId) {
+    const now = moment();
+    const startOfYear = now.clone().startOf('year');
+    const monthsData = [];
+    const currentMonth = now.month();
+    let totalMeetingThisYear = 0;
+
+    for (let i = 0; i < 12; i++) {
+        const monthStart = startOfYear.clone().add(i, 'months');
+        const monthEnd = monthStart.clone().add(1, 'month');
+        let count;
+
+        if (i === currentMonth) {
+            count = await MeetingBase.countDocuments({
+            $or: [
+                { 'meetingOwner': userId },
+                { 'invitedPeople.user': userId }
+                ],
+            selectedDate: {
+                $gte: monthStart.toDate(),
+                $lt: now.toDate()
+            }
+        });  
+        monthsData.push({
+            month: monthStart.format('MMMM'), // Month name
+            year: monthStart.format('YYYY'),
+            count: count
+        });
+        totalMeetingThisYear += count;
+        break;
+        } 
+        
+        count = await MeetingBase.countDocuments({
+            $or: [
+                { 'meetingOwner': userId },
+                { 'invitedPeople.user': userId }
+                ],
+            selectedDate: {
+                $gte: monthStart.toDate(),
+                $lt: monthEnd.toDate()
+            }
+        });
+
+        totalMeetingThisYear += count;
+
+        monthsData.push({
+            month: monthStart.format('MMMM'), // Month name
+            year: monthStart.format('YYYY'),
+            count: count
+        });
+    }
+
+    return { totalMeetingThisYear, monthsData };
+}
