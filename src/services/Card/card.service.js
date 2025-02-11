@@ -257,27 +257,31 @@ module.exports.updateCard = async (updateData) => {
     throw new Error("Card not found or no changes detected");
   }
 
-  // If the card belongs to an enterprise employee, update EnterpriseEmployeeModel
-  if (cardCollection === EnterpriseEmployeeCard) {
+  // Check if any of the Enterprise Employee fields exist in updateData
+  const enterpriseUpdateFields = {};
+  if (businessName) enterpriseUpdateFields.companyName = businessName;
+  if (email) enterpriseUpdateFields.email = email;
+  if (website) enterpriseUpdateFields.website = website;
+  if (mobile) enterpriseUpdateFields.phnNumber = mobile;
+  if (location) enterpriseUpdateFields.address = location;
+  if (designation) enterpriseUpdateFields.role = designation;
+  if (theme) enterpriseUpdateFields.theme = theme;
+
+  const socialMediaUpdate = {};
+  if (whatsappNo) socialMediaUpdate.whatsappNo = whatsappNo;
+  if (facebookLink) socialMediaUpdate.facebookLink = facebookLink;
+  if (instagramLink) socialMediaUpdate.instagramLink = instagramLink;
+  if (twitterLink) socialMediaUpdate.twitterLink = twitterLink;
+
+  if (Object.keys(socialMediaUpdate).length > 0) {
+    enterpriseUpdateFields.socialMedia = socialMediaUpdate;
+  }
+
+  // If there are fields to update, update EnterpriseEmployeeModel
+  if (Object.keys(enterpriseUpdateFields).length > 0 && cardCollection === EnterpriseEmployeeCard) {
     const updateEnterpriseEmployee = await enterpriseEmployeModel.updateOne(
       { _id: userId },
-      {
-        $set: {
-          companyName: businessName,
-          email,
-          website,
-          phnNumber: mobile,
-          address: location,
-          role: designation,
-          theme,
-          socialMedia: {
-            whatsappNo,
-            facebookLink,
-            instagramLink,
-            twitterLink,
-          },
-        },
-      }
+      { $set: enterpriseUpdateFields }
     );
 
     if (updateEnterpriseEmployee.modifiedCount === 0) {
