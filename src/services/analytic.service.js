@@ -1019,26 +1019,137 @@ async function countUpcomingMeetingNextFourWeek(userId) {
     }
 }
 
-async function countAllMeetings(userId) {
-    const [meetingsCreatedCount, meetingInvitedCount] = await Promise.all([
-        MeetingBase.countDocuments({ meetingOwner: userId }),
-        MeetingBase.countDocuments({ 'invitedPeople.user': userId })
+async function countAllMeetings(userId  ) {
+    const now = moment();
+    const startOfYear = now.clone().startOf('year');
+    const monthsData = [];
+    let [totalMeeting, totalMeetingThisYear] = await Promise.all([
+        MeetingBase.countDocuments({
+            $or: [
+                { 'meetingOwner': userId },
+                { 'invitedPeople.user': userId }
+            ]
+        }),
+        MeetingBase.countDocuments({
+            $or: [
+                { 'meetingOwner': userId },
+                { 'invitedPeople.user': userId }
+            ],
+            selectedDate: {
+                $gte: startOfYear.toDate()
+            }
+        })
     ]);
 
-    return { meetingsCreatedCount, meetingInvitedCount };
+    let count;
+
+    for (let i = 0; i < 12; i++) {
+        const monthStart = startOfYear.clone().add(i, 'months');
+        const monthEnd = monthStart.clone().add(1, 'month');
+
+        
+        count = await MeetingBase.countDocuments({
+            $or: [
+                { 'meetingOwner': userId },
+                { 'invitedPeople.user': userId }
+            ],
+            selectedDate: {
+                $lt: monthEnd.toDate()
+            }});
+
+        monthsData.push({
+            month: monthStart.format('MMMM'), // Month name
+            year: monthStart.format('YYYY'),
+            count: count
+        });
+    }
+
+    return { totalMeeting, totalMeetingThisYear, monthsData };
+    
 }
 
 async function countAllCards(userId) {
-    return await Card.countDocuments({ userId });
+    const now = moment();
+    const startOfYear = now.clone().startOf('year');
+    const monthsData = [];
+    let [totalCards, totalCardThisYear] = await Promise.all([
+        Card.countDocuments({ userId: userId }),
+        Card.countDocuments({
+            userId: userId,
+            createdAt: {
+                $gte: startOfYear.toDate()
+            }})
+    ]);
+
+    let count;
+
+    for (let i = 0; i < 12; i++) {
+        const monthStart = startOfYear.clone().add(i, 'months');
+        const monthEnd = monthStart.clone().add(1, 'month');
+
+        count = await Card.countDocuments({
+            'userId': userId,
+            createdAt : {
+                $lt: monthEnd.toDate()
+            }});
+
+        monthsData.push({
+            month: monthStart.format('MMMM'), // Month name
+            year: monthStart.format('YYYY'),
+            count: count
+        });
+    }
+
+    return { totalCards, totalCardThisYear, monthsData };
 }
 
 async function countAllContacts(userId) {
+    const now = moment();
+    const startOfYear = now.clone().startOf('year');
+    const monthsData = [];
+
+    const response = async (model, userId) => {
+    let [totalContacts, totalContactThisYear] = await Promise.all([
+        model.countDocuments({ contactOwnerId: userId }),
+        model.countDocuments({
+            contactOwnerId: userId,
+            createdAt: {
+                $gte: startOfYear.toDate()
+            }})
+    ]);
+
+    let count;
+    
+    for (let i = 0; i < 12; i++) {
+        const monthStart = startOfYear.clone().add(i, 'months');
+        const monthEnd = monthStart.clone().add(1, 'month');
+
+        count = await model.countDocuments({
+            contactOwnerId: userId,
+            createdAt : {
+                $lt: monthEnd.toDate()
+            }});
+
+        monthsData.push({
+            month: monthStart.format('MMMM'), // Month name
+            year: monthStart.format('YYYY'),
+            count: count
+        });
+    }
+
+    return { totalContacts, totalContactThisYear, monthsData };
+    }
+    
     const userType = await checkUserType(userId);
     if (userType === 'enterprise') {
-        return await Contact.countDocuments({ contactOwnerId: userId });
+        return await response(Contact, userId);
+        // return await Contact.countDocuments({ contactOwnerId: userId });
     } else {
-        return await individualContact.countDocuments({ contactOwnerId: userId });
+        return await response(individualContact, userId);
+        // return await individualContact.countDocuments({ contactOwnerId: userId });
     }
+
+
 };
 
 async function countAllEmployees(userId) {
