@@ -101,6 +101,7 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     coinsBalance : { type: Number, default: 0 },
     coinsRewarded: { type: Number, default: 0 },
     coinsWithdrawn: { type: Number, default: 0 },
+    coinsPending: { type: Number, default: 0 },
     invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
 } ,{ timestamps: true });
 

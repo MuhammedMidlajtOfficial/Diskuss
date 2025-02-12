@@ -102,9 +102,20 @@ const createWithdrawal = async (req, res) => {
         } else if (e.message === "User not found") {
             return res.status(404).json({ error: e.message });
         } else if (e.message === "Invalid withdrawal amount") {
-            return res.status(400).json({ error: e.message });
+            return res.status(400).json({ error: e.messaPge });
         }
             return res.status(500).json({ error: e.message });
+    }
+};
+
+
+const checkUserSubscription = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const referral = await referralService.checkUserSubscription(userId);
+        res.status(200).json(referral);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -117,7 +128,8 @@ module.exports = {
     checkReferralCode,
     getAllReferrals,
     getMonthlyReferralsCounts,
-    createWithdrawal
+    createWithdrawal,
+    checkUserSubscription
 }
 
 // // controllers/referralController.js
