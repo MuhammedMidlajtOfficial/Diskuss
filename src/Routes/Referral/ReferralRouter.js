@@ -22,6 +22,8 @@ router.put('/withdraw/:id', WithdrawalController.updateWithdrawalRequest);
 router.get('/admin', ReferralController.getAllReferrals);
 router.get('/admin/monthly', ReferralController.getMonthlyReferralsCounts);
 
+router.get('/check-subscription/:userId', ReferralController.checkUserSubscription);
+
 
 // Old Referral Routes
 // router.post('/', ReferralController.createReferral);

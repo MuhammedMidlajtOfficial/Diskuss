@@ -8,8 +8,12 @@ const Card = require('../models/cards/card')
 const Employee = require("../models/users/enterpriseEmploye.model")
 const Team = require("../models/team/team.model")
 const Contact = require("../models/contacts/contact.enterprise.model")
+const individualContact = require("../models/contacts/contact.individual.model")
 const filterByDate = require("../util/filterByDate")
-const { individualUserCollection } = require("../DBConfig")
+const { individualUserCollection } = require("../DBConfig");
+const { getMeetingsAnalytics } = require("../Controller/analyticController");
+const { checkUserType } = require("../util/HelperFunctions")
+
 
 exports.logShare = async (cardId, userId, sharedAt = new Date()) => {
     const share = new Analytic.Share({ cardId, userId, sharedAt });
@@ -692,6 +696,31 @@ exports.getMeetingsAnalytics = async (userId) => {
     }
     };
 
+exports.getOverview = async (userId) => {
+    try {
+        
+        const [cards, employees, contacts, meetings] = await Promise.all([
+            countAllCards(userId),
+            countAllEmployees(userId),
+            countAllContacts(userId),
+            countAllMeetings(userId)
+        ]);
+
+        const response = {
+            cards,
+            employees,
+            contacts,
+            meetings
+        }
+
+        return response;
+
+
+    } catch (err) {
+        return ({ error: err.message });
+    }
+
+};
 
   // Helper function to generate a series of dates
 function getDateSeries(startDate, endDate) {
@@ -987,5 +1016,38 @@ async function countUpcomingMeetingNextFourWeek(userId) {
     } catch (error) {
         console.error("Error in countUpcomingMeetingNextFourWeek: ", error);
         throw error; // Re-throw the error to be handled by the caller
+    }
+}
+
+async function countAllMeetings(userId) {
+    const [meetingsCreatedCount, meetingInvitedCount] = await Promise.all([
+        MeetingBase.countDocuments({ meetingOwner: userId }),
+        MeetingBase.countDocuments({ 'invitedPeople.user': userId })
+    ]);
+
+    return { meetingsCreatedCount, meetingInvitedCount };
+}
+
+async function countAllCards(userId) {
+    return await Card.countDocuments({ userId });
+}
+
+async function countAllContacts(userId) {
+    const userType = await checkUserType(userId);
+    if (userType === 'enterprise') {
+        return await Contact.countDocuments({ contactOwnerId: userId });
+    } else {
+        return await individualContact.countDocuments({ contactOwnerId: userId });
+    }
+};
+
+async function countAllEmployees(userId) {
+    const userType = await checkUserType(userId);
+    // console.log("User Type : ", userType.userType)
+    if (userType.userType === 'enterprise') {
+        const count = await enterprise.findById(userId).select('empCards').exec();
+        return count.empCards.length ;
+    } else {
+        return "NA";
     }
 }
