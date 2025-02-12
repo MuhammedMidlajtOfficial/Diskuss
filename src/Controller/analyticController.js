@@ -177,6 +177,16 @@ exports.getMeetingsAnalytics = async (req, res) => {
     }
 };
 
+exports.getOverview = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const data = await analyticsService.getOverview(userId);
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching analytics data' });
+    }
+}
+
 
 // const analyticService = require("../services/analytic.service")
 // const Analytic  = require('../models/analytics/analytic.model');

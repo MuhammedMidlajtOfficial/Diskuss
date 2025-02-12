@@ -9,6 +9,7 @@ const ReferralSchema = new mongoose.Schema({
     invitee: { type: String },  // Reference to the referred user (user_id)
     status: { type: String, enum: ['Invited', 'Registered', 'Card Created'], default: 'Invited' },
     rewardsEarned: { type: Number, default: 0 },
+    isSubscribed: { type: Boolean, default: false },
     registeredAt: { type: Date },
     cardCreatedAt: { type: Date }
 }, { timestamps: true });

@@ -8,6 +8,7 @@ const { ObjectId } = require('mongodb');
 const { checkUserType } = require('../../util/HelperFunctions');
 const Settings = require('../../models/settings/settingModel');
 const configModel = require('../../models/config/config.model');
+const UserSubscription = require('../../models/subscription/userSubscription.model');
 
 const configId = "67988e04e60b8e8d6f248e07"
 
@@ -40,18 +41,37 @@ const registerInvitee = async (referralId, inviteePhoneNo) => {
     referral.rewardsEarned += parseInt(settings.registrationReward); // Award 50 coins for registration
     await referral.save();
 
+    const isSubscribed = await checkUserSubscription(inviteePhoneNo);
+    if (isSubscribed) {
+        referral.isSubscribed = true;
+    }
+
     // Update invitee's coin balance
     const totalCoins = await Referral.aggregate([ 
         { $match: { referrer: referral.referrer } }, 
         { $group: { total: { $sum: '$rewardsEarned' } } } ]).lean().exec();
+
+    const rewardedCoins = await Referral.aggregate([ 
+    { $match: { referrer: referral.referrer, isSubscribed: true} }, 
+    { $group: { total: { $sum: '$rewardsEarned' } } } ]).lean().exec();
+    
+    const pendingCoins = parseInt(totalCoins[0].total || 0) - parseInt(rewardedCoins[0].total || 0);
+
     
     const userType = await checkUserType(referral.referrer).userType;
+    
+    let coinsRewarded = 0;
+    
+
     // Update referrerId's coin balance
     if (userType === 'individual') {
         await IndividualUser.findByIdAndUpdate(referral.referrer,  { coinsRewarded: totalCoins.total } );
-    } else {
+    } else if (userType === 'enterprise') {
         await EnterpriseUser.findByIdAndUpdate(referral.referrer,  { coinsRewarded: totalCoins.total } );
-    }    
+    } else if (userType === 'enterpriseEmployee') {
+        await EnterpriseEmployeeUser.findByIdAndUpdate(referral.referrer,  { coinsRewarded: totalCoins.total } );
+    }
+
     return referral;
 };
 
@@ -106,11 +126,23 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     // console.log("registration reward : ", settings.RegistrationReward); 
     await newReferral.save();
 
+    const isSubscribed = await checkUserSubscription(newReferral.referrer);
+    if (isSubscribed) {
+        newReferral.isSubscribed = true;
+        newReferral.save();
+    }
+
+
     // Update invitee's coin balance
     const totalCoins = await Referral.aggregate([
         { $match: { referrer: newReferral.referrer } },
         { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
     
+    const rewardedCoins = await Referral.aggregate([
+        { $match: { referrer: newReferral.referrer, isSubscribed: true } },
+        { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
+    
+    const coinsPending = parseInt(totalCoins[0].total || 0) - parseInt(rewardedCoins[0].total || 0);
     const withDrawn = await WithdrawalRequest.aggregate([
         {
             $match: {
@@ -143,11 +175,11 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     const userType = (await checkUserType(newReferral.referrer)).userType;
     // Update referrerId's coin balance
     if (userType === 'individual') {
-        await IndividualUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsBalance } );
+        await IndividualUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: rewardedCoins[0].total, coinsPending, coinsBalance } );
     } else if (userType === 'enterprise') {
-        await EnterpriseUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsBalance } );
+        await EnterpriseUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: rewardedCoins[0].total, coinsPending, coinsBalance } );
     } else if (userType === 'enterpriseEmployee') {
-        await EnterpriseEmployeeUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsBalance } );
+        await EnterpriseEmployeeUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: rewardedCoins[0].total, coinsBalance } );
     }
     return newReferral;
 };
@@ -190,6 +222,12 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
     newReferral.rewardsEarned += parseInt(settings.CardCreationReward); // Award 50 coins for registration
     // console.log("new referral : ", newReferral);
     await newReferral.save();
+
+    const isSubscribed = await checkUserSubscription(newReferral.referrer);
+    if (isSubscribed) {
+        newReferral.isSubscribed = true;
+        newReferral.save();
+    }
 
     // Update invitee's coin balance
     const totalCoins = await Referral.aggregate([
@@ -525,6 +563,46 @@ const updateWithdrawalRequest = async (id, status, transactionId) => {
     return withdrawalRequest;
 };
 
+// Helper Functions
+// Function to get the rewards earned by a user
+function getRewardsEarned(userId) {
+    // Implement logic to calculate rewards earned by the user
+    const rewards = Referral.find({ referrer: userId }).select('rewardsEarned').exec();
+    return rewards;
+}
+
+
+// check user has subscribed to a plan or not
+const checkUserSubscription = async (userId) => {
+    const userSubscription = await UserSubscription.findOne({ 
+        userId: userId,
+        $or: [
+            { status : "active" },
+            { status : "inactive" }]
+        }).exec();
+    console.log("userSubscription : ", userSubscription);
+    if (!userSubscription) {
+        return false;
+    }
+    return true;
+};
+// check user has subscribed to a plan or not
+const checkUserSubscriptionByPhoneNo = async (inviteePhoneNo) => {
+    const userSubscription = await UserSubscription.findOne({ 
+        inviteePhoneNo: inviteePhoneNo,
+        $or: [
+            { status : "active" },
+            { status : "inactive" }]
+        }).exec();
+    console.log("userSubscription : ", userSubscription);
+    if (!userSubscription) {
+        return false;
+    }
+    return true;
+};
+
+
+
 
 module.exports = {
     sendInvite,
@@ -537,7 +615,10 @@ module.exports = {
     findMonthlyReferralsCounts,
     validateWithdrawal,
     updateWithdrawalRequest,
-    createCardByReferralCode
+    createCardByReferralCode,
+
+    checkUserSubscription,
+    checkUserSubscriptionByPhoneNo
 }
 
 // const {Referral} = require('../../models/referral/referral.model');
