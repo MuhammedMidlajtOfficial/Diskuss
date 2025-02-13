@@ -129,58 +129,71 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     const isSubscribed = await checkUserSubscription(newReferral.referrer);
     if (isSubscribed) {
         newReferral.isSubscribed = true;
-        newReferral.save();
+        // await newReferral.save();
     }
-
 
     // Update invitee's coin balance
-    const totalCoins = await Referral.aggregate([
-        { $match: { referrer: newReferral.referrer } },
-        { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
+    await updateCoinsBalance(newReferral.referrer);
+
+
+
+    // // Update invitee's coin balance
+    // let totalCoins = await Referral.aggregate([
+    //     { $match: { referrer: newReferral.referrer } },
+    //     { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
     
-    const rewardedCoins = await Referral.aggregate([
-        { $match: { referrer: newReferral.referrer, isSubscribed: true } },
-        { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
+    // let rewardedCoins = await Referral.aggregate([
+    //     { $match: { referrer: newReferral.referrer, isSubscribed: true } },
+    //     { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
     
-    const coinsPending = parseInt(totalCoins[0].total || 0) - parseInt(rewardedCoins[0].total || 0);
-    const withDrawn = await WithdrawalRequest.aggregate([
-        {
-            $match: {
-                userId: newReferral.referrer,
-                status: "approved",
-            },
-        },
-        {
-            $group: {
-                _id: null,
-                coinsRedeemed: { $sum: '$amount' },
-            },
-        },
-        {
-            $project: {
-                _id: 0,
-                total: '$coinsRedeemed',
-            },
-        },
-    ]).exec();
+    //     // console.log("total coin : ", totalCoins[0].total);
+    //     // console.log("totalCoins : ", totalCoins);
+    //     // console.log("rewardedCoins : ", rewardedCoins);
+    //     totalCoins = totalCoins[0].total;
+    //     rewardedCoins = !rewardedCoins ? rewardedCoins[0].total : 0;
+    //     // console.log("totalCoins : ", totalCoins);
+    //     // console.log("rewardedCoins : ", rewardedCoins);
 
-    // console.log("withDrawn : ", withDrawn);
+    // const coinsPending = parseInt(totalCoins) - parseInt(rewardedCoins);
+    // const withDrawn = await WithdrawalRequest.aggregate([
+    //     {
+    //         $match: {
+    //             userId: newReferral.referrer,
+    //             status: "approved",
+    //         },
+    //     },
+    //     {
+    //         $group: {
+    //             _id: null,
+    //             coinsRedeemed: { $sum: '$amount' },
+    //         },
+    //     },
+    //     {
+    //         $project: {
+    //             _id: 0,
+    //             total: '$coinsRedeemed',
+    //         },
+    //     },
+    // ]).exec();
 
-    if (withDrawn.length === 0) {
-        withDrawn.push({ total: 0 });
-    }
-    const coinsBalance = parseInt(totalCoins[0].total || 0) - parseInt(withDrawn[0].total);
+    // // console.log("withDrawn : ", withDrawn);
 
+    // if (withDrawn.length === 0) {
+    //     withDrawn.push({ total: 0 });
+    // }
+    // const coinsBalance = parseInt(rewardedCoins) - parseInt(withDrawn[0].total);
 
-    const userType = (await checkUserType(newReferral.referrer)).userType;
-    // Update referrerId's coin balance
-    if (userType === 'individual') {
-        await IndividualUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: rewardedCoins[0].total, coinsPending, coinsBalance } );
-    } else if (userType === 'enterprise') {
-        await EnterpriseUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: rewardedCoins[0].total, coinsPending, coinsBalance } );
-    } else if (userType === 'enterpriseEmployee') {
-        await EnterpriseEmployeeUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: rewardedCoins[0].total, coinsBalance } );
-    }
+    // console.log("coinsBalance : ", coinsBalance, " coinsPending : ", coinsPending, " coinsRewarded : ", rewardedCoins);
+
+    // const userType = (await checkUserType(newReferral.referrer)).userType;
+    // // Update referrerId's coin balance
+    // if (userType === 'individual') {
+    //     await IndividualUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: rewardedCoins, coinsPending, coinsBalance } );
+    // } else if (userType === 'enterprise') {
+    //     await EnterpriseUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: rewardedCoins, coinsPending, coinsBalance } );
+    // } else if (userType === 'enterpriseEmployee') {
+    //     await EnterpriseEmployeeUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: rewardedCoins, coinsPending, coinsBalance } );
+    // }
     return newReferral;
 };
 
@@ -229,49 +242,58 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
         newReferral.save();
     }
 
-    // Update invitee's coin balance
-    const totalCoins = await Referral.aggregate([
-        { $match: { referrer: newReferral.referrer } },
-        { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
+    await updateCoinsBalance(newReferral.referrer);
+
+    // // Update invitee's coin balance
+    // let totalCoins = await Referral.aggregate([
+    //     { $match: { referrer: newReferral.referrer } },
+    //     { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
+    // let rewardedCoins = await Referral.aggregate([
+    //     { $match: { referrer: newReferral.referrer, isSubscribed: true } },
+    //     { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
+        
+    //     totalCoins = totalCoins[0].total;
+    //     rewardedCoins = !rewardedCoins ? rewardedCoins[0].total : 0;
+    //     const coinsPending = parseInt(totalCoins) - parseInt(rewardedCoins);
+        
+    //     const withDrawn = await WithdrawalRequest.aggregate([
+    //         {
+    //             $match: {
+    //                 userId: newReferral.referrer,
+    //                 status: "approved",
+    //             },
+    //         },
+    //         {
+    //             $group: {
+    //                 _id: null,
+    //                 coinsRedeemed: { $sum: '$amount' },
+    //             },
+    //         },
+    //         {
+    //             $project: {
+    //                 _id: 0,
+    //                 total: '$coinsRedeemed',
+    //             },
+    //         },
+    //     ]).exec();
     
-        const withDrawn = await WithdrawalRequest.aggregate([
-            {
-                $match: {
-                    userId: newReferral.referrer,
-                    status: "approved",
-                },
-            },
-            {
-                $group: {
-                    _id: null,
-                    coinsRedeemed: { $sum: '$amount' },
-                },
-            },
-            {
-                $project: {
-                    _id: 0,
-                    total: '$coinsRedeemed',
-                },
-            },
-        ]).exec();
+    //     // console.log("withDrawn : ", withDrawn);
     
-        // console.log("withDrawn : ", withDrawn);
-    
-        if (withDrawn.length === 0) {
-            withDrawn.push({ total: 0 });
-        }
-        const coinsBalance = parseInt(totalCoins[0].total || 0) - parseInt(withDrawn[0].total);
+    //     if (withDrawn.length === 0) {
+    //         withDrawn.push({ total: 0 });
+    //     }
+    //     const coinsBalance = parseInt(rewardedCoins) - parseInt(withDrawn[0].total);
     
 
-    const userType = (await checkUserType(newReferral.referrer)).userType;
-    // Update referrerId's coin balance
-    if (userType === 'individual') {
-        await IndividualUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsBalance } );
-    } else if (userType === 'enterprise') {
-        await EnterpriseUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsBalance } );
-    } else if (userType === 'enterpriseEmployee') {
-        await EnterpriseEmployeeUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsBalance } );
-    }
+    // const userType = (await checkUserType(newReferral.referrer)).userType;
+    // // Update referrerId's coin balance
+    // if (userType === 'individual') {
+    //     await IndividualUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsPending, coinsBalance } );
+    // } else if (userType === 'enterprise') {
+    //     await EnterpriseUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsPending, coinsBalance } );
+    // } else if (userType === 'enterpriseEmployee') {
+    //     await EnterpriseEmployeeUser.findByIdAndUpdate(newReferral.referrer,  { coinsRewarded: totalCoins[0].total, coinsPending, coinsBalance } );
+    // }
     return newReferral;
 };
 
@@ -337,12 +359,23 @@ const getReferralDetails = async (userId) => {
     } else if(userType === 'enterpriseEmployee') {
         userData = await EnterpriseEmployeeUser.findById(userId).select('referralCode coinsWithdrawn coinsRewarded coinsBalance').lean().exec();
     }
-
     const referralCode = userData ? userData.referralCode : ''; // Default to empty string if no user found
-    const totalCoins = userData ? userData.coinsRewarded : 0; // Default to 0 if no user found
-    const coinsWithdrawn = userData ? userData.coinsWithdrawn : 0; // Default to 0 if no user found
-    const remainingCoins = totalCoins - coinsWithdrawn; // Default to 0 if no user found
+
+    const [totalCoins, coinsWithdrawn, remainingCoins, coinsRewarded] = await Promise.all([
+        countTotalCoins(userId),
+        countTotalCoinsWithdrawn(userId),
+        countTotalCoinsBalance(userId),
+        countTotalCoinsRewarded(userId)
+    ]);
+
+    const pendingCoins = parseInt(totalCoins) - parseInt(coinsRewarded);
+
+    // const updated  = await updateCoinsBalance(userId);
+    // console.log("updated : ", updated);
+    // const totalCoins = userData ? userData.coinsRewarded : 0; // Default to 0 if no user found
     // const coinsWithdrawn = userData ? userData.coinsWithdrawn : 0; // Default to 0 if no user found
+    // const remainingCoins = totalCoins - coinsWithdrawn; // Default to 0 if no user found
+    // // const coinsWithdrawn = userData ? userData.coinsWithdrawn : 0; // Default to 0 if no user found
     // const totalCoins = totalCoinsData[0].total; // Default to 0 if no user found
     // const remainingCoins = totalCoins - coinsWithdrawn; // Default to 0 if no user found
     // console.log("referralCode : ", referralCode);
@@ -350,13 +383,14 @@ const getReferralDetails = async (userId) => {
     // console.log("totalCoinsData : ", totalCoins);
     // console.log("remainingCoins : ", remainingCoins);
     // console.log("total coins : ", totalCoins);
-    const coinsRewarded = userData ? userData.coinsRewarded : 0; // Default to 0 if no user found
+    // const coinsRewarded = userData ? userData.coinsRewarded : 0; // Default to 0 if no user found
     let nextReward = settings.LevelOneReward;
     if (coinsRewarded > settings.LevelOneReward && coinsRewarded < settings.LevelTwoReward) {
         nextReward = settings.LevelTwoReward;
     } else if (coinsRewarded > settings.LevelTwoReward && coinsRewarded < settings.LevelThreeReward) {
         nextReward = settings.LevelThreeReward;
     }
+
 
     const userReferralRequired = parseInt((settings.LevelOneReward)/(parseInt(settings.RegistrationReward) + parseInt(settings.CardCreationReward)));
     // console.log("userReferralRequired : ", userReferralRequired);
@@ -374,7 +408,8 @@ const getReferralDetails = async (userId) => {
         minimumWithdrawalAmount: settings.MinimumWithdrawalAmount,
         registrationReward: settings.RegistrationReward,
         cardCreationReward: settings.CardCreationReward,
-        coinsRewarded : totalCoins,
+        coinsRewarded : coinsRewarded,
+        coinsPending : pendingCoins,
         coinsBalance : remainingCoins,
         coinsWithdrawn : coinsWithdrawn,
         invitedUsers: referrals
@@ -569,7 +604,7 @@ function getRewardsEarned(userId) {
     // Implement logic to calculate rewards earned by the user
     const rewards = Referral.find({ referrer: userId }).select('rewardsEarned').exec();
     return rewards;
-}
+}   
 
 
 // check user has subscribed to a plan or not
@@ -601,8 +636,104 @@ const checkUserSubscriptionByPhoneNo = async (inviteePhoneNo) => {
     return true;
 };
 
+// Total coins pending and unlocked and withrdrawn
+const countTotalCoins = async (userId) => {
+    let totalCoins = await Referral.aggregate([
+        { $match: { referrer: userId } },
+        { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
 
+    if (totalCoins.length === 0) {
+       return 0;
+    }
+    return totalCoins[0].total;
+}
 
+// Total unlocked and withdrawn coins
+const countTotalCoinsRewarded = async (userId) => {
+    let rewardedCoins = await Referral.aggregate([
+        { $match: { referrer: userId, isSubscribed: true } },
+        { $group: { _id: null, total: { $sum: '$rewardsEarned' } } } ]).exec();
+
+    if (rewardedCoins.length === 0) {
+        return 0;
+    }
+    return rewardedCoins[0].total;
+}
+
+// total coins pending
+const countTotalCoinsPending = async (userId) => {
+    const [totalCoins, rewardedCoins] = await Promise.all([
+        countTotalCoins(userId),
+        countTotalCoinsRewarded(userId)
+    ]);
+    const coinsPending = parseInt(totalCoins) - parseInt(rewardedCoins);
+    return coinsPending;
+}
+
+// total coins withdrawn
+const countTotalCoinsWithdrawn = async (userId) => {
+    const withDrawn = await WithdrawalRequest.aggregate(
+        [
+            {
+                $match: { userId: userId, status: "approved" },
+            },
+            {
+                $group: { _id: null, coinsRedeemed: { $sum: '$amount' } },
+            },
+            {
+                $project: { _id: 0, total: '$coinsRedeemed'},
+            },
+        ]
+    ).exec();
+    if (withDrawn.length === 0) {
+        return 0;
+    }
+    return withDrawn[0].total;
+};
+
+const countTotalCoinsBalance = async (userId) => {
+    const [totalCoinsRewarded, coinsWithdrawn] = await Promise.all([
+        countTotalCoinsRewarded(userId),
+        countTotalCoinsWithdrawn(userId)
+    ]);
+    const coinsBalance = parseInt(totalCoinsRewarded) - parseInt(coinsWithdrawn);
+    return coinsBalance;
+}
+
+const updateCoinsBalance = async (userId) => {
+    try {
+    const [coinsPending, coinsBalance, coinsWithdrawn, coinsRewarded, userType] = await Promise.all([
+        countTotalCoinsPending(userId),
+        countTotalCoinsBalance(userId),
+        countTotalCoinsWithdrawn(userId),
+        countTotalCoinsRewarded(userId),
+        checkUserType(userId)
+    ]);
+
+    console.log(coinsPending, coinsBalance, coinsWithdrawn, coinsRewarded, userType.userType)
+    // const coinsPending = await countTotalCoinsPending(userId);
+    // const coinsBalance = await countTotalCoinsBalance(userId);
+    // const coinsWithdrawn = await countTotalCoinsWithdrawn(userId);
+    // const coinsRewarded = await countTotalCoinsRewarded(userId);
+    // const userType = (await checkUserType(userId)).userType;
+    // Update referrerId's coin balance
+    if (userType.userType === 'individual') {
+        console.log("1");
+        await IndividualUser.findByIdAndUpdate(userId,  { coinsPending, coinsRewarded, coinsWithdrawn, coinsBalance } );
+    } else if (userType.userType === 'enterprise') {
+        console.log("2");
+        await EnterpriseUser.findByIdAndUpdate(userId,  { coinsPending, coinsRewarded, coinsWithdrawn, coinsBalance } );
+    } else if (userType.userType === 'enterpriseEmployee') {
+        console.log("3");
+        await EnterpriseEmployeeUser.findByIdAndUpdate(userId,  { coinsPending, coinsRewarded, coinsWithdrawn, coinsBalance } );
+    }
+    // console.log("Updated coins balance");
+    return  ;
+} catch (error) {
+    console.error("Error updating coins balance:", error);
+    throw error;
+}
+};
 
 module.exports = {
     sendInvite,
