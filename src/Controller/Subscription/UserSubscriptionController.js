@@ -152,8 +152,8 @@ const verifyPayment = async (req, res) => {
   if (isProcessing) {
     return res.status(429).json({ message: "Payment verification already in process. Please wait." });
   }
-  console.log('payment verification started');
-  console.log('verifyPayment - body - ',req.body);
+  console.log('Payment verification started');
+  console.log('verifyPayment - body - ', req.body);
 
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
   try {
@@ -161,7 +161,7 @@ const verifyPayment = async (req, res) => {
 
     // Generate the signature to verify the payment authenticity
     const generatedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_API_SECRET) // Use your Razorpay key secret
+      .createHmac("sha256", process.env.RAZORPAY_API_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
@@ -180,11 +180,11 @@ const verifyPayment = async (req, res) => {
     // UPDATE USER STATUS
     await UserSubscriptionService.updateSubscriptionStatusInUsers(razorpay_order_id);
     // SEND NOTIFICATION
-    await UserSubscriptionService.sendNotification({ success:true, razorpay_order_id });
+    await UserSubscriptionService.sendNotification({ success: true, razorpay_order_id });
 
     return res.status(200).json({ message: "Payment verified and subscription activated successfully." });
   } catch (error) {
-    await UserSubscriptionService.sendNotification({ success:false, razorpay_order_id });
+    await UserSubscriptionService.sendNotification({ success: false, razorpay_order_id });
     console.error("Payment verification failed:", error);
     res.status(500).json({ error: error.message });
   } finally {
