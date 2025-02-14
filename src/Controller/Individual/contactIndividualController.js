@@ -243,130 +243,129 @@ const createContact = async (req, res) => {
  */
 const updateContact = async (req, res) => {
   try {
-      const { contact_id } = req.params;
-      const {
-          name,
-          companyName,
-          designation,
-          phnNumber,
-          email,
-          website,
-          location,
-          businessCategory,
-          scheduled,
-          scheduledTime,
-          cardFrontImage,
-          cardBackImage,
-          notes,
-          contactOwnerId,
-          contactOwnerName
-      } = req.body;
+    const { contact_id } = req.params;
+    const {
+      name,
+      companyName,
+      designation,
+      phnNumber,
+      email,
+      website,
+      location,
+      businessCategory,
+      scheduled,
+      scheduledTime,
+      cardFrontImage = null,
+      cardBackImage = null,
+      notes,
+      contactOwnerId,
+      contactOwnerName
+    } = req.body;
 
-      // Validate required fields
-      if (!contactOwnerId || !name || !phnNumber) {
-          return res.status(400).json({ message: "All fields are required" });
+    // Validate required fields
+    if (!contactOwnerId || !name || !phnNumber) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if the contact exists
+    const contact = await Contact.findOne({ _id: contact_id });
+    if (!contact) {
+      return res.status(404).json({ message: "Contact not found using this contact id" });
+    }
+
+    // Check if the phone number exists in any user
+    const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
+    const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
+    const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
+
+    let userId = null;
+    let isDiskussUser = false;
+
+    if (existIndividualUser) {
+      userId = existIndividualUser._id;
+      isDiskussUser = true;
+    } else if (existEnterpriseUser) {
+      userId = existEnterpriseUser._id;
+      isDiskussUser = true;
+    } else if (existEnterpriseEmploye) {
+      userId = existEnterpriseEmploye._id;
+      isDiskussUser = true;
+    }
+
+    let cardFrontImageS3;
+    let cardBackImageS3;
+
+    // Upload front image to S3 if provided
+    if (cardFrontImage) {
+      if (contact.cardImage?.front) {
+        await deleteImageFromS3ForContact(contact.cardImage.front);
       }
 
-      // Check if the contact exists
-      const contact = await Contact.findOne({ _id: contact_id });
-      if (!contact) {
-          return res.status(404).json({ message: "Contact not found using this contact id" });
+      const frontImageBuffer = Buffer.from(
+        cardFrontImage.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      );
+      const frontFileName = `${contactOwnerId}-${Date.now()}-cardFront.jpg`;
+
+      try {
+        const frontUploadResult = await uploadImageToS3ForContact(frontImageBuffer, frontFileName);
+        cardFrontImageS3 = frontUploadResult.Location;
+      } catch (uploadError) {
+        throw new Error(`Failed to upload front card image: ${uploadError.message}`);
+      }
+    }
+
+    // Upload back image to S3 if provided
+    if (cardBackImage) {
+      if (contact.cardImage?.back) {
+        await deleteImageFromS3ForContact(contact.cardImage.back);
       }
 
-      // Check if the phone number exists in any user
-      const existIndividualUser = await individualUserCollection.findOne({ phnNumber });
-      const existEnterpriseUser = await enterpriseUser.findOne({ phnNumber });
-      const existEnterpriseEmploye = await enterpriseEmployeModel.findOne({ phnNumber });
+      const backImageBuffer = Buffer.from(
+        cardBackImage.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      );
+      const backFileName = `${contactOwnerId}-${Date.now()}-cardBack.jpg`;
 
-      let userId = null;
-      let isDiskussUser = false;
-
-      if (existIndividualUser) {
-          userId = existIndividualUser._id;
-          isDiskussUser = true;
-      } else if (existEnterpriseUser) {
-          userId = existEnterpriseUser._id;
-          isDiskussUser = true;
-      } else if (existEnterpriseEmploye) {
-          userId = existEnterpriseEmploye._id;
-          isDiskussUser = true;
+      try {
+        const backUploadResult = await uploadImageToS3ForContact(backImageBuffer, backFileName);
+        cardBackImageS3 = backUploadResult.Location;
+      } catch (uploadError) {
+        throw new Error(`Failed to upload back card image: ${uploadError.message}`);
       }
+    }
 
-      let cardImage = {
-          front: contact?.cardImage?.front || "",
-          back: contact?.cardImage?.back || "",
-      };
-
-      // Upload front image to S3 if provided
-      if (cardFrontImage) {
-          if (contact.cardImage?.front) {
-              await deleteImageFromS3ForContact(contact.cardImage.front);
-          }
-
-          const frontImageBuffer = Buffer.from(
-              cardFrontImage.replace(/^data:image\/\w+;base64,/, ""),
-              "base64"
-          );
-          const frontFileName = `${contactOwnerId}-${Date.now()}-cardFront.jpg`;
-
-          try {
-              const frontUploadResult = await uploadImageToS3ForContact(frontImageBuffer, frontFileName);
-              cardImage.front = frontUploadResult.Location;
-          } catch (uploadError) {
-              throw new Error(`Failed to upload front card image: ${uploadError.message}`);
-          }
-      }
-
-      // Upload back image to S3 if provided
-      if (cardBackImage) {
-          if (contact.cardImage?.back) {
-              await deleteImageFromS3ForContact(contact.cardImage.back);
-          }
-
-          const backImageBuffer = Buffer.from(
-              cardBackImage.replace(/^data:image\/\w+;base64,/, ""),
-              "base64"
-          );
-          const backFileName = `${contactOwnerId}-${Date.now()}-cardBack.jpg`;
-
-          try {
-              const backUploadResult = await uploadImageToS3ForContact(backImageBuffer, backFileName);
-              cardImage.back = backUploadResult.Location;
-          } catch (uploadError) {
-              throw new Error(`Failed to upload back card image: ${uploadError.message}`);
-          }
-      }
-
-      // Update contact details
-      const updatedContact = await Contact.updateOne(
-        {
-            _id: contact_id,
-            "contacts._id": contact.contacts[0]._id
-        },
-        {
-            $set: {
-                contactOwnerName: contactOwnerName,
-                "contacts.$.name": name,
-                "contacts.$.companyName": companyName,
-                "contacts.$.designation": designation,
-                "contacts.$.phnNumber": phnNumber,
-                "contacts.$.email": email,
-                "contacts.$.website": website,
-                "contacts.$.location": location,
-                "contacts.$.businessCategory": businessCategory,
-                "contacts.$.scheduled": scheduled,
-                "contacts.$.scheduledTime": scheduledTime,
-                "contacts.$.notes": notes,
-                "contacts.$.cardImage": cardImage,
-                "contacts.$.userId": userId,
-                "contacts.$.isDiskussUser": isDiskussUser
-            }
+    // Update contact details
+    const updatedContact = await Contact.updateOne(
+      {
+        _id: contact_id,
+        "contacts._id": contact.contacts[0]._id
+      },
+      {
+        $set: {
+          contactOwnerName: contactOwnerName,
+          "contacts.$.name": name,
+          "contacts.$.companyName": companyName,
+          "contacts.$.designation": designation,
+          "contacts.$.phnNumber": phnNumber,
+          "contacts.$.email": email,
+          "contacts.$.website": website,
+          "contacts.$.location": location,
+          "contacts.$.businessCategory": businessCategory,
+          "contacts.$.scheduled": scheduled,
+          "contacts.$.scheduledTime": scheduledTime,
+          "contacts.$.notes": notes,
+          "contacts.$.cardImage.0.front": cardFrontImageS3,
+          "contacts.$.cardImage.0.back": cardBackImageS3,
+          "contacts.$.userId": userId,
+          "contacts.$.isDiskussUser": isDiskussUser
         }
+      }
     );
-    
+
     if (updatedContact.matchedCount === 0) {
-        return res.status(404).json({ message: "No contact Added to update" });
-    }      
+      return res.status(404).json({ message: "No contact Added to update" });
+    }
 
     // Depending on the user type, update the contact in the relevant collection
     const updateQuery = { _id: contactOwnerId };
@@ -374,18 +373,18 @@ const updateContact = async (req, res) => {
     const arrayFilters = [{ "contact._id": contact_id }];
 
     if (existIndividualUser) {
-        await individualUserCollection.updateOne(updateQuery, updateData, { arrayFilters });
+      await individualUserCollection.updateOne(updateQuery, updateData, { arrayFilters });
     } else if (existEnterpriseUser) {
-        await enterpriseUser.updateOne(updateQuery, updateData, { arrayFilters });
+      await enterpriseUser.updateOne(updateQuery, updateData, { arrayFilters });
     } else if (existEnterpriseEmploye) {
-        await enterpriseEmployeModel.updateOne(updateQuery, updateData, { arrayFilters });
+      await enterpriseEmployeModel.updateOne(updateQuery, updateData, { arrayFilters });
     }
 
     return res.status(200).json({ message: "Contact updated successfully" });
 
   } catch (error) {
-      console.error("Error updating Contact:", error.message);
-      return res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error updating Contact:", error.message);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
