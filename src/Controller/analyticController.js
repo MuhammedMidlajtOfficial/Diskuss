@@ -67,19 +67,22 @@ exports.getCardAnalytics = async (req, res) => {
 exports.getCardAnalyticsByDateFrame = async (req, res) => {
     const { cardId } = req.params;  
     let { startDate, endDate, days} = req.query;
-    console.log("cardId ", cardId,"& startDate :", startDate, " & endDate :", endDate, " & day", days )
+    // console.log("cardId ", cardId,"& startDate :", startDate, " & endDate :", endDate, " & day", days )
     if (!startDate || !endDate) {
-        if (!days) {
-            days = 7;
-        }
+    days = days ? parseInt(days, 10) : 7; // Default to 7 days if not provided
        endDate = new Date();
-       endDate.setHours(0, 0, 0, 0);
+    //    console.log("end date", endDate)         
+       endDate.setHours(23, 59, 59, 999);
+    //    console.log("2 end date", endDate)
        startDate = new Date(endDate.getTime() - ((days-1) * 24 * 60 * 60 * 1000));    
+    //    console.log("2 cardId ", cardId,"& startDate :", startDate, " & endDate :", endDate, " & day", days )
     }
     else{
         startDate = new Date(startDate);
         endDate = new Date(endDate);
     }
+
+    // console.log("f   cardId ", cardId,"& startDate :", startDate, " & endDate :", endDate, " & day", days )
     try {
         const data = await analyticsService.getAllAnalyticsByDateFrame(cardId, startDate, endDate);
         res.json(data);
