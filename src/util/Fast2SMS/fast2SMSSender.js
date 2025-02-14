@@ -70,7 +70,7 @@ module.exports.sendSubscriptionSuccessFast2SMS = async (phnNumber, name, amount,
       {
         route: config.Route,
         sender_id: config["Sender Id"],
-        message: config["Transaction Success ID:"],
+        message: config["Transaction Success ID"],
         flash:0,
         variables_values: `${name}|Rs.${amount}|${date}|`,
         numbers: phnNumber,
