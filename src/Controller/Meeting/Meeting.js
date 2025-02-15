@@ -891,76 +891,79 @@ const notificationContent =
 
 cron.schedule("* * * * *", async () => {
   try {
-    console.log("Checking for upcoming meetings...");
+    console.log("Checking for upcoming and ongoing meetings...");
 
     const todayDate = moment().format("YYYY-MM-DD");
-    const currentTime = moment().add(30, "minutes").format("hh:mm A");
+    const currentTime = moment().format("hh:mm A"); // Meeting starts now
+    const reminderTime = moment().add(30, "minutes").format("hh:mm A"); // 30 min before
 
+    // 1️⃣ Find meetings that start in 30 minutes
     const upcomingMeetings = await MeetingBase.find({
+      selectedDate: todayDate,
+      startTime: { $regex: `^${reminderTime}$`, $options: "i" },
+    });
+
+    // 2️⃣ Find meetings that start now
+    const ongoingMeetings = await MeetingBase.find({
       selectedDate: todayDate,
       startTime: { $regex: `^${currentTime}$`, $options: "i" },
     });
 
-    if (upcomingMeetings.length === 0) {
-      console.log("No upcoming meetings found.");
-      return;
-    }
+    // Function to send notifications
+    const sendNotifications = async (meetings, type) => {
+      if (meetings.length === 0) {
+        console.log(`No ${type} meetings found.`);
+        return;
+      }
 
-    console.log(`Found ${upcomingMeetings.length} meetings.`);
+      console.log(`Found ${meetings.length} ${type} meetings.`);
 
-    await Promise.all(
-      upcomingMeetings.map(async (meeting) => {
-        console.log("Meeting Title:", meeting.meetingTitle);
+      await Promise.all(
+        meetings.map(async (meeting) => {
+          const invitedPeopleIds = meeting.invitedPeople.map((person) => person.user.toString());
+          const invitedPeople = [...invitedPeopleIds, meeting.meetingOwner.toString()];
 
-        // Extract only user IDs
-        const invitedPeopleIds = meeting.invitedPeople.map((person) => person.user.toString());
-        const invitedPeople = [...invitedPeopleIds, meeting.meetingOwner.toString()];
+          const notificationContent = type === "upcoming"
+            ? `Reminder: Your meeting "${meeting.meetingTitle}" is scheduled at ${meeting.startTime}. Be ready in 30 minutes!`
+            : `Reminder: Your meeting "${meeting.meetingTitle}" is starting now!`;
 
-        console.log("Sending notifications to:", invitedPeople);
-
-        const notificationContent = `Reminder: Your meeting "${meeting.meetingTitle}" is scheduled today at ${meeting.startTime}. Be ready in 30 minutes!`;
-
-        try {
-          const response = await axios.post(
-            "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
-            {
+          try {
+            await axios.post("http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification", {
               userIds: invitedPeople,
-              notification: {
-                title: "Meeting Invitation",
-                body: notificationContent,
-              },
-            }
-          );
-          console.log("Notification Response:", response.data);
+              notification: { title: "Meeting Invitation", body: notificationContent },
+            });
 
-          await Promise.all(
-            invitedPeople.map(async (userId) => {
-              const notification = new Notification({
-                sender: meeting.meetingOwner,
-                receiver: userId,
-                type: "meeting",
-                content: notificationContent,
-                status: "unread",
-              });
-  
-              await notification.save();
-              emitNotification(userId, notification);
-              console.log(`📨 Socket.io notification sent to ${userId}`);
-            })
-          
-        
+            await Promise.all(
+              invitedPeople.map(async (userId) => {
+                const notification = new Notification({
+                  sender: meeting.meetingOwner,
+                  receiver: userId,
+                  type: "meeting",
+                  content: notificationContent,
+                  status: "unread",
+                });
+
+                await notification.save();
+                emitNotification(userId, notification);
+                console.log(`📨 Socket.io notification sent to ${userId}`);
+              })
+            );
+          } catch (error) {
+            console.error("Notification Error:", error.response?.data || error.message);
+          }
+        })
       );
-        } catch (error) {
-          console.error("Notification Error:", error.response?.data || error.message);
-        }
-      })
-    );
+    };
 
-    console.log("All notifications sent.");
+    // 3️⃣ Send notifications (30 min before & at start time)
+    await sendNotifications(upcomingMeetings, "upcoming");
+    await sendNotifications(ongoingMeetings, "ongoing");
+
   } catch (error) {
     console.error("Error in cron job:", error);
   }
 });
+
 
 module.exports = {
   CreateMeeting,
