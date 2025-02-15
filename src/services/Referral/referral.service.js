@@ -15,6 +15,21 @@ const configId = "67988e04e60b8e8d6f248e07"
 
 // Send Invite
 const sendInvite = async (referrerId, inviteePhoneNo,referralCode ) => {
+
+    // check if the invitee is already registered or card created
+    let alreadyRegistered = await Referral.findOne({  
+        inviteePhoneNo: inviteePhoneNo,
+            $or: [
+                { referralCode: referralCode },
+                { referralId: referralCode } // Assuming you have a referralId field
+            ]
+    })
+    console.log("alreadyRegistered : ", alreadyRegistered);
+
+    if (alreadyRegistered) {
+        throw new Error('Invitee already registered or card created');
+    }
+
     const referral = new Referral({
         referrer: referrerId,
         inviteePhoneNo,
@@ -330,7 +345,7 @@ const createCardByInvitee = async (referralId) => {
 
 // Get Referral Details
 const getReferralDetails = async (userId) => {
-    const referrals = await Referral.find({ referrer: userId }).populate('referrer', 'username image').exec();
+    const referrals = await Referral.find({ referrer: userId,  }).populate('referrer', 'username image').exec();
     const totalReferrals = referrals.length;
     const cardCreated = referrals.filter(referral => referral.status === 'Card Created').length;
     const registered = referrals.filter(referral => referral.status === 'Registered').length;
