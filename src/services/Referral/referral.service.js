@@ -657,6 +657,7 @@ const countTotalCoinsRewarded = async (userId) => {
     if (rewardedCoins.length === 0) {
         return 0;
     }
+    // console.log("rewardedCoins : ", rewardedCoins);
     return rewardedCoins[0].total;
 }
 
@@ -672,22 +673,15 @@ const countTotalCoinsPending = async (userId) => {
 
 // total coins withdrawn
 const countTotalCoinsWithdrawn = async (userId) => {
-    const withDrawn = await WithdrawalRequest.aggregate(
-        [
-            {
-                $match: { userId: userId, status: "approved" },
-            },
-            {
-                $group: { _id: null, coinsRedeemed: { $sum: '$amount' } },
-            },
-            {
-                $project: { _id: 0, total: '$coinsRedeemed'},
-            },
+    const withDrawn = await WithdrawalRequest.aggregate([
+            { $match: { userId: userId, status: "approved" },},
+            { $group: { _id: null, total: { $sum: '$amount' } },},
         ]
     ).exec();
     if (withDrawn.length === 0) {
         return 0;
     }
+    // console.log("withDrawn : ", withDrawn);
     return withDrawn[0].total;
 };
 

@@ -42,14 +42,14 @@ const rewardSchema = new mongoose.Schema({
 // Withdrwal Request Schema
 const WithdrawalRequestSchema = new mongoose.Schema({
     userId: { type: String, required: true }, // Reference to the user requesting withdrawal
-    amount: { type: mongoose.Types.Decimal128, required: true }, // Amount requested for withdrawal
+    amount: { type: Number, required: true }, // Amount requested for withdrawal
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }, // Status of the withdrawal request
     upiId : { type: String, required: true }, // UPI ID of the user
     transactionId: { type: String }, // Transaction ID of the withdrawal
   },{ timestamps: true });
 
 const IncentiveSchema = new mongoose.Schema({
-    amount: { type: mongoose.Types.Decimal128, required: true }, // Amount of incentive earned
+    amount: { type: Number, required: true }, // Amount of incentive earned
     userId: { type: String, required: true }, // Reference to the user who earned the incentive
     type: { type: String, required: true },                      // Type of incentive (e.g., cash, discount)
     status: { type: String, enum: ['pending', 'paid'], default: 'pending' }, // Status of the incentive
@@ -68,7 +68,7 @@ const ActionSchema = new mongoose.Schema({
 const ReferralLevelSchema = new mongoose.Schema({
     level: { type: Number, required: true }, // Level number (e.g., 1, 2)
     referralCountRequired: { type: Number, required: true }, // Number of referrals required to achieve this level
-    rewardAmount: { type: mongoose.Types.Decimal128, required: true } // Reward amount for achieving this level
+    rewardAmount: { type: Number, required: true } // Reward amount for achieving this level
   }, { timestamps: true });
   
 
