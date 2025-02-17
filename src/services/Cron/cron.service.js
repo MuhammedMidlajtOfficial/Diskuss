@@ -24,11 +24,15 @@ cron.schedule("* * * * *", async () => {
   try {
     console.log("🔍 Checking for upcoming and ongoing meetings...");
 
-    const todayDate = moment().format("YYYY-MM-DD");
-    const currentTime = moment().format("hh:mm A");
-    const reminderTime = moment().add(30, "minutes").format("hh:mm A");
-    console.log("currentTime -",currentTime);
-    console.log("reminderTime -",reminderTime);
+    const todayDate = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
+    const currentTime = moment().tz("Asia/Kolkata").format("hh:mm A");
+    const reminderTime = moment().tz("Asia/Kolkata").add(30, "minutes").format("hh:mm A");
+
+    console.log("Server Time (Asia/Kolkata) -", moment().tz("Asia/Kolkata").format());
+    console.log("todayDate -", todayDate);
+    console.log("currentTime -", currentTime);
+    console.log("reminderTime -", reminderTime);
+
 
     // Fetch all meetings that are either starting now or in 30 minutes
     const meetings = await MeetingBase.find({
