@@ -13,7 +13,7 @@ router.patch('/:userSubscription_id', authMiddleware.authenticateToken2, control
 router.delete('/:userSubscription_id',authMiddleware.authenticateToken2, controller.deleteUserSubscription);
 
 router.post('/verifyPayment', authMiddleware.authenticateToken2, controller.verifyPayment)
-router.post('/deactivate-expired-subscriptions', controller.deactivateSubscriptions)
+router.get('/deactivate-expired-subscriptions', controller.deactivateSubscriptions)
 router.post('/free', controller.createFreeSubscription)
 
 module.exports = router;
