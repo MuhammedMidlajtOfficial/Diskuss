@@ -29,10 +29,10 @@ cron.schedule("* * * * *", async () => {
     const currentTime = moment().tz("Asia/Kolkata").format("hh:mm A");
     const reminderTime = moment().tz("Asia/Kolkata").add(30, "minutes").format("hh:mm A");
 
-    console.log("Server Time (Asia/Kolkata) -", moment().tz("Asia/Kolkata").format());
-    console.log("todayDate -", todayDate);
-    console.log("currentTime -", currentTime);
-    console.log("reminderTime -", reminderTime);
+    // console.log("Server Time (Asia/Kolkata) -", moment().tz("Asia/Kolkata").format());
+    // console.log("todayDate -", todayDate);
+    // console.log("currentTime -", currentTime);
+    // console.log("reminderTime -", reminderTime);
 
 
     // Fetch all meetings that are either starting now or in 30 minutes
@@ -40,7 +40,7 @@ cron.schedule("* * * * *", async () => {
       selectedDate: todayDate,
       startTime: { $in: [reminderTime, currentTime] },
     });
-    console.log("meetings -",meetings);
+    // console.log("meetings -",meetings);
     if (meetings.length === 0) {
       return;
     }
