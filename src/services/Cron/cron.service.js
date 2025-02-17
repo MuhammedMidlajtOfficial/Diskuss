@@ -7,6 +7,7 @@ const {
 } = require("../../Controller/Socket.io/NotificationSocketIo");
 const moment = require("moment");
 
+// SUBSCRIPTION CRON
 cron.schedule('0 0 * * *', async () => {
   console.log("Cron job triggered at:", new Date().toLocaleString());
   try {
@@ -18,6 +19,7 @@ cron.schedule('0 0 * * *', async () => {
   }
 });
 
+// MEETING NOTIFICATION 
 cron.schedule("* * * * *", async () => {
   try {
     console.log("🔍 Checking for upcoming and ongoing meetings...");
@@ -26,20 +28,15 @@ cron.schedule("* * * * *", async () => {
     const currentTime = moment().format("hh:mm A");
     const reminderTime = moment().add(30, "minutes").format("hh:mm A");
 
-
-
     // Fetch all meetings that are either starting now or in 30 minutes
     const meetings = await MeetingBase.find({
       selectedDate: todayDate,
       startTime: { $in: [reminderTime, currentTime] },
     });
-
+    console.log("meetings from meeting cron-",meetings);
     if (meetings.length === 0) {
-      
       return;
     }
-
-  
 
     const notificationsToInsert = [];
     const socketNotifications = [];
@@ -56,8 +53,6 @@ cron.schedule("* * * * *", async () => {
           ? `Reminder: Your meeting "${meeting.meetingTitle}" is scheduled at ${meeting.startTime}. Be ready in 30 minutes!`
           : `Reminder: Your meeting "${meeting.meetingTitle}" is starting now!`;
 
-    
-
       // Batch users into groups of 5 for API requests
       for (let i = 0; i < invitedPeople.length; i += 5) {
         const batch = invitedPeople.slice(i, i + 5);
@@ -67,8 +62,6 @@ cron.schedule("* * * * *", async () => {
             userIds: batch,
             notification: { title: "Meeting Invitation", body: notificationContent },
           });
-
-          
         } catch (error) {
           console.error("❌ Notification API Error:", error.response?.data || error.message);
         }
@@ -87,17 +80,16 @@ cron.schedule("* * * * *", async () => {
         socketNotifications.push({ userId, content: notificationContent });
       }
     }
+    console.log("notificationsToInsert from meeting cron-",notificationsToInsert);
 
     // Insert all notifications at once
     if (notificationsToInsert.length > 0) {
       await Notification.insertMany(notificationsToInsert);
-      
     }
 
     // Emit socket notifications
     for (const { userId, content } of socketNotifications) {
       emitNotification(userId, { content });
-    
     }
 
     console.log("🎯 Notification process completed successfully.");
