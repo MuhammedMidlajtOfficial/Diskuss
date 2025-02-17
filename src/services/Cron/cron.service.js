@@ -62,6 +62,9 @@ cron.schedule("* * * * *", async () => {
             userIds: batch,
             notification: { title: "Meeting Invitation", body: notificationContent },
           });
+
+          console.log('response sendMeetingNotification -',response);
+          
         } catch (error) {
           console.error("❌ Notification API Error:", error.response?.data || error.message);
         }
