@@ -5,7 +5,8 @@ const Notification = require("../../models/notification/NotificationModel");
 const {
   emitNotification,
 } = require("../../Controller/Socket.io/NotificationSocketIo");
-const moment = require("moment");
+// const moment = require("moment");
+const moment = require("moment-timezone");
 
 // SUBSCRIPTION CRON
 cron.schedule('0 0 * * *', async () => {
