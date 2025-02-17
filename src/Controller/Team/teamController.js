@@ -3,20 +3,29 @@ const teamModel = require("../../models/team/team.model");
 
 module.exports.getAllTeamById = async (req, res) => {
     try {
-        const teamOwnerId = req.params.id;
-        if (!teamOwnerId) {
-            return res.status(400).json({ message: "teamOwnerId is required" });
+        const userId = req.params.id;
+        if (!userId) {
+            return res.status(400).json({ message: "userId is required" });
         }
 
-        const team = await teamModel.find({ teamOwnerId })
-            .populate('teamMembers')
-            .populate('teamLead')
-            .exec();
-            console.log('team',team);
-        return res.status(200).json({ team });
+        const teams = await teamModel.find({
+            $or: [
+                { teamMembers: userId },
+                { teamLead: userId },
+                { teamOwnerId: userId }
+            ]
+        })
+        .populate('teamMembers')
+        .populate('teamLead')
+        .populate('teamOwnerId')
+        .exec();
+
+        console.log('teams:', teams);
+        return res.status(200).json({ teams });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Failed to fetch team", error });
+        res.status(500).json({ message: "Failed to fetch teams", error });
     }
 };
 
