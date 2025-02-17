@@ -27,13 +27,15 @@ cron.schedule("* * * * *", async () => {
     const todayDate = moment().format("YYYY-MM-DD");
     const currentTime = moment().format("hh:mm A");
     const reminderTime = moment().add(30, "minutes").format("hh:mm A");
+    console.log("currentTime -",currentTime);
+    console.log("reminderTime -",reminderTime);
 
     // Fetch all meetings that are either starting now or in 30 minutes
     const meetings = await MeetingBase.find({
       selectedDate: todayDate,
       startTime: { $in: [reminderTime, currentTime] },
     });
-    console.log("meetings from meeting cron-",meetings);
+    console.log("meetings -",meetings);
     if (meetings.length === 0) {
       return;
     }
