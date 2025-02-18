@@ -6,6 +6,7 @@ const enterpriseEmployeCardModel = require("../../models/cards/enterpriseEmploye
 const mailSender = require("../../util/mailSender");
 const bcrypt = require("bcrypt");
 const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
+const { individualUserCollection } = require("../../DBConfig");
 
 module.exports.getCards = async (req, res) => {
   try {
@@ -147,6 +148,35 @@ module.exports.createCard = async (req, res) => {
       });
     } else {
       // CREATE CARD FOR ENTERPRISE EMPLOYEE
+
+      // Check for missing fields
+      if ( !mobile) {
+        return res.status(400).json({ message :"phnNumber is required"}); 
+      }
+
+      let isIndividualExist;
+      let isEnterpriseExist;
+      let isEnterpriseEmployeeExist;
+
+      if(mobile){
+        // Check if phone number exists in any of the collections
+        isIndividualExist = await individualUserCollection.findOne({ phnNumber:mobile }).exec();
+        isEnterpriseExist = await enterpriseUser.findOne({ phnNumber:mobile }).exec();
+        isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber:mobile }).exec();
+      }
+
+      if (isIndividualExist) {
+        return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+      }
+
+      if (isEnterpriseExist) {
+        return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
+      }
+
+      if (isEnterpriseEmployeeExist) {
+        return res.status(409).json({ message: "This phone number is already associated with an enterprise employee" });
+      }
+
       // Hash password
       const hashedPassword = await bcrypt.hash(passwordRaw, 10);
       // Create a new user
