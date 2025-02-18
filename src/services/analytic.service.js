@@ -13,6 +13,7 @@ const filterByDate = require("../util/filterByDate")
 const { individualUserCollection } = require("../DBConfig");
 const { getMeetingsAnalytics } = require("../Controller/analyticController");
 const { checkUserType } = require("../util/HelperFunctions")
+const { ObjectId } = require("mongodb");
 
 
 exports.logShare = async (cardId, userId, sharedAt = new Date()) => {
@@ -695,31 +696,31 @@ exports.getMeetingsAnalytics = async (userId) => {
     }
     };
 
-exports.getOverview = async (userId) => {
-    try {
+// exports.getOverview = async (userId) => {
+//     try {
         
-        const [cards, employees, contacts, meetings] = await Promise.all([
-            countAllCards(userId),
-            countAllEmployees(userId),
-            countAllContacts(userId),
-            countAllMeetings(userId)
-        ]);
+//         const [cards, employees, contacts, meetings] = await Promise.all([
+//             countAllCards(userId),
+//             countAllEmployees(userId),
+//             countAllContacts(userId),
+//             countAllMeetings(userId)
+//         ]);
 
-        const response = {
-            cards,
-            employees,
-            contacts,
-            meetings
-        }
+//         const response = {
+//             cards,
+//             employees,
+//             contacts,
+//             meetings
+//         }
 
-        return response;
+//         return response;
 
 
-    } catch (err) {
-        return ({ error: err.message });
-    }
+//     } catch (err) {
+//         return ({ error: err.message });
+//     }
 
-};
+// };
 
   // Helper function to generate a series of dates
 function getDateSeries(startDate, endDate) {
@@ -910,68 +911,6 @@ async function countMeetingsThisMonth(userId) {
     return { totalMeetingThisYear, monthsData };
 }
 
-// async function countUpcomingMeetingNextFourWeek(userId) {
-//     const now = moment();
-//     const startOfDay = now.clone().startOf('day');
-//     const endOfWeek = now.clone().endOf('week');
-
-//     console.log("startOfDay : ", startOfDay, " endOfWeek : ", endOfWeek);
-
-//     const sections = [];
-//     let totalMeetingNextFourWeek = 0;
-    
-//         const sectionStart = startOfDay.clone();
-//         const sectionEnd = endOfWeek.clone();
-
-//         const count = await MeetingBase.countDocuments({
-//             $or: [
-//                 { 'meetingOwner': userId },
-//                 { 'invitedPeople.user': userId }
-//                 ],
-//             selectedDate: {
-//                 $gte: sectionStart.toDate(),
-//                 $lt: sectionEnd.toDate()
-//             }
-//         });
-
-//         totalMeetingNextFourWeek += count;
-    
-//         sections.push({
-//             section: 1,
-//             start: sectionStart.format('YYYY-MM-DD'),
-//             end: sectionEnd.format('YYYY-MM-DD'),
-//             count: count
-//         });
-
-
-//     for (let i = 1; i < 5; i++) {
-//         const sectionStart = startOfDay.clone().add(i, 'weeks');
-//         const sectionEnd = sectionStart.clone().add(1, 'week');
-
-//         const count = await MeetingBase.countDocuments({
-//             $or: [
-//                 { 'meetingOwner': userId },
-//                 { 'invitedPeople.user': userId }
-//                 ],
-//             selectedDate: {
-//                 $gte: sectionStart.toDate(),
-//                 $lt: sectionEnd.toDate()
-//             }
-//         });
-
-//         totalMeetingNextFourWeek += count;
-    
-//         sections.push({
-//             section: i + 1,
-//             start: sectionStart.format('YYYY-MM-DD'),
-//             end: sectionEnd.format('YYYY-MM-DD'),
-//             count: count
-//         });
-//     }
-
-
-//     return { totalMeetingNextFourWeek, sections };
-// }
 
 async function countUpcomingMeetingNextFourWeek(userId) {
     try {
@@ -1161,3 +1100,381 @@ async function countAllEmployees(userId) {
         return "NA";
     }
 }
+
+exports.getOverview = async (userId) => {
+    try {
+        const now = moment();
+        const startOfYear = now.clone().startOf('year').toDate();
+
+        // Helper function to create the monthly aggregation pipeline
+        const createMonthlyPipeline = (dateField) => {
+            return Array.from({ length: 12 }, (_, i) => {
+                const monthStart = now.clone().startOf('year').add(i, 'months').toDate();
+                const monthEnd = now.clone().startOf('year').add(i + 1, 'months').toDate();
+
+                return {
+                    $cond: {
+                        if: {
+                            $and: [
+                                // { $gte: [dateField, monthStart] },
+                                { $lt: [dateField, monthEnd] }
+                            ]
+                        },
+                        then: 1,
+                        else: 0
+                    }
+                };
+            });
+        };
+
+        // Constructing aggregation pipeline for meetings
+        const meetingPipeline = [
+            {
+                $match: {
+                    $or: [
+                        { 'meetingOwner': new ObjectId(userId) },
+                        { 'invitedPeople.user': userId }
+                    ]
+                }
+            },
+            {
+                $facet: {
+                    totalMeeting: [{ $count: 'count' }],
+                    totalMeetingThisYear: [
+                        {
+                            $match: {
+                                selectedDate: { $gte: startOfYear }
+                            }
+                        },
+                        { $count: 'count' }
+                    ],
+                    monthsData: [
+                        {
+                            $project: {
+                                monthData: createMonthlyPipeline('$selectedDate')
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: '$monthData',
+                                includeArrayIndex: 'monthIndex'
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: '$monthIndex',
+                                count: { $sum: '$monthData' }
+                            }
+                        },
+                        {
+                            $sort: { _id: 1 }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                monthsData: { $push: { count: '$count' } }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    totalMeeting: { $arrayElemAt: ['$totalMeeting.count', 0] },
+                    totalMeetingThisYear: { $arrayElemAt: ['$totalMeetingThisYear.count', 0] },
+                    monthsData: { $arrayElemAt: ['$monthsData.monthsData', 0] }
+                }
+            }
+        ];
+
+        // Constructing aggregation pipeline for cards
+        const cardPipeline = [
+            {
+                $match: {
+                    userId: userId
+                }
+            },
+            {
+                $facet: {
+                    totalCards: [{ $count: 'count' }],
+                    totalCardThisYear: [
+                        {
+                            $match: {
+                                createdAt: { $gte: startOfYear }
+                            }
+                        },
+                        { $count: 'count' }
+                    ],
+                    monthsData: [
+                        {
+                            $project: {
+                                monthData: createMonthlyPipeline('$createdAt')
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: '$monthData',
+                                includeArrayIndex: 'monthIndex'
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: '$monthIndex',
+                                count: { $sum: '$monthData' }
+                            }
+                        },
+                        {
+                            $sort: { _id: 1 }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                monthsData: { $push: { count: '$count' } }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    totalCards: { $arrayElemAt: ['$totalCards.count', 0] },
+                    totalCardThisYear: { $arrayElemAt: ['$totalCardThisYear.count', 0] },
+                    monthsData: { $arrayElemAt: ['$monthsData.monthsData', 0] }
+                }
+            }
+        ];
+
+        // Function to execute aggregation and format month data
+        const executeAggregation = async (model, pipeline) => {
+            const result = await model.aggregate(pipeline).exec();
+            const data = result[0] || {};
+            const monthsData = data.monthsData ? data.monthsData.map((count, index) => {
+                const monthStart = now.clone().startOf('year').add(index, 'months');
+                return {
+                    month: monthStart.format('MMMM'),
+                    year: monthStart.format('YYYY'),
+                    count: count.count
+                };
+            }) : Array(12).fill(0).map((_, index) => {
+                const monthStart = now.clone().startOf('year').add(index, 'months');
+                return {
+                    month: monthStart.format('MMMM'),
+                    year: monthStart.format('YYYY'),
+                    count: 0
+                };
+            });
+
+            return {
+                total: data.totalCards || data.totalMeeting || 0,
+                totalThisYear: data.totalCardThisYear || data.totalMeetingThisYear || 0,
+                monthsData: monthsData
+            };
+        };
+
+        // Refactor countAllContacts to use aggregation
+        const countAllContacts = async (userId) => {
+            const startOfYear = now.clone().startOf('year').toDate();
+            const createMonthlyPipeline = (dateField) => {
+                return Array.from({ length: 12 }, (_, i) => {
+                    const monthStart = now.clone().startOf('year').add(i, 'months').toDate();
+                    const monthEnd = now.clone().startOf('year').add(i + 1, 'months').toDate();
+
+                    return {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    // { $gte: [dateField, monthStart] },
+                                    { $lt: [dateField, monthEnd] }
+                                ]
+                            },
+                            then: 1,
+                            else: 0
+                        }
+                    };
+                });
+            };
+
+            const response = async (model, userId) => {
+                const pipeline = [
+                    {
+                        $match: {
+                            contactOwnerId: new ObjectId(userId)
+                        }
+                    },
+                    {
+                        $facet: {
+                            totalContacts: [{ $count: 'count' }],
+                            totalContactThisYear: [
+                                {
+                                    $match: {
+                                        createdAt: { $gte: startOfYear }
+                                    }
+                                },
+                                { $count: 'count' }
+                            ],
+                            monthsData: [
+                                {
+                                    $project: {
+                                        monthData: createMonthlyPipeline('$createdAt')
+                                    }
+                                },
+                                {
+                                    $unwind: {
+                                        path: '$monthData',
+                                        includeArrayIndex: 'monthIndex'
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: '$monthIndex',
+                                        count: { $sum: '$monthData' }
+                                    }
+                                },
+                                {
+                                    $sort: { _id: 1 }
+                                },
+                                {
+                                    $group: {
+                                        _id: null,
+                                        monthsData: { $push: { count: '$count' } }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $project: {
+                            totalContacts: { $arrayElemAt: ['$totalContacts.count', 0] },
+                            totalContactThisYear: { $arrayElemAt: ['$totalContactThisYear.count', 0] },
+                            monthsData: { $arrayElemAt: ['$monthsData.monthsData', 0] }
+                        }
+                    }
+                ];
+
+                const result = await model.aggregate(pipeline).exec();
+                const data = result[0] || {};
+                const monthsData = data.monthsData ? data.monthsData.map((count, index) => {
+                    const monthStart = now.clone().startOf('year').add(index, 'months');
+                    return {
+                        month: monthStart.format('MMMM'),
+                        year: monthStart.format('YYYY'),
+                        count: count
+                    };
+                }) : Array(12).fill(0).map((_, index) => {
+                    const monthStart = now.clone().startOf('year').add(index, 'months');
+                    return {
+                        month: monthStart.format('MMMM'),
+                        year: monthStart.format('YYYY'),
+                        count: 0
+                    };
+                });
+
+                return {
+                    totalContacts: data.totalContacts || 0,
+                    totalContactThisYear: data.totalContactThisYear || 0,
+                    monthsData: monthsData
+                };
+            };
+            const userType = await checkUserType(userId);
+            if (userType === 'enterprise') {
+                return await response(Contact, userId);
+            } else {
+                return await response(individualContact, userId);
+            }
+        };
+
+        // Execute all operations in parallel
+        const [cardsData, employees, contactsData, meetingsData] = await Promise.all([
+            executeAggregation(Card, cardPipeline),
+            countAllEmployees(userId),
+            countAllContacts(userId),
+            executeAggregation(MeetingBase, meetingPipeline)
+        ]);
+
+        const response = {
+            cards: cardsData,
+            employees: employees,
+            contacts: contactsData,
+            meetings: meetingsData
+        };
+
+        return response;
+    } catch (err) {
+        console.error("Error in getOverview:", err);
+        return { error: err.message };
+    }
+};
+
+async function countAllEmployees(userId) {
+    const userType = await checkUserType(userId);
+    if (userType.userType === 'enterprise') {
+        const enterpriseData = await enterprise.findById(userId).select('empCards').exec();
+        return enterpriseData.empCards.length;
+    } else {
+        return "NA";
+    }
+}
+
+
+// async function countUpcomingMeetingNextFourWeek(userId) {
+//     const now = moment();
+//     const startOfDay = now.clone().startOf('day');
+//     const endOfWeek = now.clone().endOf('week');
+
+//     console.log("startOfDay : ", startOfDay, " endOfWeek : ", endOfWeek);
+
+//     const sections = [];
+//     let totalMeetingNextFourWeek = 0;
+    
+//         const sectionStart = startOfDay.clone();
+//         const sectionEnd = endOfWeek.clone();
+
+//         const count = await MeetingBase.countDocuments({
+//             $or: [
+//                 { 'meetingOwner': userId },
+//                 { 'invitedPeople.user': userId }
+//                 ],
+//             selectedDate: {
+//                 $gte: sectionStart.toDate(),
+//                 $lt: sectionEnd.toDate()
+//             }
+//         });
+
+//         totalMeetingNextFourWeek += count;
+    
+//         sections.push({
+//             section: 1,
+//             start: sectionStart.format('YYYY-MM-DD'),
+//             end: sectionEnd.format('YYYY-MM-DD'),
+//             count: count
+//         });
+
+
+//     for (let i = 1; i < 5; i++) {
+//         const sectionStart = startOfDay.clone().add(i, 'weeks');
+//         const sectionEnd = sectionStart.clone().add(1, 'week');
+
+//         const count = await MeetingBase.countDocuments({
+//             $or: [
+//                 { 'meetingOwner': userId },
+//                 { 'invitedPeople.user': userId }
+//                 ],
+//             selectedDate: {
+//                 $gte: sectionStart.toDate(),
+//                 $lt: sectionEnd.toDate()
+//             }
+//         });
+
+//         totalMeetingNextFourWeek += count;
+    
+//         sections.push({
+//             section: i + 1,
+//             start: sectionStart.format('YYYY-MM-DD'),
+//             end: sectionEnd.format('YYYY-MM-DD'),
+//             count: count
+//         });
+//     }
+
+
+//     return { totalMeetingNextFourWeek, sections };
+// }
