@@ -383,20 +383,20 @@ module.exports.sendOTP = async (req, res) => {
       return res.status(400).json({ message :"phnNumber is required"}); 
     }
 
-    // let isIndividualExist;
+    let isIndividualExist;
     let isEnterpriseExist;
     let isEnterpriseEmployeeExist;
 
     if(phnNumber){
       // Check if phone number exists in any of the collections
-      // isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
+      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
       isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
       isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
     }
 
-    // if (isIndividualExist) {
-    //   return res.status(409).json({ message: "This phone number is already associated with an individual user" });
-    // }
+    if (isIndividualExist) {
+      return res.status(409).json({ message: "This phone number is already associated with an individual user" });
+    }
 
     if (isEnterpriseExist) {
       return res.status(409).json({ message: "This phone number is already associated with an enterprise user" });
