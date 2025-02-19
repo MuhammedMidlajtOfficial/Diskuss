@@ -194,9 +194,9 @@ module.exports.postEnterpriseSignup = async (req, res) => {
 
     // ✅ 2. Check if email already exists
     const isEmailExist = await enterpriseUser.findOne({ email }).exec();
-    const isEmailExist2 = await individualUserCollection.findOne({ email }).exec();
+    
 
-    if (isEmailExist || isEmailExist2) {
+    if (isEmailExist) {
       return res.status(409).json({ message: "A user with this email address already exists. Please login instead" });
     }
 
