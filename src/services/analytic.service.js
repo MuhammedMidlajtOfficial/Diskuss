@@ -5,6 +5,7 @@ const enterprise = require("../models/users/enterpriseUser")
 const MeetingBase = require("../models/meeting/EnterpriseMeetingModel")
 const individualMeeting = require("../models/meeting/EnterpriseMeetingModel")
 const Card = require('../models/cards/card')
+const empCard = require('../models/cards/enterpriseEmployeCard.model')
 const Employee = require("../models/users/enterpriseEmploye.model")
 const Team = require("../models/team/team.model")
 const Contact = require("../models/contacts/contact.enterprise.model")
@@ -1106,6 +1107,7 @@ exports.getOverview = async (userId) => {
     try {
         const now = moment();
         const startOfYear = now.clone().startOf('year').toDate();
+        const userType = await checkUserType(userId);
 
         // Helper function to create the monthly aggregation pipeline
         const createMonthlyPipeline = (dateField) => {
@@ -1383,10 +1385,12 @@ exports.getOverview = async (userId) => {
                 return await response(individualContact, userId);
             }
         };
-
+        console.log("userType : ", userType.userType)
         // Execute all operations in parallel
         const [cardsData, employees, contactsData, meetingsData] = await Promise.all([
-            executeAggregation(Card, cardPipeline),
+            userType.userType === 'enterpriseEmployee' 
+            ? executeAggregation(empCard, cardPipeline) 
+            : executeAggregation(Card, cardPipeline),
             countAllEmployees(userId),
             countAllContacts(userId),
             executeAggregation(MeetingBase, meetingPipeline)
