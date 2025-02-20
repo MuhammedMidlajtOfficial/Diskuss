@@ -52,6 +52,21 @@ module.exports.getCard = async (userId, page = null, limit = null) => {
   return cards;
 };
 
+module.exports.getCardsUsingCardId = async ( cardId ) => {
+
+  let card = await Card.findOne({ _id: cardId })
+  if(!card){
+    card = await EnterpriseEmployeeCard.findOne({ _id: cardId })
+  }
+  console.log(card);
+  if (!card) {
+    console.log(`Card with ID ${cardId} not found.`);
+    return null; // Return null explicitly if no card is found
+  }
+  
+  return card;
+};
+
 module.exports.createCard = async (cardData) => {
   const {
     userId,
