@@ -60,6 +60,12 @@ cron.schedule("* * * * *", async () => {
           ? `Reminder: Your meeting "${meeting.meetingTitle}" is scheduled at ${meeting.startTime}. Be ready in 30 minutes!`
           : `Reminder: Your meeting "${meeting.meetingTitle}" is starting now!`;
 
+          const notificationContent2 = 
+  type === "upcoming"
+    ? `<h3><h2>Reminder:</h2> Your meeting <strong>"${meeting.meetingTitle}"</strong> is scheduled at <strong>${meeting.startTime}</strong>. Be ready in 30 minutes!</h3>`
+    : `<h3><h2>Reminder:</h2> Your meeting <strong>"${meeting.meetingTitle}"</strong> is starting now!</h3>`;
+
+
       // Batch users into groups of 5 for API requests
       for (let i = 0; i < invitedPeople.length; i += 5) {
         const batch = invitedPeople.slice(i, i + 5);
@@ -67,7 +73,7 @@ cron.schedule("* * * * *", async () => {
         try {
           const response = await axios.post("http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification", {
             userIds: batch,
-            notification: { title: "Meeting Invitation", body: notificationContent },
+            notification: { title: "Meeting Reminder", body: notificationContent },
           });
         } catch (error) {
           console.error("❌ Notification API Error:", error.response?.data || error.message);
@@ -80,11 +86,11 @@ cron.schedule("* * * * *", async () => {
           sender: meeting.meetingOwner,
           receiver: userId,
           type: "meeting",
-          content: notificationContent,
+          content: notificationContent2,
           status: "unread",
         });
 
-        socketNotifications.push({ userId, content: notificationContent });
+        socketNotifications.push({ userId, content: notificationContent2 });
       }
     }
 
