@@ -144,8 +144,17 @@ module.exports.postIndividualSignup = async (req, res) => {
     }
     // Check if email exists
     const isEmailExist = await individualUserCollection.findOne({ email }).exec();
+    
     if (isEmailExist) {
-      return res.status(409).json({ message :"A user with this email address already exists. Please login instead"}); // Correct response handling
+      return res.status(409).json({ message: "A user with this email address already exists. Please log in instead." });
+    }
+
+    // Check if phone number exists
+    const isPhoneExist = await individualUserCollection.findOne({ phnNumber }).exec();
+    const isPhoneExist2 = await enterpriseUser.findOne({ phnNumber }).exec();
+
+    if (isPhoneExist || isPhoneExist2) {
+      return res.status(409).json({ message: "A user with this phone number already exists. Please log in instead." }); // Correct response handling
     }
     // Validate OTP
     const otpRecord = await otpCollection.findOne({ phnNumber }).sort({ createdAt: -1 });

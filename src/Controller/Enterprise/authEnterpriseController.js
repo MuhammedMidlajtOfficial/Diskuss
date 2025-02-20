@@ -194,8 +194,18 @@ module.exports.postEnterpriseSignup = async (req, res) => {
 
     // ✅ 2. Check if email already exists
     const isEmailExist = await enterpriseUser.findOne({ email }).exec();
+    
+
     if (isEmailExist) {
       return res.status(409).json({ message: "A user with this email address already exists. Please login instead" });
+    }
+
+    // ✅ 2. Check if phone number already exists
+    const isPhnNumberExist = await enterpriseUser.findOne({ phnNumber }).exec();  
+    const isPhnNumberExist2 = await individualUserCollection.findOne({ phnNumber}).exec();
+
+    if (isPhnNumberExist || isPhnNumberExist2) {
+      return res.status(409).json({ message: "A user with this phone number already exists. Please login instead" });     
     }
 
     // ✅ 3. Validate referral code (if provided)
