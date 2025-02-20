@@ -30,17 +30,18 @@ module.exports.getCard = async (userId, page = null, limit = null) => {
     // Fetch enterprise user cards
     const enterpriseCardsFromEmpCards = isEnterpriseUserExist.empCards.map(empCard => empCard.empCardId);
     const enterpriseCardsFromCardCollection = await Card.find({ userId });
-    cards = [...enterpriseCardsFromCardCollection, ...enterpriseCardsFromEmpCards];
+    // cards = [...enterpriseCardsFromCardCollection, ...enterpriseCardsFromEmpCards];
+    cards = enterpriseCardsFromCardCollection;
   } else if (isIndividualUserExist) {
     // Fetch individual user cards
     cards = await Card.find({ userId });
   } else if (isEmployeeUserExist) {
     // Fetch employee-specific card
-    const employeeCard = await EnterpriseEmployeeCard.findOne({ userId });
+    const employeeCard = await EnterpriseEmployeeCard.find({ userId });
     if (!employeeCard) {
       throw new Error("Card not found for employee");
     }
-    cards = [employeeCard];
+    cards = employeeCard;
   }
 
   // Apply pagination if page and limit are provided
