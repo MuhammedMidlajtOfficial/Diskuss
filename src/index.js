@@ -19,7 +19,7 @@ const logger = require('./config/logger.js');
 const morgan = require('./config/morgan.js');
 const expressListRoutes = require('express-list-routes');
 // const { parseLogs } = require('./crons/testCron.js');
-
+require('dotenv').config()
 
 
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
