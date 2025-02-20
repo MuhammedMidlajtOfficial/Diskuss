@@ -145,7 +145,7 @@ const defaultRoutes = [
   },
   {
     path: '/analytic',
-    route: analyticRouter
+  route: analyticRouter
   },
   {
     path: '/Preferences',
