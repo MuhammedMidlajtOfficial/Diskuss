@@ -37,6 +37,25 @@ module.exports.getCards = async (req, res) => {
   }
 };
 
+module.exports.getCardsUsingCardId = async (req, res) => {
+  try {
+    const cardId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(cardId)) {
+      return res.status(400).json({ message: "Invalid card ID format" });
+    }
+    
+    // Fetch cards
+    const card = await cardService.getCardsUsingCardId(cardId);
+
+    // Return cards
+    return res.status(200).json({card});
+  } catch (error) {
+    console.error("Error fetching cards:", error);
+    res.status(500).json({ message: "Failed to get cards", error });
+  }
+};
+
 module.exports.createCard = async (req, res) => {
   try {
     console.log(req.body);
