@@ -1095,7 +1095,8 @@ async function countAllEmployees(userId) {
     // console.log("User Type : ", userType.userType)
     if (userType.userType === 'enterprise') {
         const count = await enterprise.findById(userId).select('empCards').exec();
-        return count.empCards.length ;
+        // console.log((count.empCards.length).toString(), " : ", typeOf((count.empCards.length).toString()))
+        return (count.empCards.length).toString() ;
     } else {
         return "NA";
     }
@@ -1409,7 +1410,9 @@ async function countAllEmployees(userId) {
     const userType = await checkUserType(userId);
     if (userType.userType === 'enterprise') {
         const enterpriseData = await enterprise.findById(userId).select('empCards').exec();
-        return enterpriseData.empCards.length;
+        // console.log((enterpriseData.empCards.length).toString(), " : ", typeof((enterpriseData.empCards.length).toString()))
+        return (enterpriseData.empCards.length).toString() ;
+        // return enterpriseData.empCards.length;
     } else {
         return "NA";
     }
