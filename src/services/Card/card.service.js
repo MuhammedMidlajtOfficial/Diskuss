@@ -18,7 +18,7 @@ module.exports.getCard = async (userId, page = null, limit = null) => {
     individualUserCollection.findOne({ _id: userId }).lean(),
     enterpriseUser.findOne({ _id: userId }).populate("empCards.empCardId").lean(),
     enterpriseEmployee.findOne({ _id: userId }).lean(),
-  ]);
+  ]); 
 
   if (!isIndividualUserExist && !isEnterpriseUserExist && !isEmployeeUserExist) {
     throw new Error("Invalid user ID");
