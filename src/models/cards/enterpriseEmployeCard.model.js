@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const EnterpriseEmployeeCardSchema = new mongoose.Schema({
   userId:{
-    type: mongoose.Schema.Types.ObjectId, ref: 'EnterpriseEmployee',
+    type: String,
     required : true
   },
   enterpriseId:{
