@@ -9,7 +9,7 @@ const generateReferralCode = () => {
 const assignReferralCodesToExistingUsers = async () => {
     try {
         // Connect to your MongoDB database
-        await mongoose.connect('mongodb+srv://muhammedmidlaj236:muhammedmidlaj236@cluster0.cdoh9.mongodb.net/Diskuss', { useNewUrlParser: true, useUnifiedTopology: true });
+        await mongoose.connect(process.env.MongoDBURL, { useNewUrlParser: true, useUnifiedTopology: true });
 
         // Find all users who do not have a referral code
         const usersWithoutReferralCode = await individualUserCollection.find({ referralCode: { $exists: false } });

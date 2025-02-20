@@ -134,7 +134,7 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
 };
 
 module.exports.postIndividualSignup = async (req, res) => {
-  const { username, email, phnNumber, otp, referralCode } = req.body;
+  const { username, email, phnNumber, companyName, otp, referralCode } = req.body;
   // const passwordRaw = req.body.password;
 
   try {
@@ -178,6 +178,7 @@ module.exports.postIndividualSignup = async (req, res) => {
       username,
       email,
       phnNumber,
+      companyName,
       // password: hashedPassword,
       referralCodeUsed : referralCode || "",
       // cardNo: 0,
@@ -430,7 +431,7 @@ module.exports.resetPassword = async (req, res ) => {
 
 module.exports.updateProfile = async (req, res) => {
   try {
-    const { userId, image, phnNumber, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body;
+    const { userId, image, companyName, phnNumber, role, name, website, address, whatsappNo, facebookLink, instagramLink, twitterLink } = req.body;
 
     const isUserExist = await individualUserCollection.findOne({ _id: userId }).exec();
     if (!isUserExist) {
@@ -484,6 +485,7 @@ module.exports.updateProfile = async (req, res) => {
           image: imageUrl,
           role,
           username: name,
+          companyName,
           website,
           phnNumber,
           address,
