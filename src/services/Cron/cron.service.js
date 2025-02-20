@@ -62,8 +62,8 @@ cron.schedule("* * * * *", async () => {
 
           const notificationContent2 = 
   type === "upcoming"
-    ? `<h3><h2>Reminder:</h2> Your meeting <strong>"${meeting.meetingTitle}"</strong> is scheduled at <strong>${meeting.startTime}</strong>. Be ready in 30 minutes!</h3>`
-    : `<h3><h2>Reminder:</h2> Your meeting <strong>"${meeting.meetingTitle}"</strong> is starting now!</h3>`;
+    ? `<h3><strong>"Reminder:</strong>< Your meeting <strong>"${meeting.meetingTitle}"</strong> is scheduled at <strong>${meeting.startTime}</strong>. Be ready in 30 minutes!</h3>`
+    : `<h3><strong>"Reminder:</strong> Your meeting <strong>"${meeting.meetingTitle}"</strong> is starting now!</h3>`;
 
 
       // Batch users into groups of 5 for API requests
