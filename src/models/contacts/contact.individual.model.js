@@ -1,8 +1,7 @@
-const { required, boolean } = require('joi');
 const mongoose = require('mongoose');
 
 const contactSchema = new mongoose.Schema({
-  contactOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the owner of the contact
+  contactOwnerId: { type: String, required: true }, // Reference to the owner of the contact
   contactOwnerName: {type:String, required:true},
   contactOwnerPhnNumber: {type:String, required:false},
   contacts: [ {
@@ -18,7 +17,7 @@ const contactSchema = new mongoose.Schema({
     scheduled: { type: Boolean, default: false },
     scheduledTime: { type: Date },
     notes: { type: String},
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Reference to the user who created the contact
+    userId: { type: String, required: true }, // Reference to the user who created the contact
     cardImage:[{
       front :{ type:String, default: ''},
       back :{ type:String, default: ''},
