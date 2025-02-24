@@ -369,7 +369,7 @@ const updateContact = async (req, res) => {
 
     // Depending on the user type, update the contact in the relevant collection
     const updateQuery = { _id: contactOwnerId };
-    const updateData = { $set: { "contacts.$[contact].phnNumber": phnNumber } };
+    const updateData = { $set: { "contacts.$.phnNumber": phnNumber } };
     const arrayFilters = [{ "contact._id": contact_id }];
 
     if (existIndividualUser) {
@@ -383,7 +383,7 @@ const updateContact = async (req, res) => {
     return res.status(200).json({ message: "Contact updated successfully" });
 
   } catch (error) {
-    console.error("Error updating Contact:", error.message);
+    console.error("Error updating Contact:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
