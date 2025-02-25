@@ -17,7 +17,7 @@ const contactSchema = new mongoose.Schema({
     scheduled: { type: Boolean, default: false },
     scheduledTime: { type: Date },
     notes: { type: String},
-    userId: { type: String, required: true }, // Reference to the user who created the contact
+    userId: { type: mongoose.Schema.Types.Mixed, required: false }, // Reference to the user who created the contact
     cardImage:[{
       front :{ type:String, default: ''},
       back :{ type:String, default: ''},
