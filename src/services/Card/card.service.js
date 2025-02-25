@@ -18,7 +18,7 @@ module.exports.getCard = async (userId, page = null, limit = null) => {
     individualUserCollection.findOne({ _id: userId }).lean(),
     enterpriseUser.findOne({ _id: userId }).populate("empCards.empCardId").lean(),
     enterpriseEmployee.findOne({ _id: userId }).lean(),
-  ]); 
+  ]);
 
   if (!isIndividualUserExist && !isEnterpriseUserExist && !isEmployeeUserExist) {
     throw new Error("Invalid user ID");
@@ -30,8 +30,8 @@ module.exports.getCard = async (userId, page = null, limit = null) => {
     // Fetch enterprise user cards
     const enterpriseCardsFromEmpCards = isEnterpriseUserExist.empCards.map(empCard => empCard.empCardId);
     const enterpriseCardsFromCardCollection = await Card.find({ userId });
-    // cards = [...enterpriseCardsFromCardCollection, ...enterpriseCardsFromEmpCards];
-    cards = enterpriseCardsFromCardCollection;
+    cards = [...enterpriseCardsFromCardCollection, ...enterpriseCardsFromEmpCards];
+    // cards = enterpriseCardsFromCardCollection;
   } else if (isIndividualUserExist) {
     // Fetch individual user cards
     cards = await Card.find({ userId });
