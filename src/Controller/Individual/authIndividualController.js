@@ -55,7 +55,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
     // Check if phnNumber exists
     const user = await individualUserCollection.findOne({ phnNumber });
     if (!user) {
-      return res.status(404).json({ message: 'Seems like you are new to DISKUSS, register now to Login' });
+      return res.status(404).json({ message: 'Seems like you are new to   Know Connection, register now to Login' });
     }
 
     let otp;
@@ -107,7 +107,7 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
     // Check if phnNumber exists
     const user = await individualUserCollection.findOne({ phnNumber });
     if (!user) {
-      return res.status(404).json({ message: 'Seems like you are new to DISKUSS, register now to Login' });
+      return res.status(404).json({ message: 'Seems like you are new to Know Connection, register now to Login' });
     }
     
     if(!user){
