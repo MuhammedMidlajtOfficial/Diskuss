@@ -11,7 +11,8 @@ const IndividualUserSchema = new mongoose.Schema({
     required: true,
   },
   companyName: {
-    type: String
+    type: String,
+    default: ''
   },
   password: {
     type: String
