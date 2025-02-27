@@ -1361,7 +1361,7 @@ exports.getOverview = async (userId) => {
                     return {
                         month: monthStart.format('MMMM'),
                         year: monthStart.format('YYYY'),
-                        count: count
+                        count: count.count
                     };
                 }) : Array(12).fill(0).map((_, index) => {
                     const monthStart = now.clone().startOf('year').add(index, 'months');
