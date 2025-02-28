@@ -73,7 +73,7 @@ const ReferralLevelSchema = new mongoose.Schema({
   
 
   // index the fields
-  ReferralSchema.index({ referrer: 1, invitee: 1 }, { unique: true });
+  ReferralSchema.index({ referrer: 1, inviteePhoneNo: 1 }, { unique: true });
   ReferralSchema.index({ invitee: 1 });
   ReferralSchema.index({ inviteePhoneNo: 1 });
   ReferralSchema.index({ referrer: 1 });
