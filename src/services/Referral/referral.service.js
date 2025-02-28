@@ -624,14 +624,14 @@ function getRewardsEarned(userId) {
 
 // check user has subscribed to a plan or not
 const checkUserSubscription = async (userId) => {
-    const userSubscription = await UserSubscription.findOne({ 
+    const userSubscription = await UserSubscription.find({ 
         userId: userId,
         $or: [
             { status : "active" },
             { status : "inactive" }]
         }).exec();
-    console.log("userSubscription : ", userSubscription);
-    if (!userSubscription) {
+    // console.log("userSubscription : ", userSubscription);
+    if (userSubscription.length === 0) {
         return false;
     }
     return true;
