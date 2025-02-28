@@ -9,6 +9,7 @@ const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.mod
 const Contact  = require('../../models/contacts/contact.individual.model');
 const enterpriseUser = require('../../models/users/enterpriseUser');
 const { checkReferralCodeValid } = require('../../helper/validateReferralCode');
+const referralService = require('../../services/Referral/referral.service');
 
 module.exports.postEnterpriseLogin = async (req, res) => {
   try {
