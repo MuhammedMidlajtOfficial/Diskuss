@@ -1190,6 +1190,7 @@ exports.getOverview = async (userId) => {
             }
         ];
 
+
         // Constructing aggregation pipeline for cards
         const cardPipeline = [
             {
@@ -1301,7 +1302,7 @@ exports.getOverview = async (userId) => {
                 const pipeline = [
                     {
                         $match: {
-                            contactOwnerId: new ObjectId(userId)
+                            contactOwnerId: userId
                         }
                     },
                     {

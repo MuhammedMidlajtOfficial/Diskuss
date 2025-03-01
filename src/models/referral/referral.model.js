@@ -77,7 +77,7 @@ const ReferralLevelSchema = new mongoose.Schema({
   ReferralSchema.index({ invitee: 1 });
   ReferralSchema.index({ inviteePhoneNo: 1 });
   ReferralSchema.index({ referrer: 1 });
-  ReferralSchema.index({ referralCode: 1 });
+  ReferralSchema.index({ referralCode: 1 });  
   ReferralSchema.index({ status: 1 });
 
   // Export the model based on the schema
