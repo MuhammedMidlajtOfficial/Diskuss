@@ -49,7 +49,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
 
     // Check for missing fields
     if (!phnNumber) {
-      return res.status(400).json({ message: "phnNumber is required" });
+      return res.status(400).json({ message: "Phone Number is required" });
     }
 
     // Check if phnNumber exists
@@ -331,7 +331,7 @@ module.exports.sendOTP = async (req, res) => {
 
     // Check for missing fields
     if ( !phnNumber) {
-      return res.status(400).json({ message :"phnNumber is required"}); 
+      return res.status(400).json({ message :"Phone Number is required"}); 
     }
 
     let isIndividualExist;
