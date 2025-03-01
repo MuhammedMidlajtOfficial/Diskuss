@@ -1301,7 +1301,7 @@ exports.getOverview = async (userId) => {
                 const pipeline = [
                     {
                         $match: {
-                            contactOwnerId: new ObjectId(userId)
+                            contactOwnerId: userId
                         }
                     },
                     {
