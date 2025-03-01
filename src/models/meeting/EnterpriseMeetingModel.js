@@ -41,7 +41,7 @@ const meetingSchema = new mongoose.Schema({
     {
       Name: { type: String, required: true },
       PhonNumber: { type: String, required: true },
-      status:{type:String,default:'Invited Via SMS'}
+      status:{type:String,default:'Invite Via SMS'}
       
     }
   ],

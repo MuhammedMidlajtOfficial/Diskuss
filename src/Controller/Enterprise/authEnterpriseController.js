@@ -9,6 +9,7 @@ const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.mod
 const Contact  = require('../../models/contacts/contact.individual.model');
 const enterpriseUser = require('../../models/users/enterpriseUser');
 const { checkReferralCodeValid } = require('../../helper/validateReferralCode');
+const referralService = require('../../services/Referral/referral.service');
 
 module.exports.postEnterpriseLogin = async (req, res) => {
   try {
@@ -74,7 +75,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
 
     // Check for missing fields
     if (!phnNumber) {
-      return res.status(400).json({ message: "phnNumber is required" }); 
+      return res.status(400).json({ message: "Phone Number is required" }); 
     }
 
     // Find enterprise user 
@@ -234,6 +235,9 @@ module.exports.postEnterpriseSignup = async (req, res) => {
     });
 
     console.log(newUser);
+    if(referralCode){
+            await referralService.registerInviteeByReferralCode(referralCode, newUser.phnNumber, newUser._id);
+    }
 
     // ✅ 7. Generate JWT tokens
     const payload = { id: newUser._id, email: newUser.email };
@@ -332,7 +336,7 @@ module.exports.OtpValidate = async (req, res ) => {
     const { phnNumber, otp } = req.body
 
     if (!phnNumber || !otp) {
-      return res.status(400).json({ message: "Both phnNumber and Otp are required" });
+      return res.status(400).json({ message: "Both Phone Number and Otp are required" });
     }
 
     const isPhoneInEnterpriseUser = await enterpriseUser.findOne({ phnNumber }).exec();
@@ -357,7 +361,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
   try {
     const {phnNumber } = req.body;
     if(!phnNumber){
-      return res.status(401).json({ message: "Phone nNumber not exist" })
+      return res.status(401).json({ message: "Phone Number not exist" })
     }
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
@@ -390,7 +394,7 @@ module.exports.sendOTP = async (req, res) => {
 
     // Check for missing fields
     if ( !phnNumber) {
-      return res.status(400).json({ message :"phnNumber is required"}); 
+      return res.status(400).json({ message :"Phone Number is required"}); 
     }
 
     let isIndividualExist;
