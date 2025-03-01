@@ -654,7 +654,7 @@ exports.getMeetingsAnalytics = async (userId) => {
             countMeetingsTodayInSections(userId),
             countMeetingsThisMonth(userId),
             countMeetingsThisYearInQuarters(userId),
-            countMeetingsEveryMonthOfThisYear(userId),
+            countExpiredMeetingsEveryMonthOfThisYear(userId),
             countUpcomingMeetingNextFourWeek(userId)
         ]);
 
@@ -874,7 +874,7 @@ async function countMeetingsThisMonth(userId) {
   }
   
 // Helper function to count meetings in every month of the year
-  async function countMeetingsEveryMonthOfThisYear(userId) {
+  async function countExpiredMeetingsEveryMonthOfThisYear(userId) {
     const now = moment();
     const startOfYear = now.clone().startOf('year');
     const monthsData = [];
@@ -883,10 +883,11 @@ async function countMeetingsThisMonth(userId) {
 
     for (let i = 0; i < 12; i++) {
         const monthStart = startOfYear.clone().add(i, 'months');
-        const monthEnd = monthStart.clone().add(1, 'month');
+        let monthEnd = monthStart.clone().add(1, 'month');
         let count;
 
         if (i === currentMonth) {
+            monthEnd = moment()
             count = await countMeetings(userId, monthStart, monthEnd);
         monthsData.push({
             month: monthStart.format('MMMM'), // Month name
@@ -957,6 +958,46 @@ async function countUpcomingMeetingNextFourWeek(userId) {
         throw error; // Re-throw the error to be handled by the caller
     }
 }
+
+// Helper function to count meetings in every month of the year
+async function countMeetingsEveryMonthOfThisYear(userId) {
+    const now = moment();
+    const startOfYear = now.clone().startOf('year');
+    const monthsData = [];
+    const currentMonth = now.month();
+    let totalMeetingThisYear = 0;
+
+    for (let i = 0; i < 12; i++) {
+        const monthStart = startOfYear.clone().add(i, 'months');
+        const monthEnd = monthStart.clone().add(1, 'month');
+        let count;
+
+        if (i === currentMonth) {
+            count = await countMeetings(userId, monthStart, monthEnd);
+        monthsData.push({
+            month: monthStart.format('MMMM'), // Month name
+            year: monthStart.format('YYYY'),
+            count: count
+        });
+        totalMeetingThisYear += count;
+        break;
+        } 
+        
+        count = await countMeetings(userId, monthStart, monthEnd);
+
+
+        totalMeetingThisYear += count;
+
+        monthsData.push({
+            month: monthStart.format('MMMM'), // Month name
+            year: monthStart.format('YYYY'),
+            count: count
+        });
+    }
+
+    return { totalMeetingThisYear, monthsData };
+}
+
 
 async function countAllMeetings(userId  ) {
     const now = moment();
