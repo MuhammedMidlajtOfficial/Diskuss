@@ -94,6 +94,6 @@ const EnterpriseEmployeeCardSchema = new mongoose.Schema({
     type:String,
     default : 'active'
   },
-});
+},{ timestamps:true });
 
 module.exports = mongoose.model("EnterpriseEmployeeCard",EnterpriseEmployeeCardSchema );
