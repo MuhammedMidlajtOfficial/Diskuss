@@ -151,7 +151,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     const isSubscribed = await checkUserSubscription(newReferral.referrer);
     if (isSubscribed) {
         newReferral.isSubscribed = true;
-        // await newReferral.save();
+        await newReferral.save();
     }
 
     // Update invitee's coin balance
