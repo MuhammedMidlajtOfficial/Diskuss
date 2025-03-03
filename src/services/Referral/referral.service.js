@@ -149,6 +149,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     await newReferral.save();
 
     const isSubscribed = await checkUserSubscription(newReferral.referrer);
+    console.log("isSubscribed : ", isSubscribed)
     if (isSubscribed) {
         newReferral.isSubscribed = true;
         await newReferral.save();
@@ -261,7 +262,7 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
     const isSubscribed = await checkUserSubscription(newReferral.referrer);
     if (isSubscribed) {
         newReferral.isSubscribed = true;
-        newReferral.save();
+        await newReferral.save();
     }
 
     await updateCoinsBalance(newReferral.referrer);
