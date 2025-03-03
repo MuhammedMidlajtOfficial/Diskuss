@@ -93,9 +93,16 @@ const registerInvitee = async (referralId, inviteePhoneNo) => {
 // Register Invitee by Referral Code
 const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, inviteeId = "") => {
     // checking if the referral code is valid
-    const individualUser = await IndividualUser.findOne({ referralCode }).exec();
-    const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
-    const enterpriseEmployeeUser = await EnterpriseEmployeeUser.findOne({ referralCode }).exec();
+    const [individualUser, enterpriseUser, enterpriseEmployeeUser] = await Promise.all(
+        [
+            await IndividualUser.findOne({ referralCode }).exec(),
+            await EnterpriseUser.findOne({ referralCode }).exec(),
+            await EnterpriseEmployeeUser.findOne({ referralCode }).exec()
+        ]);
+
+    // const individualUser = await IndividualUser.findOne({ referralCode }).exec();
+    // const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
+    // const enterpriseEmployeeUser = await EnterpriseEmployeeUser.findOne({ referralCode }).exec();
 
     if (!individualUser && !enterpriseUser && !enterpriseEmployeeUser) {
         throw new Error('Invalid referral code');
@@ -144,7 +151,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     const isSubscribed = await checkUserSubscription(newReferral.referrer);
     if (isSubscribed) {
         newReferral.isSubscribed = true;
-        // await newReferral.save();
+        await newReferral.save();
     }
 
     // Update invitee's coin balance
@@ -719,7 +726,7 @@ const updateCoinsBalance = async (userId) => {
         checkUserType(userId)
     ]);
 
-    console.log(coinsPending, coinsBalance, coinsWithdrawn, coinsRewarded, userType.userType)
+    // console.log(coinsPending, coinsBalance, coinsWithdrawn, coinsRewarded, userType.userType)
     // const coinsPending = await countTotalCoinsPending(userId);
     // const coinsBalance = await countTotalCoinsBalance(userId);
     // const coinsWithdrawn = await countTotalCoinsWithdrawn(userId);
