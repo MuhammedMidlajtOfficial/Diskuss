@@ -186,6 +186,7 @@ module.exports.createCard = async (req, res) => {
         companyName: businessName,
         phnNumber: mobile,
         password: hashedPassword,
+        role: designation,
         cardNo: 0,
         theme
       });
