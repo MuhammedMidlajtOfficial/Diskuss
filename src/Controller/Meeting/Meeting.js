@@ -657,6 +657,9 @@ const UpdateMeeting = async (req, res) => {
     const { meetingId } = req.params;
     const updatedData = req.body;
 
+    console.log('updatedData from UpdateMeeting',updatedData);
+    
+
     // Fetch the original meeting
     const oldMeeting = await MeetingBase.findById(meetingId);
     // console.log(oldMeeting);
@@ -730,10 +733,8 @@ const UpdateMeeting = async (req, res) => {
 
     if (newInvitedPeople.length != 0) {
 
-const notificationContent = 
-  `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate}, scheduled at ${updatedMeeting.startTime}, created by ${Ownername}.`;
-
-
+    const notificationContent = 
+      `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate}, scheduled at ${updatedMeeting.startTime}, created by ${Ownername}.`;
 
       const repose = await axios.post(
         "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
