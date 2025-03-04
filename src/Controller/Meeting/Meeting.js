@@ -689,7 +689,7 @@ const UpdateMeeting = async (req, res) => {
     if (updatedData.invitedPeople) {
       updatedData.invitedPeople = updatedData.invitedPeople.map((user) => ({
         user,
-        status: "pending",
+        // status: "pending",
       }));
     }
 
