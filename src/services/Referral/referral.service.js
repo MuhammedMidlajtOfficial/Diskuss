@@ -148,8 +148,8 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     // console.log("registration reward : ", settings.RegistrationReward); 
     await newReferral.save();
 
-    const isSubscribed = await checkUserSubscription(newReferral.referrer);
-    console.log("isSubscribed : ", isSubscribed)
+    const isSubscribed = await checkUserSubscription(newReferral.invitee);
+    // console.log("isSubscribed : ", isSubscribed)
     if (isSubscribed) {
         newReferral.isSubscribed = true;
         await newReferral.save();
@@ -259,7 +259,9 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
     // console.log("new referral : ", newReferral);
     await newReferral.save();
 
-    const isSubscribed = await checkUserSubscription(newReferral.referrer);
+    const isSubscribed = await checkUserSubscription(newReferral.invitee);
+    // console.log("new Referral", newReferral)
+    // console.log("is Subscribed ", isSubscribed)
     if (isSubscribed) {
         newReferral.isSubscribed = true;
         await newReferral.save();
@@ -359,6 +361,9 @@ const getReferralDetails = async (userId) => {
     const registered = referrals.filter(referral => referral.status === 'Registered').length;
     const invited = referrals.filter(referral => referral.status === 'Invited').length;
     const referalConfig = await configModel.findById(configId);
+    if (!referalConfig) {
+        throw new Error("Referral configuration not found");
+    }
     const settings = referalConfig.config;
     // Update invitee's coin balance
     // const totalCoinsData = await Referral.aggregate([ 
@@ -375,23 +380,45 @@ const getReferralDetails = async (userId) => {
     // console.log("coins : ", coins);
     const userType = (await checkUserType(userId)).userType;
     let userData = {};
-    if (userType === 'individual') {
-        userData = await IndividualUser.findById(userId).select('referralCode coinsWithdrawn coinsRewarded coinsBalance').lean().exec();
-    } else if(userType === 'enterprise') {
-        userData = await EnterpriseUser.findById(userId).select('referralCode coinsWithdrawn coinsRewarded coinsBalance').lean().exec();
-    } else if(userType === 'enterpriseEmployee') {
-        userData = await EnterpriseEmployeeUser.findById(userId).select('referralCode coinsWithdrawn coinsRewarded coinsBalance').lean().exec();
+    switch (userType) {
+        case 'individual':
+            userData = await IndividualUser.findById(userId).select('referralCode coinsWithdrawn coinsRewarded coinsBalance').lean().exec();
+            break;
+        case 'enterprise':
+            userData = await EnterpriseUser.findById(userId).select('referralCode coinsWithdrawn coinsRewarded coinsBalance').lean().exec();
+            break;
+        case 'enterpriseEmployee':
+            userData = await EnterpriseEmployeeUser.findById(userId).select('referralCode coinsWithdrawn coinsRewarded coinsBalance').lean().exec();
+            break;
+        default:
+            throw new Error("Unsupported user type");
+    }
+    if (!userData) {
+        throw new Error("User data not found");
     }
     const referralCode = userData ? userData.referralCode : ''; // Default to empty string if no user found
 
-    const [totalCoins, coinsWithdrawn, remainingCoins, coinsRewarded] = await Promise.all([
+    const [totalCoins, coinsWithdrawn, coinsRewarded] = await Promise.all([
         countTotalCoins(userId),
         countTotalCoinsWithdrawn(userId),
-        countTotalCoinsBalance(userId),
         countTotalCoinsRewarded(userId)
     ]);
 
+    const remainingCoins = parseInt(coinsRewarded) - parseInt(coinsWithdrawn); // Default to 0 if no user found
     const pendingCoins = parseInt(totalCoins) - parseInt(coinsRewarded);
+
+     // Update user data
+     switch (userType) {
+        case 'individual':
+            await IndividualUser.findByIdAndUpdate(userId, { coinsPending: pendingCoins, coinsBalance: remainingCoins, coinsRewarded, coinsWithdrawn });
+            break;
+        case 'enterprise':
+            await EnterpriseUser.findByIdAndUpdate(userId, { coinsPending: pendingCoins, coinsBalance: remainingCoins, coinsRewarded, coinsWithdrawn });
+            break;
+        case 'enterpriseEmployee':
+            await EnterpriseEmployeeUser.findByIdAndUpdate(userId, { coinsPending: pendingCoins, coinsBalance: remainingCoins, coinsRewarded, coinsWithdrawn });
+            break;
+    }
 
     // userData.coinsRewarded = coinsRewarded;
     // userData.coinsPending = pendingCoins;
