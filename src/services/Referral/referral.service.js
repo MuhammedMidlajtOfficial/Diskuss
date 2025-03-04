@@ -93,9 +93,16 @@ const registerInvitee = async (referralId, inviteePhoneNo) => {
 // Register Invitee by Referral Code
 const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, inviteeId = "") => {
     // checking if the referral code is valid
-    const individualUser = await IndividualUser.findOne({ referralCode }).exec();
-    const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
-    const enterpriseEmployeeUser = await EnterpriseEmployeeUser.findOne({ referralCode }).exec();
+    const [individualUser, enterpriseUser, enterpriseEmployeeUser] = await Promise.all(
+        [
+            await IndividualUser.findOne({ referralCode }).exec(),
+            await EnterpriseUser.findOne({ referralCode }).exec(),
+            await EnterpriseEmployeeUser.findOne({ referralCode }).exec()
+        ]);
+
+    // const individualUser = await IndividualUser.findOne({ referralCode }).exec();
+    // const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
+    // const enterpriseEmployeeUser = await EnterpriseEmployeeUser.findOne({ referralCode }).exec();
 
     if (!individualUser && !enterpriseUser && !enterpriseEmployeeUser) {
         throw new Error('Invalid referral code');
@@ -142,9 +149,10 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     await newReferral.save();
 
     const isSubscribed = await checkUserSubscription(newReferral.referrer);
+    console.log("isSubscribed : ", isSubscribed)
     if (isSubscribed) {
         newReferral.isSubscribed = true;
-        // await newReferral.save();
+        await newReferral.save();
     }
 
     // Update invitee's coin balance
@@ -254,7 +262,7 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
     const isSubscribed = await checkUserSubscription(newReferral.referrer);
     if (isSubscribed) {
         newReferral.isSubscribed = true;
-        newReferral.save();
+        await newReferral.save();
     }
 
     await updateCoinsBalance(newReferral.referrer);
@@ -384,6 +392,12 @@ const getReferralDetails = async (userId) => {
     ]);
 
     const pendingCoins = parseInt(totalCoins) - parseInt(coinsRewarded);
+
+    // userData.coinsRewarded = coinsRewarded;
+    // userData.coinsPending = pendingCoins;
+    // userData.coinsBalance = remainingCoins;
+    // userData.coinsWithdrawn = coinsWithdrawn;
+    // await userData.save();
 
     // const updated  = await updateCoinsBalance(userId);
     // console.log("updated : ", updated);
@@ -719,7 +733,7 @@ const updateCoinsBalance = async (userId) => {
         checkUserType(userId)
     ]);
 
-    console.log(coinsPending, coinsBalance, coinsWithdrawn, coinsRewarded, userType.userType)
+    // console.log(coinsPending, coinsBalance, coinsWithdrawn, coinsRewarded, userType.userType)
     // const coinsPending = await countTotalCoinsPending(userId);
     // const coinsBalance = await countTotalCoinsBalance(userId);
     // const coinsWithdrawn = await countTotalCoinsWithdrawn(userId);

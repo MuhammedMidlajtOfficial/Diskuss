@@ -7,6 +7,7 @@ const Notification = require("../../models/notification/NotificationModel");
 const {emitNotification,} = require("../../Controller/Socket.io/NotificationSocketIo");
 const axios = require('axios');
 const mongoose = require('mongoose');
+const { Referral } = require('../../models/referral/referral.model');
 
 /**
  * Get all UserSubscription
@@ -228,7 +229,10 @@ const updateUserSubscription = async (req, res) => {
       const updatedUserSubscription = await UserSubscriptionService.updateUserSubscriptionById(userSubscription_id, updateData);
   
         // console.log(updateUserSubscription);
-        
+      if (updatedUserSubscription.status === 'active') {
+        // Update the user status to active
+        await Referral.updateOne({ userId: updatedUserSubscription.userId }, { status: 'active' });
+      }
       // Respond with success and the updated plan
       res.status(200).json({
         message: "User Subscription plan updated successfully",
