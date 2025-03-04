@@ -696,6 +696,14 @@ const UpdateMeeting = async (req, res) => {
       }));
     }
 
+    // ListOfInvitedPeopleViaSms
+    if (updatedData.ListOfInvitedPeopleViaSms && Array.isArray(updatedData.ListOfInvitedPeopleViaSms)) {
+      updatedData.ListOfInvitedPeopleViaSms = updatedData.ListOfInvitedPeopleViaSms.map(({ Name, PhonNumber }) => ({
+        Name,
+        PhonNumber,
+      }));
+    }
+
     // Update the meeting
     const updatedMeeting = await MeetingBase.findByIdAndUpdate(
       meetingId,
@@ -721,14 +729,6 @@ const UpdateMeeting = async (req, res) => {
     const removedPeople = oldInvitedPeople.filter(
       (userId) => !newInvitedPeople.includes(userId)
     );
-
-    // ListOfInvitedPeopleViaSms
-    if (updatedData.ListOfInvitedPeopleViaSms && Array.isArray(updatedData.ListOfInvitedPeopleViaSms)) {
-      updatedData.ListOfInvitedPeopleViaSms = updatedData.ListOfInvitedPeopleViaSms.map(({ Name, PhonNumber }) => ({
-        Name,
-        PhonNumber,
-      }));
-    }
 
     // console.log(newInvitedPeople);
     // console.log(removedPeople);
