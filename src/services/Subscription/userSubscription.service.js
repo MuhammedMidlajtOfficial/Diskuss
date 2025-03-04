@@ -6,6 +6,7 @@ const { razorpay } = require('../Razorpay/razorpay');
 const subscriptionPlanModel = require('../../models/subscription/subscriptionPlan.model');
 const mailSender = require('../../util/mailSender');
 const { sendSubscriptionSuccessFast2SMS, sendSubscriptionFailedFast2SMS } = require('../../util/Fast2SMS/fast2SMSSender');
+const { Referral } = require('../../models/referral/referral.model');
 
 /**
  * Find all Subscsriptions
@@ -96,6 +97,10 @@ const createUserSubscription = async (data) => {
       }],
     });
 
+    if (newSubscription.status === "active") {
+      // Make Referral's isSubscribed true
+      await Referral.updateOne({ userId: data.userId }, { isSubscribed: true });
+    }
     // Save the new UserSubscription plan to the database
     const savedSubscription = await newSubscription.save();
     return savedSubscription;
@@ -166,6 +171,11 @@ const createUserSubscription = async (data) => {
         },
         { new: true }  // Return the updated document
       ).exec();
+
+      if (updatedUserSubscription.status === "active") {
+        // Make Referral's isSubscribed true
+        await Referral.updateOne({ userId: data.userId }, { isSubscribed: true });
+      }
   
       return updatedUserSubscription;  // Return the result of the update operation
     } catch (error) {
