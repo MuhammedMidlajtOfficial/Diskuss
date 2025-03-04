@@ -99,7 +99,7 @@ const createUserSubscription = async (data) => {
 
     if (newSubscription.status === "active") {
       // Make Referral's isSubscribed true
-      await Referral.updateOne({ userId: data.userId }, { isSubscribed: true });
+      await Referral.updateOne({ invitee: data.userId }, { isSubscribed: true });
     }
     // Save the new UserSubscription plan to the database
     const savedSubscription = await newSubscription.save();
@@ -137,7 +137,7 @@ const createUserSubscription = async (data) => {
         { new: true }
       ).exec(); // Find and update the UserSubscription plan
 
-      updatedUserSubscription.save(); // Save the updated UserSubscription plan
+      await updatedUserSubscription.save(); // Save the updated UserSubscription plan
 
   
       return updatedUserSubscription; // Return the updated UserSubscription
@@ -174,7 +174,7 @@ const createUserSubscription = async (data) => {
 
       if (updatedUserSubscription.status === "active") {
         // Make Referral's isSubscribed true
-        await Referral.updateOne({ userId: data.userId }, { isSubscribed: true });
+        await Referral.updateOne({ invitee: data.userId }, { isSubscribed: true });
       }
   
       return updatedUserSubscription;  // Return the result of the update operation
