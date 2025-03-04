@@ -722,6 +722,14 @@ const UpdateMeeting = async (req, res) => {
       (userId) => !newInvitedPeople.includes(userId)
     );
 
+    // ListOfInvitedPeopleViaSms
+    if (updatedData.ListOfInvitedPeopleViaSms && Array.isArray(updatedData.ListOfInvitedPeopleViaSms)) {
+      updatedData.ListOfInvitedPeopleViaSms = updatedData.ListOfInvitedPeopleViaSms.map(({ Name, PhonNumber }) => ({
+        Name,
+        PhonNumber,
+      }));
+    }
+
     // console.log(newInvitedPeople);
     // console.log(removedPeople);
     const selectedDateObj = new Date(updatedData.selectedDate);
