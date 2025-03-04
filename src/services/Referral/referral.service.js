@@ -393,11 +393,11 @@ const getReferralDetails = async (userId) => {
 
     const pendingCoins = parseInt(totalCoins) - parseInt(coinsRewarded);
 
-    userData.coinsRewarded = coinsRewarded;
-    userData.coinsPending = pendingCoins;
-    userData.coinsBalance = remainingCoins;
-    userData.coinsWithdrawn = coinsWithdrawn;
-    await userData.save();
+    // userData.coinsRewarded = coinsRewarded;
+    // userData.coinsPending = pendingCoins;
+    // userData.coinsBalance = remainingCoins;
+    // userData.coinsWithdrawn = coinsWithdrawn;
+    // await userData.save();
 
     // const updated  = await updateCoinsBalance(userId);
     // console.log("updated : ", updated);
