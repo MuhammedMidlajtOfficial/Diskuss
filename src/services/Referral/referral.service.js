@@ -9,6 +9,9 @@ const { checkUserType } = require('../../util/HelperFunctions');
 const Settings = require('../../models/settings/settingModel');
 const configModel = require('../../models/config/config.model');
 const UserSubscription = require('../../models/subscription/userSubscription.model');
+const Notification = require("../../models/notification/NotificationModel")
+const {emitNotification} = require("../../Controller/Socket.io/NotificationSocketIo");
+
 
 const configId = "67988e04e60b8e8d6f248e07"
 
@@ -115,7 +118,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
         status : { $ne : "Invited" }
  }).exec();
 
-    // console.log("alreadyRegistered : ", alreadyRegistered);
+    console.log("alreadyRegistered : ", alreadyRegistered);
     if (alreadyRegistered) {
         throw new Error('Invitee already registered or card created');
     }
@@ -147,6 +150,20 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
     newReferral.rewardsEarned = parseInt(settings.RegistrationReward) ; // Award 50 coins for registration
     // console.log("registration reward : ", settings.RegistrationReward); 
     await newReferral.save();
+
+    const notification = new Notification({
+      receiver:referrerId,
+      currency: 'INR',
+      type: "referral",
+      content: inviteePhoneNo +" has registered with your referral code",
+      status: "unread",
+    });
+    await notification.save();
+
+    // Emit notification
+    emitNotification(referrerId, notification);
+
+   
 
     const isSubscribed = await checkUserSubscription(newReferral.invitee);
     // console.log("isSubscribed : ", isSubscribed)
@@ -258,6 +275,18 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
     newReferral.rewardsEarned += parseInt(settings.CardCreationReward); // Award 50 coins for registration
     // console.log("new referral : ", newReferral);
     await newReferral.save();
+
+    const notification = new Notification({
+        receiver:referrerId,
+        currency: 'INR',
+        type: "referral",
+        content: inviteePhoneNo +" has registered with your referral code",
+        status: "unread",
+      });
+      await notification.save();
+  
+      // Emit notification
+      emitNotification(referrerId, notification);
 
     const isSubscribed = await checkUserSubscription(newReferral.invitee);
     // console.log("new Referral", newReferral)
@@ -665,6 +694,9 @@ function getRewardsEarned(userId) {
 
 // check user has subscribed to a plan or not
 const checkUserSubscription = async (userId) => {
+    if (!userId) {
+        return false;
+    }
     const userSubscription = await UserSubscription.find({ 
         userId: userId,
         $or: [
