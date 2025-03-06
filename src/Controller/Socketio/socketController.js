@@ -1,5 +1,7 @@
 let io;
 const connectedUsers = new Map();
+const messageController = require("../Message/messageController")
+const messageService = require("../../services/Message/message.service")
 
 // Set up the Socket.IO instance and handle user connections
 exports.setSocketIO = (socketIO) => {
@@ -26,8 +28,14 @@ exports.setSocketIO = (socketIO) => {
     });
 
     // Handle chat messages
-    socket.on('chat message', ({ room, msg }) => {
-      io.to(room).emit('chat message', msg);
+    socket.on('chat message', async ({ room, senderId, recieverId, msg }) => {
+      socket.join(room);
+      // socket.emit("chat message", msg); 
+      console.log("socket user id")
+      const data = { room, senderId, recieverId, msg }
+      console.log("room "+ room + " msg "+ msg + " senderId "+ senderId + " recieverId "+ recieverId);
+      io.to(room).emit('new_message', data);
+      await messageService.createMessage({ chatId: room, senderId: senderId, receiverId: recieverId, content: msg });
   });
 
     // Track user connection
