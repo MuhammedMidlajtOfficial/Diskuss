@@ -10,6 +10,7 @@ const socketIo = require('socket.io');
 const server = http.createServer(app);
 const socketController = require('./Controller/Socketio/socketController.js');
 const messageController = require('./Controller/Message/messageController');
+const messageService = require("./services/Message/message.service.js")
 // const groupmessageController = require('./Controller/Message/groupmessageController.js');
 // const enterpriseMessageController = require('./Controller/EnterpriseMessage/enterpriseMessageController.js');
 const socketControllers = require('./Controller/Socket.io/NotificationSocketIo.js');
@@ -49,7 +50,6 @@ const io = socketIo(server, {
     origin: "*", 
     methods: ["GET", "POST"],
   },
-
 });
 
 notificationSocketController.setSocketIO(io);
@@ -59,6 +59,7 @@ messageController.setSocketIO(io);
 // enterpriseMessageController.setSocketIO(io);
 // Initialize SocketController with Socket.io instance
 socketControllers.setSocketIO(io);
+messageService.setSocketIO(io);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
