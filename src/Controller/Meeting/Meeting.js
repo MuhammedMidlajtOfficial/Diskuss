@@ -657,9 +657,6 @@ const UpdateMeeting = async (req, res) => {
     const { meetingId } = req.params;
     const updatedData = req.body;
 
-    console.log('updatedData from UpdateMeeting',updatedData);
-    
-
     // Fetch the original meeting
     const oldMeeting = await MeetingBase.findById(meetingId);
     // console.log(oldMeeting);
@@ -680,27 +677,19 @@ const UpdateMeeting = async (req, res) => {
       invitedUserProfile.companyName ||
       "Unknown";
 
-    console.log(Ownername);
+    
 
     // Store the old invited people
     const oldInvitedPeople = oldMeeting.invitedPeople.map((person) =>
       person.user.toString()
     );
-    // console.log(oldInvitedPeople);
+    
 
     // Reset status to "pending" for updated invited people
     if (updatedData.invitedPeople) {
       updatedData.invitedPeople = updatedData.invitedPeople.map((user) => ({
         user,
-        // status: "pending",
-      }));
-    }
-
-    // ListOfInvitedPeopleViaSms
-    if (updatedData.ListOfInvitedPeopleViaSms && Array.isArray(updatedData.ListOfInvitedPeopleViaSms)) {
-      updatedData.ListOfInvitedPeopleViaSms = updatedData.ListOfInvitedPeopleViaSms.map(({ Name, PhonNumber }) => ({
-        Name,
-        PhonNumber,
+        status: "pending",
       }));
     }
 
@@ -721,14 +710,22 @@ const UpdateMeeting = async (req, res) => {
     }
 
     // Store the new invited people
-    const newInvitedPeople = updatedMeeting.invitedPeople.map((person) =>
-      person.user.toString()
-    );
+    const updatedPeopleSet = new Set(updatedData.invitedPeople.map(person => person.user.toString()));
+   const oldPeopleSet = new Set(oldMeeting.invitedPeople.map(person => person.user.toString()));
 
-    // Find removed users (present in old but not in new)
-    const removedPeople = oldInvitedPeople.filter(
-      (userId) => !newInvitedPeople.includes(userId)
-    );
+   
+  // Find new invited people (present in updated but NOT in old)
+const newInvitedPeople = [...updatedPeopleSet].filter(personId => !oldPeopleSet.has(personId));
+
+
+
+// Find removed people (present in old but NOT in updated)
+const removedPeople = [...oldPeopleSet].filter(personId => !updatedPeopleSet.has(personId));
+
+// ✅ Store in an array
+const removedPeopleArray = [...removedPeople];
+
+
 
     // console.log(newInvitedPeople);
     // console.log(removedPeople);
@@ -741,8 +738,10 @@ const UpdateMeeting = async (req, res) => {
 
     if (newInvitedPeople.length != 0) {
 
-    const notificationContent = 
-      `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate}, scheduled at ${updatedMeeting.startTime}, created by ${Ownername}.`;
+const notificationContent = 
+  `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate}, scheduled at ${updatedMeeting.startTime}, created by ${Ownername}.`;
+
+
 
       const repose = await axios.post(
         "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
@@ -882,6 +881,61 @@ const UpdateMeeting = async (req, res) => {
       })
     );
 
+    const newInvitedSet = new Set(newInvitedPeople); // Convert array to Set
+
+    // Find invited IDs that are in updatedPeopleSet but NOT in newInvitedSet
+    const RestPeopleId = [...updatedPeopleSet].filter(personId => !newInvitedSet.has(personId));
+
+
+
+    const notificationContentUpdate = `The meeting titled "${updatedData.meetingTitle}",  on ${updatedData.selectedDate},scheduled at ${updatedMeeting.startTime} created by ${Ownername}, has been updated. Please check the details for any changes.`;
+
+
+      const reposed = await axios.post(
+        "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
+        {
+          userIds: RestPeopleId,
+          notification: {
+            title: "Meeting Invitation",
+            body: notificationContentUpdate,
+          },
+        }
+      );
+
+      const notificationContentUpdate2 = `
+      <h3>
+        The meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
+        <strong>${formattedDate}</strong>, Scheduled at 
+        <strong>${updatedMeeting.startTime}</strong>, created by 
+        <strong>${Ownername}</strong> has been updated. Please check the details for any changes..
+      </h3>
+    `;
+
+      await Promise.all(
+        RestPeopleId.map(async (userId) => {
+          try {
+    
+  
+  
+            const notification = new Notification({
+              sender: ownerId,
+              receiver: userId,
+              type: "meeting",
+              content: notificationContentUpdate2,
+              status: "unread",
+            });
+            await notification.save();
+  
+            // Emit notification
+            emitNotification(userId, notification);
+          } catch (error) {
+            console.error(`Error adding meeting ID to user ID: ${userId}`, error);
+          }
+        })
+      );
+
+    
+
     // Return the updated meeting information
     return res.status(200).json({
       data: updatedMeeting,
@@ -895,7 +949,6 @@ const UpdateMeeting = async (req, res) => {
       .json({ message: "Failed to update meeting", error: error.message });
   }
 };
-
 
 
 
