@@ -902,19 +902,22 @@ const notificationContent =
     console.log(RestPeopleId);
 
 
-    const notificationContentUpdate = `The meeting titled "${updatedData.meetingTitle}",  on ${updatedData.selectedDate},scheduled at ${updatedMeeting.startTime} created by ${Ownername}, has been updated. Please check the details for any changes.`;
+      if (RestPeopleId.length != 0) {
+        const notificationContentUpdate = `The meeting titled "${updatedData.meetingTitle}",  on ${updatedData.selectedDate},scheduled at ${updatedMeeting.startTime} created by ${Ownername}, has been updated. Please check the details for any changes.`;
 
 
-      const reposed = await axios.post(
-        "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
-        {
-          userIds: RestPeopleId,
-          notification: {
-            title: "Meeting Invitation",
-            body: notificationContentUpdate,
-          },
-        }
-      );
+        const reposed = await axios.post(
+          "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
+          {
+            userIds: RestPeopleId,
+            notification: {
+              title: "Meeting Invitation",
+              body: notificationContentUpdate,
+            },
+          }
+        );
+
+      }
 
       const notificationContentUpdate2 = `
       <h3>
@@ -929,7 +932,7 @@ const notificationContent =
         RestPeopleId.map(async (userId) => {
           try {
     
-  
+                console.log(userId)
   
             const notification = new Notification({
               sender: ownerId,
