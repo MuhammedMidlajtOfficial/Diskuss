@@ -652,57 +652,9 @@ const deleteMeeting = async (req, res) => {
   }
 };
 
-const UpdateMeeting = async (req, res) => {
-  try {
-    const { meetingId } = req.params;
-    const updatedData = req.body;
 
-    // Fetch the original meeting
-    const oldMeeting = await MeetingBase.findById(meetingId);
-    // console.log(oldMeeting);
-
-    if (!oldMeeting) {
-      return res.status(404).json({ message: "Meeting not found" });
-    }
-
-    const ownerId = oldMeeting.meetingOwner;
-
-    const invitedUserProfile =
-      (await Profile.findById(ownerId)) ||
-      (await enterprise.findById(ownerId)) ||
-      (await individualUserCollection.findById(ownerId));
-
-    const Ownername =
-      invitedUserProfile.username ||
-      invitedUserProfile.companyName ||
-      "Unknown";
 
     
-
-    // Store the old invited people
-    const oldInvitedPeople = oldMeeting.invitedPeople.map((person) =>
-      person.user.toString()
-    );
-    
-
-    // Reset status to "pending" for updated invited people
-    if (updatedData.invitedPeople) {
-      updatedData.invitedPeople = updatedData.invitedPeople.map((user) => ({
-        user,
-        status: "pending",
-      }));
-    }
-
-   
-      // ListOfInvitedPeopleViaSms
-      // if (updatedData.ListOfInvitedPeopleViaSms && Array.isArray(updatedData.ListOfInvitedPeopleViaSms)) {
-      //   updatedData.ListOfInvitedPeopleViaSms = updatedData.ListOfInvitedPeopleViaSms.map(({ Name, PhonNumber }) => ({
-      //     Name,
-      //     PhonNumber,
-      //   }));
-      // }
-
-    // Update the meeting
 const UpdateMeeting = async (req, res) => {
   try {
     const { meetingId } = req.params;
