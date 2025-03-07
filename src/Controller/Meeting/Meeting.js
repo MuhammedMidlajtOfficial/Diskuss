@@ -697,6 +697,15 @@ const UpdateMeeting = async (req, res) => {
       }));
     }
 
+    if (updatedData.ListOfInvitedPeopleViaSms && Array.isArray(updatedData.ListOfInvitedPeopleViaSms)) {
+      updatedData.ListOfInvitedPeopleViaSms = updatedData.ListOfInvitedPeopleViaSms.map(({ Name, PhonNumber }) => ({
+        Name,
+        PhonNumber,
+      }));
+    }
+
+
+
     // Update the meeting
     const updatedMeeting = await MeetingBase.findByIdAndUpdate(
       meetingId,
