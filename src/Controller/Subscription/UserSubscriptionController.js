@@ -115,17 +115,17 @@ const createUserSubscription = async (req, res) => {
 
     console.log("razorpayOrder--",razorpayOrder);
 
-    const notification = new Notification({
-      receiver:userId,
-      orderId: razorpayOrder.id,
-      amount,
-      Plan_name :subscriptionPlan.name,
-      currency: 'INR',
-      type: "subscription",
-      content: "Your plan has been successfully activated! Enjoy the premium features.",
-      status: "unread",
-    });
-    await notification.save();
+    // const notification = new Notification({
+    //   receiver:userId,
+    //   orderId: razorpayOrder.id,
+    //   amount,
+    //   Plan_name :subscriptionPlan.name,
+    //   currency: 'INR',
+    //   type: "subscription",
+    //   content: "Your plan has been successfully activated! Enjoy the premium features.",
+    //   status: "unread",
+    // });
+    // await notification.save();
 
     // Emit notification
     emitNotification(userId, notification);
