@@ -128,7 +128,7 @@ const createUserSubscription = async (req, res) => {
     // await notification.save();
 
     // Emit notification
-    emitNotification(userId, notification);
+    // emitNotification(userId, notification);
 
     // Respond with order details for frontend to process payment
     return res.status(201).json({
