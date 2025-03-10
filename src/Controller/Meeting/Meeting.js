@@ -652,51 +652,49 @@ const deleteMeeting = async (req, res) => {
   }
 };
 
+
+
+    
 const UpdateMeeting = async (req, res) => {
   try {
     const { meetingId } = req.params;
     const updatedData = req.body;
 
-    console.log('updatedData from UpdateMeeting',updatedData);
-    
-
     // Fetch the original meeting
     const oldMeeting = await MeetingBase.findById(meetingId);
-    // console.log(oldMeeting);
-
     if (!oldMeeting) {
       return res.status(404).json({ message: "Meeting not found" });
     }
 
     const ownerId = oldMeeting.meetingOwner;
 
+    // Fetch the meeting owner's profile
     const invitedUserProfile =
       (await Profile.findById(ownerId)) ||
       (await enterprise.findById(ownerId)) ||
       (await individualUserCollection.findById(ownerId));
 
     const Ownername =
-      invitedUserProfile.username ||
-      invitedUserProfile.companyName ||
+      invitedUserProfile?.username ||
+      invitedUserProfile?.companyName ||
       "Unknown";
 
-    console.log(Ownername);
+    console.log("Meeting Owner:", Ownername);
 
     // Store the old invited people
     const oldInvitedPeople = oldMeeting.invitedPeople.map((person) =>
       person.user.toString()
     );
-    // console.log(oldInvitedPeople);
+    console.log("Old Invited People:", oldInvitedPeople);
 
     // Reset status to "pending" for updated invited people
     if (updatedData.invitedPeople) {
       updatedData.invitedPeople = updatedData.invitedPeople.map((user) => ({
         user,
-        // status: "pending",
+        status: "pending",
       }));
     }
 
-    // ListOfInvitedPeopleViaSms
     if (updatedData.ListOfInvitedPeopleViaSms && Array.isArray(updatedData.ListOfInvitedPeopleViaSms)) {
       updatedData.ListOfInvitedPeopleViaSms = updatedData.ListOfInvitedPeopleViaSms.map(({ Name, PhonNumber }) => ({
         Name,
@@ -708,16 +706,11 @@ const UpdateMeeting = async (req, res) => {
     const updatedMeeting = await MeetingBase.findByIdAndUpdate(
       meetingId,
       updatedData,
-      {
-        new: true,
-        runValidators: true,
-      }
+      { new: true, runValidators: true }
     );
 
     if (!updatedMeeting) {
-      return res
-        .status(404)
-        .json({ message: "Meeting not found after update" });
+      return res.status(404).json({ message: "Meeting not found after update" });
     }
 
     // Store the new invited people
@@ -730,80 +723,43 @@ const UpdateMeeting = async (req, res) => {
       (userId) => !newInvitedPeople.includes(userId)
     );
 
-    // console.log(newInvitedPeople);
-    // console.log(removedPeople);
+    // Find users who are present in both old and new meetings (previously present and still invited)
+    const usersStillInvited = oldInvitedPeople.filter((userId) =>
+      newInvitedPeople.includes(userId)
+    );
+
+    console.log("New Invited People:", newInvitedPeople);
+    console.log("Removed People:", removedPeople);
+    console.log("Users Still Invited:", usersStillInvited);
+
+    // Format the selected date
     const selectedDateObj = new Date(updatedData.selectedDate);
     const day = String(selectedDateObj.getDate()).padStart(2, "0");
     const month = String(selectedDateObj.getMonth() + 1).padStart(2, "0"); // months are 0-based
     const year = selectedDateObj.getFullYear();
-
     const formattedDate = `${day}/${month}/${year}`;
 
-    if (newInvitedPeople.length != 0) {
+    // Notify removed users
+    if (removedPeople.length > 0) {
+      const notificationContentRemove = `You have been removed from the meeting titled "${updatedData.meetingTitle}" scheduled on ${formattedDate}, created by ${Ownername}.`;
 
-    const notificationContent = 
-      `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate}, scheduled at ${updatedMeeting.startTime}, created by ${Ownername}.`;
-
-      const repose = await axios.post(
-        "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
-        {
-          userIds: newInvitedPeople,
-          notification: {
-            title: "Meeting Invitation",
-            body: notificationContent,
-          },
-        }
-      );
-
-      console.log(repose.data);
-    }
-
-    if (removedPeople.length != 0) {
-    //   const notificationContent = `
-    //   <h3>
-    //     You have been invited to a meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
-    //     <strong>${formattedDate}</strong>, Scheduled at 
-    //     <strong>${updatedMeeting.startTime}</strong>, created by 
-    //     <strong>${Ownername}</strong>.
-    //   </h3>
-    // `;
-    const notificationContentRemove = `You have been removed from the meeting titled "${updatedData.meetingTitle}" scheduled on ${updatedData.selectedDate}, created by ${Ownername}.`;
-
-      const reposed = await axios.post(
-        "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
-        {
-          userIds: removedPeople,
-          notification: {
-            title: "Meeting Invitation",
-            body: notificationContentRemove,
-          },
-        }
-      );
-
-      console.log(reposed.data);
-    }
-
-    // Remove meeting ID from removed users
-    await Promise.all(
-      removedPeople.map(async (userId) => {
-        try {
-          const profileOrEnterprise =
-            (await Profile.findById(userId)) ||
-            (await enterprise.findById(userId)) ||
-            (await individualUserCollection.findById(userId));
-
-          if (profileOrEnterprise) {
-            await profileOrEnterprise.updateOne(
-              { $pull: { meetings: updatedMeeting._id } }, // Remove the meeting ID
-              { new: true }
-            );
-          } else {
-            console.log(
-              `No profile, enterprise, or individual user found with ID: ${userId}`
-            );
+      try {
+        const fcmResponse = await axios.post(
+          "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
+          {
+            userIds: removedPeople,
+            notification: {
+              title: "Meeting Removal",
+              body: notificationContentRemove,
+            },
           }
+        );
+        console.log("FCM Response for Removed Users:", fcmResponse.data);
+      } catch (error) {
+        console.error("FCM Error for Removed Users:", error.message);
+      }
 
-          const notificationContent = `
+      const notificationContentRemove2 = `
           <h3>
             You have been removed from the meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
             <strong>${formattedDate}</strong>, Scheduled at 
@@ -811,51 +767,69 @@ const UpdateMeeting = async (req, res) => {
             <strong>${Ownername}</strong>.
           </h3>
         `;
-        
 
-          const notification = new Notification({
-            sender: ownerId,
-            receiver: userId,
-            type: "meeting",
-            content: notificationContent,
-            status: "unread",
-          });
-          await notification.save();
+      // Remove meeting ID from removed users
+      await Promise.all(
+        removedPeople.map(async (userId) => {
+          try {
+            const profileOrEnterprise =
+              (await Profile.findById(userId)) ||
+              (await enterprise.findById(userId)) ||
+              (await individualUserCollection.findById(userId));
 
-          // Emit notification
-          emitNotification(userId, notification);
-        } catch (error) {
-          console.error(
-            `Error removing meeting ID from user ID: ${userId}`,
-            error
-          );
-        }
-      })
-    );
+            if (profileOrEnterprise) {
+              await profileOrEnterprise.updateOne(
+                { $pull: { meetings: updatedMeeting._id } }, // Remove the meeting ID
+                { new: true }
+              );
+            } else {
+              console.log(
+                `No profile, enterprise, or individual user found with ID: ${userId}`
+              );
+            }
 
-    // Add meeting ID to new invited users
-    await Promise.all(
-      newInvitedPeople.map(async (userId) => {
-        try {
-          const profileOrEnterprise =
-            (await Profile.findById(userId)) ||
-            (await enterprise.findById(userId)) ||
-            (await individualUserCollection.findById(userId));
+            const notification = new Notification({
+              sender: ownerId,
+              receiver: userId,
+              type: "meeting",
+              content: notificationContentRemove2,
+              status: "unread",
+            });
+            await notification.save();
 
-          if (profileOrEnterprise) {
-            await profileOrEnterprise.updateOne(
-              { $addToSet: { meetings: updatedMeeting._id } }, // Add the meeting ID
-              { new: true }
-            );
-          } else {
-            console.log(
-              `No profile, enterprise, or individual user found with ID: ${userId}`
+            // Emit notification
+            emitNotification(userId, notification);
+          } catch (error) {
+            console.error(
+              `Error removing meeting ID from user ID: ${userId}`,
+              error
             );
           }
+        })
+      );
+    }
 
-    
+    // Notify newly invited users
+    if (newInvitedPeople.length > 0) {
+      const notificationContent = `You have been invited to a meeting titled "${updatedData.meetingTitle}" on ${formattedDate}, scheduled at ${updatedMeeting.startTime}, created by ${Ownername}.`;
 
-          const notificationContent = `
+      try {
+        const fcmResponse = await axios.post(
+          "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
+          {
+            userIds: newInvitedPeople,
+            notification: {
+              title: "Meeting Invitation",
+              body: notificationContent,
+            },
+          }
+        );
+        console.log("FCM Response for New Invited Users:", fcmResponse.data);
+      } catch (error) {
+        console.error("FCM Error for New Invited Users:", error.message);
+      }
+
+      const notificationContentInApp = `
   <h3>
     You have been invited to a meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
     <strong>${formattedDate}</strong>, Scheduled at 
@@ -864,23 +838,95 @@ const UpdateMeeting = async (req, res) => {
   </h3>
 `;
 
+      // Add meeting ID to new invited users
+      await Promise.all(
+        newInvitedPeople.map(async (userId) => {
+          try {
+            const profileOrEnterprise =
+              (await Profile.findById(userId)) ||
+              (await enterprise.findById(userId)) ||
+              (await individualUserCollection.findById(userId));
 
-          const notification = new Notification({
-            sender: ownerId,
-            receiver: userId,
-            type: "meeting",
-            content: notificationContent,
-            status: "unread",
-          });
-          await notification.save();
+            if (profileOrEnterprise) {
+              await profileOrEnterprise.updateOne(
+                { $addToSet: { meetings: updatedMeeting._id } }, // Add the meeting ID
+                { new: true }
+              );
+            } else {
+              console.log(
+                `No profile, enterprise, or individual user found with ID: ${userId}`
+              );
+            }
 
-          // Emit notification
-          emitNotification(userId, notification);
-        } catch (error) {
-          console.error(`Error adding meeting ID to user ID: ${userId}`, error);
-        }
-      })
-    );
+            const notification = new Notification({
+              sender: ownerId,
+              receiver: userId,
+              type: "meeting",
+              content: notificationContentInApp,
+              status: "unread",
+            });
+            await notification.save();
+
+            // Emit notification
+            emitNotification(userId, notification);
+          } catch (error) {
+            console.error(`Error adding meeting ID to user ID: ${userId}`, error);
+          }
+        })
+      );
+    }
+
+    // Notify users who are still invited (present in both old and new meetings)
+    if (usersStillInvited.length > 0) {
+      const notificationContentUpdate = `The meeting titled "${updatedData.meetingTitle}", scheduled on ${formattedDate} at ${updatedMeeting.startTime}, created by ${Ownername}, has been updated. Please check the details for any changes.`;
+
+      try {
+        const fcmResponse = await axios.post(
+          "http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification",
+          {
+            userIds: usersStillInvited,
+            notification: {
+              title: "Meeting Updated",
+              body: notificationContentUpdate,
+            },
+          }
+        );
+        console.log("FCM Response for Users Still Invited:", fcmResponse.data);
+      } catch (error) {
+        console.error("FCM Error for Users Still Invited:", error.message);
+      }
+
+      const notificationContentUpdate2 = `
+            <h3>
+              The meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
+              <strong>${formattedDate}</strong>, Scheduled at 
+              <strong>${updatedMeeting.startTime}</strong>, created by 
+              <strong>${Ownername}</strong> has been updated. Please check the details for any changes..
+            </h3>
+          `;
+
+
+      // Notify users still invited in the database
+      await Promise.all(
+        usersStillInvited.map(async (userId) => {
+          try {
+            const notification = new Notification({
+              sender: ownerId,
+              receiver: userId,
+              type: "meeting",
+              content: notificationContentUpdate2,
+              status: "unread",
+            });
+            await notification.save();
+
+            // Emit notification
+            emitNotification(userId, notification);
+          } catch (error) {
+            console.error(`Error notifying user ID: ${userId}`, error);
+          }
+        })
+      );
+    }
 
     // Return the updated meeting information
     return res.status(200).json({
@@ -889,13 +935,10 @@ const UpdateMeeting = async (req, res) => {
       message: "Successfully updated",
     });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Failed to update meeting", error: error.message });
+    console.error("Error in UpdateMeeting:", error);
+    return res.status(500).json({ message: "Failed to update meeting", error: error.message });
   }
 };
-
 
 
 

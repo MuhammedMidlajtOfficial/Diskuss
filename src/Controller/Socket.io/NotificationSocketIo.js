@@ -6,6 +6,7 @@ const setSocketIO = (socketIoInstance) => {
   io = socketIoInstance;
 
   io.on('connection', (socket) => {
+    console.log('A user connected');
     const { userId } = socket.handshake.query; // Assuming userId is passed as a query param
 
     if (userId) {
