@@ -224,6 +224,43 @@ const createContact = async (req, res) => {
       }
     }
 
+    // if The contect is Diskuss user 
+    const SendNotification = async ()=>{
+      
+      try {
+        if (isDiskussUser && userId && contactOwnerName) {
+          const notificationContent = `
+            <h3>
+              <strong>${contactOwnerName}</strong> has saved your contact.
+              You can now chat and create a meeting with them.
+            </h3>
+          `;
+
+          const notification = new Notification({
+            sender: contactOwnerId,
+            receiver: userId,
+            type: "contact_saved",
+            content: notificationContent,
+            status: "unread",
+          });
+
+          await notification.save();
+
+          try {
+            emitNotification(userId, notification);
+          } catch (emitError) {
+            console.error("Failed to emit notification:", emitError.message);
+          }
+        }
+      } catch (notificationError) {
+        console.error("Error in SendNotification:", notificationError.message);
+      }
+    };
+      
+    if (isDiskussUser && userId ) {
+     SendNotification()
+    }
+
     return res
       .status(201)
       .json({ message: "Contact created successfully", contact: newContact });
@@ -727,6 +764,41 @@ const createPhoneContacts = async (req, res) => {
       }
     }
 
+    const SendNotification = async (userId, isDiskussUser)=>{
+      
+      try {
+        if (isDiskussUser && userId) {
+          const notificationContent = `
+            <h3>
+              <strong>${contactOwnerName}</strong> has added you to their contacts. 
+              Start a chat or schedule a meeting with them!.
+            </h3>
+          `;
+
+          const notification = new Notification({
+            sender: contactOwnerId,
+            receiver: userId,
+            type: "contact_saved",
+            content: notificationContent,
+            status: "unread",
+          });
+
+          await notification.save();
+
+          try {
+            emitNotification(userId, notification);
+          } catch (emitError) {
+            console.error("Failed to emit notification:", emitError.message);
+          }
+        }
+      } catch (notificationError) {
+        console.error("Error in SendNotification:", notificationError.message);
+      }
+    };
+      
+    
+    await Promise.all(validContacts.map((c) => SendNotification(c.userId, c.isDiskussUser)));
+    
     return res.status(201).json({
       message: "Contacts created successfully",
       contacts: createdContacts,
