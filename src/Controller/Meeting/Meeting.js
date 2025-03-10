@@ -759,6 +759,15 @@ const UpdateMeeting = async (req, res) => {
         console.error("FCM Error for Removed Users:", error.message);
       }
 
+      const notificationContentRemove2 = `
+          <h3>
+            You have been removed from the meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
+            <strong>${formattedDate}</strong>, Scheduled at 
+            <strong>${updatedMeeting.startTime}</strong>, created by 
+            <strong>${Ownername}</strong>.
+          </h3>
+        `;
+
       // Remove meeting ID from removed users
       await Promise.all(
         removedPeople.map(async (userId) => {
@@ -783,7 +792,7 @@ const UpdateMeeting = async (req, res) => {
               sender: ownerId,
               receiver: userId,
               type: "meeting",
-              content: notificationContentRemove,
+              content: notificationContentRemove2,
               status: "unread",
             });
             await notification.save();
@@ -820,6 +829,15 @@ const UpdateMeeting = async (req, res) => {
         console.error("FCM Error for New Invited Users:", error.message);
       }
 
+      const notificationContentInApp = `
+  <h3>
+    You have been invited to a meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
+    <strong>${formattedDate}</strong>, Scheduled at 
+    <strong>${updatedMeeting.startTime}</strong>, created by 
+    <strong>${Ownername}</strong>.
+  </h3>
+`;
+
       // Add meeting ID to new invited users
       await Promise.all(
         newInvitedPeople.map(async (userId) => {
@@ -844,7 +862,7 @@ const UpdateMeeting = async (req, res) => {
               sender: ownerId,
               receiver: userId,
               type: "meeting",
-              content: notificationContent,
+              content: notificationContentInApp,
               status: "unread",
             });
             await notification.save();
@@ -878,6 +896,16 @@ const UpdateMeeting = async (req, res) => {
         console.error("FCM Error for Users Still Invited:", error.message);
       }
 
+      const notificationContentUpdate2 = `
+            <h3>
+              The meeting titled <strong>"${updatedData.meetingTitle}"</strong> on 
+              <strong>${formattedDate}</strong>, Scheduled at 
+              <strong>${updatedMeeting.startTime}</strong>, created by 
+              <strong>${Ownername}</strong> has been updated. Please check the details for any changes..
+            </h3>
+          `;
+
+
       // Notify users still invited in the database
       await Promise.all(
         usersStillInvited.map(async (userId) => {
@@ -886,7 +914,7 @@ const UpdateMeeting = async (req, res) => {
               sender: ownerId,
               receiver: userId,
               type: "meeting",
-              content: notificationContentUpdate,
+              content: notificationContentUpdate2,
               status: "unread",
             });
             await notification.save();
