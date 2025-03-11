@@ -9,6 +9,7 @@ const Notification = require("../../models/notification/NotificationModel");
 const {
   emitNotification,
 } = require("../../Controller/Socket.io/NotificationSocketIo");
+const axios = require("axios");
 
 /**
  * Get all Contacts
@@ -241,6 +242,28 @@ const createContact = async (req, res) => {
               You can now chat and create a meeting with them.
             </h3>
           `;
+
+          const notificationContentForMobile = `${contactOwnerName} has saved your contact You can now chat and create a meeting with them.`
+
+          const userArray = [userId.toString()]
+          console.log(userArray)
+
+          try {
+             const repose = await axios.post(
+                    "http://13.203.24.247:9000/api/v1/fcm/sendContactNotification",
+                    {
+                      userIds: userArray,
+                      notification: {
+                        title: "Contect Saved",
+                        body: notificationContentForMobile,
+                      },
+                    }
+                  );
+                  console.log("Notification sent to mobile:", repose.data);
+          } catch (error) {
+            console.log("Error in sending notification to mobile:", error.message);
+          }
+
 
           const notification = new Notification({
             sender: contactOwnerId,
@@ -805,6 +828,28 @@ const createPhoneContacts = async (req, res) => {
     
       await Promise.all(validContacts.map((c) => SendNotification(c.userId, c.isDiskussUser)));
     
+      const notificationContentForMobile = `${contactOwnerName} has saved your contact.
+              You can now chat and create a meeting with them.`
+
+      const userArray = validContacts.map(contact => contact.userId.toString());
+
+      if(userArray.length > 0){
+        try {
+          const repose = await axios.post(
+                 "http://13.203.24.247:9000/api/v1/fcm/sendContactNotification",
+                 {
+                   userIds: userArray,
+                   notification: {
+                     title: "Contect Saved",
+                     body: notificationContentForMobile,
+                   },
+                 }
+               );
+               console.log("Notification sent to mobile:", repose.data);
+       } catch (error) {
+         console.log("Error in sending notification to mobile:", error.message);
+       }
+      }
 
 
 
