@@ -53,7 +53,7 @@ const getWithdrawalRequestByUserId = async (req, res) => {
 
         // Fetch withdrawal request by user ID
         const withdrawalRequest = await withdrawalService.getWithdrawalRequestByUserId(userId);
-        console.log("withdrawalRequest : ", withdrawalRequest)
+        // console.log("withdrawalRequest : ", withdrawalRequest)
         if (!withdrawalRequest) {
             return res.status(404).json({ message: 'No withdrawal request found for this user.' });
         }
@@ -113,9 +113,24 @@ const updateWithdrawalRequest = async (req, res) => {
     }
 }
 
+const checkPendingRequest = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const pendingRequest = await withdrawalService.checkRequestPending(userId);
+        if (pendingRequest && pendingRequest.length > 0) {
+            return res.status(200).json( {pendingRequest} );
+        }
+        return res.status(404).json({ message: 'No pending withdrawal request found for this user.' });
+    } catch (error) {
+        console.error('Error fetching pending withdrawal request:', error);
+        return res.status(500).json({ message: 'Internal server error.' });
+    }
+}
+
 module.exports = {
     createWithdrawalRequest,
     getAllWithdrawalDetails,
     getWithdrawalRequestByUserId,
-    updateWithdrawalRequest
+    updateWithdrawalRequest,
+    checkPendingRequest
 };

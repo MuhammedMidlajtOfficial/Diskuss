@@ -16,6 +16,7 @@ router.get('/withdraw', WithdrawalController.getAllWithdrawalDetails);
 router.get('/withdraw/:userId', WithdrawalController.getWithdrawalRequestByUserId);
 router.post('/withdraw', WithdrawalController.createWithdrawalRequest);
 router.put('/withdraw/:id', WithdrawalController.updateWithdrawalRequest);
+router.get('/withdraw/pending/:userId', WithdrawalController.checkPendingRequest);
 
 
 // Dashboard Routes
