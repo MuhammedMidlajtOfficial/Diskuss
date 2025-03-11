@@ -10,7 +10,7 @@ const createWithdrawalRequest = async (userId, amount, upiId) => {
 
 const getWithdrawalRequestByUserId = async (userId) => {
     console.log("userId : ", userId);
-    return await WithdrawalRequest.findOne({ userId });
+    return await WithdrawalRequest.find({ userId });
 }
 
 const getAllWithdrawalRequests = async () => {
