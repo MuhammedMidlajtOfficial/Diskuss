@@ -3,7 +3,9 @@ const EnterpriseEmployee = require('../../models/users/enterpriseEmploye.model')
 const EnterpriseUser = require('../../models/users/enterpriseUser');
 const Message = require('../../models/message/messageModel');
 const axios = require('axios');
-const { getReceiverSocketId, userSocketMap } = require('../../Controller/Socketio/socketController');
+// const { getReceiverSocketId, userSocketMap } = require('../../Controller/Socketio/socketController');
+const socketController = require('../../Controller/Socketio/socketController');
+
 const { ObjectId } = require('mongoose').Types;
 let io;
 
@@ -31,7 +33,7 @@ exports.markMessagesAsRead = async (data) => {
         // console.log("get receiver 1", getReceiverSocketId);
         // console.log("get receiver 2", getReceiverSocketId(senderId));
         // console.log("get receiver 3", userSocketMap);
-        const senderSocketId = getReceiverSocketId(senderId); // Assuming you have this function
+        const senderSocketId = socketController.getReceiverSocketId(senderId); // Assuming you have this function
         if (senderSocketId) {
           io.to(senderSocketId).emit("messageRead", {
             recieverId: receiverId,

@@ -33,11 +33,11 @@ exports.setSocketIO = (socketIO) => {
       console.error("Connection error:", err);
     });
 
-  //   socket.on("messageRead", async (data) => {
-  //     console.log("messageRead", data);
-  //     // const { messageId, chatId, userId } = data; // data = messageId, chatId, userId
-  //     await messageService.markMessagesAsRead(data);
-  // });
+    socket.on("messageRead", async (data) => {
+      console.log("messageRead", data);
+      // const { messageId, chatId, userId } = data; // data = messageId, chatId, userId
+      await messageService.markMessagesAsRead(data);
+  });
 
     // When a user joins a chat room
     socket.on("joinChat", (chatId) => {
@@ -83,7 +83,7 @@ exports.setSocketIO = (socketIO) => {
     // Handle user disconnection
     socket.on("disconnect", () => {
       delete userSocketMap[userId];
-      io.emit("getOnlineUser", Object.keys(userSocketMap));
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
       // const userId = [...connectedUsers.entries()].find(
       //   ([, socketId]) => socketId === socket.id
       // )?.[0];
