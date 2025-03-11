@@ -6,7 +6,7 @@ const Contact = require("../../models/contacts/contact.individual.model");
 const EnterpriseUser = require("../../models/users/enterpriseUser");
 const EnterpriseEmployee = require("../../models/users/enterpriseEmploye.model");
 const axios = require("axios");
-
+const {getReceiverSocketId} = require("../../Controller/Socketio/socketController")
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
 };
@@ -67,17 +67,24 @@ exports.sendMessage = async (req, res) => {
       chatId,
       senderId,
       receiverId,
-      content,
+      content,  
       timestamp: now,
       localTime, // Add the formatted local time
     });
+    await message.save();
 
-    // Emit the message to the respective chat room (chatId)
-    io.to(chatId).emit("receiveMessage", {
-      ...message.toObject(),
-      senderName: sender.username || sender.name || "Unknown Sender", // Use appropriate field for sender name
-      receiverName: receiver.username || receiver.name || "Unknown Receiver", // Use appropriate field for receiver name
-    });
+    // Notify the sender and receiver using Socket.io
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", message);
+    }
+
+    // // Emit the message to the respective chat room (chatId)
+    // io.to(chatId).emit("receiveMessage", {
+    //   ...message.toObject(),
+    //   senderName: sender.username || sender.name || "Unknown Sender", // Use appropriate field for sender name
+    //   receiverName: receiver.username || receiver.name || "Unknown Receiver", // Use appropriate field for receiver name
+    // });
 
     // Notify the receiver using the admin backend
     try {
@@ -110,13 +117,22 @@ exports.sendMessage = async (req, res) => {
 
 //Mark Messages as Read
 exports.markMessagesAsRead = async (req, res) => {
-  const { chatId, userId } = req.body;
+  const { chatId, receiverId, senderId } = req.body;
 
   try {
     const result = await Message.updateMany(
-      { chatId, receiverId: userId, isRead: false },
+      { chatId, receiverId: receiverId, isRead: false },
       { $set: { isRead: true } }
     );
+
+    // Notify the sender and receiver using Socket.io
+    console.log("receiverId", receiverId);
+    const receiverSocketId = getReceiverSocketId(senderId);
+    console.log("receiverSocketId", receiverSocketId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId});
+    }
+
 
     res.status(200).json({ message: "Messages marked as read", result });
   } catch (error) {
@@ -127,7 +143,7 @@ exports.markMessagesAsRead = async (req, res) => {
 
 // Get messages or last message of each chat involving the user
 exports.getMessages = async (req, res) => {
-  const { chatId, userId } = req.query;
+  const { chatId, receiverId } = req.query;
   let { page = null, limit = null } = req.query;
 
   try {
