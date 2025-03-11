@@ -5,6 +5,10 @@ const enterpriseUser = require("../../models/users/enterpriseUser");
 const ContactService = require("../../services/contact.Individual.service");
 const { uploadImageToS3ForContact, deleteImageFromS3ForContact } = require("../../services/AWS/s3Bucket");
 const mongoose = require ('mongoose')
+const Notification = require("../../models/notification/NotificationModel");
+const {
+  emitNotification,
+} = require("../../Controller/Socket.io/NotificationSocketIo");
 
 /**
  * Get all Contacts
@@ -75,6 +79,7 @@ const createContact = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
     console.log("contactOwnerId--", contactOwnerId);
+    
 
     const existIndividualUserNumber = await individualUserCollection.findOne({
       phnNumber,
@@ -88,6 +93,7 @@ const createContact = async (req, res) => {
 
     let userId = null;
     let isDiskussUser = false;
+    console.log(phnNumber)
 
     // Determine the user ID based on the type of user
     if (existIndividualUserNumber) {
@@ -797,8 +803,11 @@ const createPhoneContacts = async (req, res) => {
     };
       
     
-    await Promise.all(validContacts.map((c) => SendNotification(c.userId, c.isDiskussUser)));
+      await Promise.all(validContacts.map((c) => SendNotification(c.userId, c.isDiskussUser)));
     
+
+
+
     return res.status(201).json({
       message: "Contacts created successfully",
       contacts: createdContacts,
