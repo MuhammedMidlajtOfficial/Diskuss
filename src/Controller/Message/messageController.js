@@ -77,11 +77,12 @@ exports.sendMessage = async (req, res) => {
 
     // Notify the sender and receiver using Socket.io
     const receiverSocketId = getReceiverSocketId(receiverId);
+    const senderSocketId = getReceiverSocketId(senderId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", message);
+      io.to(receiverSocketId).to(senderSocketId).emit("newMessage", message);
       const newChatList = await getNewChatList({userId: receiverId});
       console.log("newChatList", newChatList);
-      io.to(receiverSocketId).emit("newChat", newChatList);
+      io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
     }
 
 
@@ -134,9 +135,10 @@ exports.markMessagesAsRead = async (req, res) => {
     // Notify the sender and receiver using Socket.io
     // console.log("receiverId", receiverId);
     const receiverSocketId = getReceiverSocketId(senderId);
+    const senderSocketId = getReceiverSocketId(receiverId);
     // console.log("receiverSocketId", receiverSocketId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId});
+      io.to(receiverSocketId).to(senderSocketId).emit("messageRead", {chatId, receiverId, senderId});
     }
 
 
