@@ -403,19 +403,45 @@ const getMeetingsByIds = async (req, res) => {
     }
 
     const meetingIds = userInfo.meetings?.map((meeting) => meeting._id);
-    // console.log(meetingIds);
+    console.log(meetingIds);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const meetings = await MeetingBase.find({
-      _id: { $in: meetingIds },
-      selectedDate: { $gte: today },
-    }).sort({ selectedDate: 1 }); // Ascending order based on selectedDate
+    console.log(today);
+    // const meetings = await MeetingBase.find({
+    //   _id: { $in: meetingIds },
+    //   // selectedDate: { $gte: today },
+    // }).sort({ selectedDate: 1 }); // Ascending order based on selectedDate
+  //   const meetings = await MeetingBase.aggregate([
+  //     {
+  //         $match: {
+  //             $and: [
+  //                 {
+  //                     $or: [
+  //                         { meetingOwner: new ObjectId(userId) }, // Convert userId to ObjectId
+  //                         { 'invitedPeople.user': new ObjectId(userId) } // Convert userId to ObjectId
+  //                     ]
+  //                 },
+  //                 { selectedDate: { $gte: today } } // Filter meetings with selectedDate >= today
+  //             ]
+  //         }
+  //     }
+  // ]);
+  const meetings = await MeetingBase.find({
+    $or: [
+      { meetingOwner: userId },
+      { 'invitedPeople.user': userId }
+    ],
+    selectedDate: { $gte: today }
+  }).sort({ selectedDate: 1 });
+  
+
+
     
   
     const meeting_date = meetings.map((meeting) => meeting.selectedDate);
-    console.log(meeting_date);    
+    
 
     if (meetings.length === 0) {
       return res.status(200).json({ meetings: [] });
