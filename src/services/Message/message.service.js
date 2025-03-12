@@ -43,7 +43,7 @@ exports.markMessagesAsRead = async (data) => {
             chatId: chatId,
             senderId: senderId
           });
-          console.log(`Emitted messageRead to sender ${senderId}`);
+          // console.log(`Emitted messageRead to sender ${senderId}`);
           return
         } else {
           console.log(`Sender ${message.senderId} not online.`);

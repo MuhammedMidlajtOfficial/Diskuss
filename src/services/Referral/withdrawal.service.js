@@ -14,7 +14,7 @@ const getWithdrawalRequestByUserId = async (userId) => {
 }
 
 const getAllWithdrawalRequests = async () => {
-    const withdrawals = await WithdrawalRequest.find().lean();
+    const withdrawals = await WithdrawalRequest.find().sort({ updatedDate: -1 }).lean();
 
     for (let withdrawal of withdrawals) {
         let user = null;

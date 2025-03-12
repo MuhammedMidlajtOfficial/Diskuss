@@ -82,7 +82,7 @@ exports.sendMessage = async (req, res) => {
       // io.to(receiverSocketId).to(senderSocketId).emit("newMessage", message);
       io.to(receiverSocketId).emit("newMessage", message);
       const newChatList = await getNewChatList({userId: receiverId});
-      console.log("newChatList", newChatList);
+      // console.log("newChatList", newChatList);
       // io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
       io.to(receiverSocketId).emit("newChat", newChatList);
     }
@@ -275,7 +275,7 @@ exports.getMessages = async (req, res) => {
         })
       );
       
-      console.log("Enriched Messages:", enrichedMessages);
+      // console.log("Enriched Messages:", enrichedMessages);
       // Apply pagination if page and limit are provided
       if (page !== null && limit !== null) {
         const startIndex = (page - 1) * limit;
