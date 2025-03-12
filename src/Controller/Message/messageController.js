@@ -7,6 +7,8 @@ const EnterpriseUser = require("../../models/users/enterpriseUser");
 const EnterpriseEmployee = require("../../models/users/enterpriseEmploye.model");
 const axios = require("axios");
 const {getReceiverSocketId} = require("../../Controller/Socketio/socketController")
+const { getNewChatList } = require("../../services/Message/message.service")
+
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
 };
@@ -75,9 +77,14 @@ exports.sendMessage = async (req, res) => {
 
     // Notify the sender and receiver using Socket.io
     const receiverSocketId = getReceiverSocketId(receiverId);
+    const senderSocketId = getReceiverSocketId(senderId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", message);
+      io.to(receiverSocketId).to(senderSocketId).emit("newMessage", message);
+      const newChatList = await getNewChatList({userId: receiverId});
+      console.log("newChatList", newChatList);
+      io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
     }
+
 
     // // Emit the message to the respective chat room (chatId)
     // io.to(chatId).emit("receiveMessage", {
@@ -126,11 +133,12 @@ exports.markMessagesAsRead = async (req, res) => {
     );
 
     // Notify the sender and receiver using Socket.io
-    console.log("receiverId", receiverId);
+    // console.log("receiverId", receiverId);
     const receiverSocketId = getReceiverSocketId(senderId);
-    console.log("receiverSocketId", receiverSocketId);
+    const senderSocketId = getReceiverSocketId(receiverId);
+    // console.log("receiverSocketId", receiverSocketId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId});
+      io.to(receiverSocketId).to(senderSocketId).emit("messageRead", {chatId, receiverId, senderId});
     }
 
 
@@ -184,7 +192,9 @@ exports.getMessages = async (req, res) => {
           lastMessagesMap.set(message.chatId, message);
         }
       }
+      // console.log("Last Messages Map:", lastMessagesMap);
       let lastMessages = Array.from(lastMessagesMap.values());
+      // console.log("Last Messages:", lastMessages);
   
       // Enrich each last message with additional information
       let enrichedMessages = await Promise.all(
@@ -262,6 +272,7 @@ exports.getMessages = async (req, res) => {
         })
       );
       
+      console.log("Enriched Messages:", enrichedMessages);
       // Apply pagination if page and limit are provided
       if (page !== null && limit !== null) {
         const startIndex = (page - 1) * limit;
