@@ -13,7 +13,7 @@ const { ObjectId } = require('mongoose').Types;
 let io;
 
 exports.markMessagesAsRead = async (data) => {
-  const { messageId, chatId, receiverId, senderId } = data; // data = messageId, chatId, userId
+  const {  chatId, receiverId, senderId } = data; // data = messageId, chatId, userId
       try {
         // 1. Update the message in the database
         const message = await Message.updateMany(
