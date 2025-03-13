@@ -828,8 +828,7 @@ const createPhoneContacts = async (req, res) => {
     
       await Promise.all(validContacts.map((c) => SendNotification(c.userId, c.isDiskussUser)));
     
-      const notificationContentForMobile = `${contactOwnerName} has saved your contact.
-              You can now chat and create a meeting with them.`
+      const notificationContentForMobile = `${contactOwnerName} has saved your contact You can now chat and create a meeting with them.`
 
       const userArray = validContacts.map(contact => contact.userId.toString());
 
