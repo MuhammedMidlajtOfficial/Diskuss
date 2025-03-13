@@ -39,46 +39,47 @@ exports.setSocketIO = (socketIO) => {
       await messageService.markMessagesAsRead(data);
   });
 
-    // When a user joins a chat room
-    socket.on("joinChat", (chatId) => {
-      socket.join(chatId);
-      const msg = `Welcome to the chat room ${chatId}!`;
-      socket.emit("chat message", msg); 
-      console.log(`User with socket ID ${socket.id} joined chat room ${chatId}`);
-    });
+    // // When a user joins a chat room
+    // socket.on("joinChat", (chatId) => {
+    //   socket.join(chatId);
+    //   const msg = `Welcome to the chat room ${chatId}!`;
+    //   socket.emit("chat message", msg); 
+    //   console.log(`User with socket ID ${socket.id} joined chat room ${chatId}`);
+    // });
 
     //    // Handle chat messages
     //    socket.on('chat message', ({ room, msg }) => {
     //     console.log("room "+ room + " msg "+ msg);
     //     io.to(room).emit('chat message', msg);
     // });
-    // Handle chat messages
-    socket.on('chat message', async ({ room, senderId, recieverId, msg }) => {
-      socket.join(room);
-      // socket.emit("chat message", msg); 
-      console.log("socket user id")
-      const data = { room, senderId, recieverId, msg }
-      console.log("room "+ room + " msg "+ msg + " senderId "+ senderId + " recieverId "+ recieverId);
-      await messageService.createMessage({ chatId: room, senderId: senderId, receiverId: recieverId, content: msg });
-      io.to(room).emit('new_message', data);
-  });
 
-    // Track user connection
-    socket.on("registerUser", (userId) => {
-      connectedUsers.set(userId, socket.id);
-      console.log(`User ${userId} connected with socket ID ${socket.id}`);
+  //   // Handle chat messages
+  //   socket.on('chat message', async ({ room, senderId, recieverId, msg }) => {
+  //     socket.join(room);
+  //     // socket.emit("chat message", msg); 
+  //     console.log("socket user id")
+  //     const data = { room, senderId, recieverId, msg }
+  //     console.log("room "+ room + " msg "+ msg + " senderId "+ senderId + " recieverId "+ recieverId);
+  //     await messageService.createMessage({ chatId: room, senderId: senderId, receiverId: recieverId, content: msg });
+  //     io.to(room).emit('new_message', data);
+  // });
 
-      // When a user joins a chat room
-      socket.on("joinChat", (chatId) => {
-        socket.join(chatId);
-        console.log(
-          `User with socket ID ${socket.id} joined chat room ${chatId}`
-        );
-      });
+    // // Track user connection
+    // socket.on("registerUser", (userId) => {
+    //   connectedUsers.set(userId, socket.id);
+      // console.log(`User ${userId} connected with socket ID ${socket.id}`);
+
+      // // When a user joins a chat room
+      // socket.on("joinChat", (chatId) => {
+      //   socket.join(chatId);
+      //   console.log(
+      //     `User with socket ID ${socket.id} joined chat room ${chatId}`
+      //   );
+      // });
 
       // Notify other clients about the user's online status
-      socket.broadcast.emit("userConnected", { userId, status: "online" });
-    });
+    //   socket.broadcast.emit("userConnected", { userId, status: "online" });
+    // });
 
     // Handle user disconnection
     socket.on("disconnect", () => {
