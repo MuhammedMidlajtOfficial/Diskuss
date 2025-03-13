@@ -519,12 +519,24 @@ exports.getMessagesNew = async (req, res) => {
         const startIndex = (page - 1) * limit;
         messages = messages.slice(startIndex, startIndex + limit);
       }
+      const isAdmin = chatId === admin_userId.toString();
+      console.log("isAdmin", isAdmin);
+      if (isAdmin) {
+        return res.status(200).json({
+          messages: messages.map((message) => ({
+            ...message.toObject(),
+          })),
+          unreadCount,
+          isAdmin : true
+        });
+      }
 
       return res.status(200).json({
         messages: messages.map((message) => ({
           ...message.toObject(),
         })),
         unreadCount,
+        
       });
     } else if (userId) {
       const enrichedMessages = await getAdminNewChatList({userId});

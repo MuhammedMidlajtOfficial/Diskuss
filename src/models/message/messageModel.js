@@ -9,7 +9,7 @@ const messageSchema = new mongoose.Schema({
   localTime: { type: String },
   isRead: { type: Boolean, default: false },
   isAdmin : { type: Boolean },
-  readBy : 
+  readBy : { type: Array }
 });
 
 

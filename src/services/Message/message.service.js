@@ -293,6 +293,6 @@ const countUnreadAdminMessage = async (userId) => {
       isRead: false, // Unread messages
       readBy: { $nin: ["67bdb074ed52c8f211cc44f9"] }, // User has not read the message
     });
-    console.log("unread count", count);
+    // console.log("unread count", count);
     return count
   }
