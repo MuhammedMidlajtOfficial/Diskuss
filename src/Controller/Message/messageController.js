@@ -141,7 +141,11 @@ exports.markMessagesAsRead = async (req, res) => {
     // console.log("receiverSocketId", receiverSocketId);
     if (receiverSocketId) {
       // io.to(receiverSocketId).to(senderSocketId).emit("messageRead", {chatId, receiverId, senderId});
-      io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId, messageIds});
+      if (messageIds){
+        io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId, messageIds});
+      }else{
+        io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId});
+      }
     }
 
 
