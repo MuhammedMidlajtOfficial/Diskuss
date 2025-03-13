@@ -51,7 +51,7 @@ const getAllWithdrawalRequests = async () => {
         withdrawal.user = user;
     }
 
-    console.log(withdrawals);
+    // console.log(withdrawals);
     return withdrawals;
 };
 
