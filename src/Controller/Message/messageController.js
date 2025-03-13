@@ -6,11 +6,95 @@ const Contact = require("../../models/contacts/contact.individual.model");
 const EnterpriseUser = require("../../models/users/enterpriseUser");
 const EnterpriseEmployee = require("../../models/users/enterpriseEmploye.model");
 const axios = require("axios");
-const {getReceiverSocketId} = require("../../Controller/Socketio/socketController")
-const { getNewChatList } = require("../../services/Message/message.service")
+const {getReceiverSocketId, userSocketMap} = require("../../Controller/Socketio/socketController")
+const { getNewChatList, getAdminNewChatList } = require("../../services/Message/message.service")
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
+};
+
+const admin_userId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462c9")
+
+// send Message From Admin
+exports.sendAdminMessage = async (req, res) => {
+  const { content } = req.body;
+
+  try {
+  // Create the message
+  // Get the current timestamp and local time
+  const now = new Date();
+  const localTime = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata", // Replace with your desired timezone
+  }).format(now);
+
+  const message = await Message.create({
+    chatId: admin_userId,
+    senderId: admin_userId,
+    receiverId: admin_userId,
+    timestamp: now,
+    content,
+    localTime, // Add the formatted local time
+    isAdmin : true,
+    readBy : []
+  });
+  await message.save();
+
+  // io.emit("newMessage", message);  
+
+  // const newChatList = await getAdminNewChatList({userId : "67bdb074ed52c8f211cc44f9"});
+  // console.log("newChatList", newChatList);
+  // io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
+  // io.emit("newChat", newChatList);
+  // io.to(receiverSocketId).emit("newChat", newChatList);
+
+  return res.status(201).json({
+    ...message.toObject(),
+    // newChatList
+  });
+
+  } catch (error) {
+    console.error("Error sending message:", error.message || error);
+    res
+      .status(500)
+      .json({ error: "Error sending message.", details: error.message });
+  }
+};
+
+// Read Messafe from Admin
+exports.markAdminMessagesAsRead = async (req, res) => {
+  const { receiverId, messageIds } = req.body;
+  const chatId = admin_userId
+
+  try {
+    
+    // Update all messages with the specified chatId
+    const result = await Message.updateMany(
+      { chatId: chatId, isRead: false }, // Find all messages in this chat that are not read
+      { $addToSet: { readBy: receiverId } } // Add userId to readBy and mark as read
+    );
+
+    // // Notify the sender and receiver using Socket.io
+    // // console.log("receiverId", receiverId);
+    // const receiverSocketId = getReceiverSocketId(senderId);
+    // // const senderSocketId = getReceiverSocketId(receiverId);
+    // // console.log("receiverSocketId", receiverSocketId);
+    // if (receiverSocketId) {
+    //   // io.to(receiverSocketId).to(senderSocketId).emit("messageRead", {chatId, receiverId, senderId});
+    //   if (messageIds){
+    //     io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId, messageIds});
+    //   }else{
+    //     io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId});
+    //   }
+    // }
+
+
+    res.status(200).json({ message: "Messages marked as read", result });
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+    res.status(500).json({ error: "Failed to mark messages as read." });
+  }
 };
 
 // Send message
@@ -81,7 +165,7 @@ exports.sendMessage = async (req, res) => {
     if (receiverSocketId) {
       // io.to(receiverSocketId).to(senderSocketId).emit("newMessage", message);
       io.to(receiverSocketId).emit("newMessage", message);
-      const newChatList = await getNewChatList({userId: receiverId});
+      const newChatList = await getNewAdminChatList({userId: receiverId});
       // console.log("newChatList", newChatList);
       // io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
       io.to(receiverSocketId).emit("newChat", newChatList);
@@ -172,6 +256,7 @@ exports.getMessages = async (req, res) => {
         isRead: false,
       });
 
+
        // Apply pagination if page and limit are provided
       if (page !== null && limit !== null) {
         const startIndex = (page - 1) * limit;
@@ -189,6 +274,7 @@ exports.getMessages = async (req, res) => {
         $or: [
           { senderId: new mongoose.Types.ObjectId(userId) },
           { receiverId: new mongoose.Types.ObjectId(userId) },
+          { isAdmin: true }
         ],
       }).sort({ timestamp: -1 });
   
@@ -287,6 +373,169 @@ exports.getMessages = async (req, res) => {
       }
   
       return res.status(200).json(enrichedMessages);
+    }  else {
+      return res
+        .status(400)
+        .json({ error: "Either chatId or userId must be provided." });
+    }
+  } catch (error) {
+    console.error("Error retrieving messages:", error);
+    res.status(500).json({ error: "Error retrieving messages." });
+  }
+};
+
+
+
+// New Send Message
+exports.sendMessageNew = async (req, res) => {
+  const { senderId, receiverId, content } = req.body;
+
+  try {
+    // Search for the sender in three different collections
+    const [senderInUser, senderInContact, senderInEnterprise] =
+      await Promise.all([
+        User.findById(senderId),
+        EnterpriseEmployee.findById(senderId),
+        EnterpriseUser.findById(senderId),
+      ]);
+
+    // Determine the sender
+    const sender = senderInUser || senderInContact || senderInEnterprise;
+
+    if (!sender) {
+      return res
+        .status(404)
+        .json({ error: "Sender not found in any collection" });
+    }
+
+    // Search for the receiver in three different collections
+    const [receiverInUser, receiverInContact, receiverInEnterprise] =
+      await Promise.all([
+        User.findById(receiverId),
+        EnterpriseEmployee.findById(receiverId),
+        EnterpriseUser.findById(receiverId),
+      ]);
+
+    // Determine the receiver
+    const receiver =
+      receiverInUser || receiverInContact || receiverInEnterprise;
+
+    if (!receiver) {
+      return res
+        .status(404)
+        .json({ error: "Receiver not found in any collection" });
+    }
+
+    // Generate chatId by sorting senderId and receiverId to ensure consistency
+    const chatId = [senderId, receiverId].sort().join("-");
+
+    // Get the current timestamp and local time
+    const now = new Date();
+    const localTime = new Intl.DateTimeFormat("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "Asia/Kolkata", // Replace with your desired timezone
+    }).format(now);
+
+    // Create the message
+    const message = await Message.create({
+      chatId,
+      senderId,
+      receiverId,
+      content,  
+      timestamp: now,
+      localTime, // Add the formatted local time
+    });
+    await message.save();
+    
+    // Notify the sender and receiver using Socket.io
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    const senderSocketId = getReceiverSocketId(senderId);
+    if (receiverSocketId) {
+      // io.to(receiverSocketId).to(senderSocketId).emit("newMessage", message);
+      io.to(receiverSocketId).emit("newMessage", message);
+      const newChatList = await getAdminNewChatList({userId: receiverId});
+      // console.log("newChatList", newChatList);
+      // io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
+      io.to(receiverSocketId).emit("newChat", newChatList);
+    }
+
+
+    // // Emit the message to the respective chat room (chatId)
+    // io.to(chatId).emit("receiveMessage", {
+    //   ...message.toObject(),
+    //   senderName: sender.username || sender.name || "Unknown Sender", // Use appropriate field for sender name
+    //   receiverName: receiver.username || receiver.name || "Unknown Receiver", // Use appropriate field for receiver name
+    // });
+
+    // Notify the receiver using the admin backend
+    try {
+      await axios.post(
+        "http://13.203.24.247:9000/api/v1/fcm/sendMessageNotification",
+        {
+          receiverId,
+          senderName: sender.username || sender.name || "Unknown Sender",
+          content,
+          chatId,
+        }
+      );
+    } catch (notificationError) {
+      console.error("Error sending notification:", notificationError.message);
+    }
+
+    // Respond with the message
+    res.status(201).json({
+      ...message.toObject(),
+      senderName: sender.username || sender.name || "Unknown Sender",
+      receiverName: receiver.username || receiver.name || "Unknown Receiver",
+    });
+  } catch (error) {
+    console.error("Error sending message:", error.message || error);
+    res
+      .status(500)
+      .json({ error: "Error sending message.", details: error.message });
+  }
+};
+
+// New Get Message
+exports.getMessagesNew = async (req, res) => {
+  const { chatId, userId } = req.query;
+  let { page = null, limit = null } = req.query;
+
+  try {
+    if (chatId) {
+      let messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+
+      // Get unread messages count for the current user in this chat
+      const unreadCount = await Message.countDocuments({
+        chatId,
+        receiverId: userId,
+        isRead: false,
+      });
+
+
+       // Apply pagination if page and limit are provided
+      if (page !== null && limit !== null) {
+        const startIndex = (page - 1) * limit;
+        messages = messages.slice(startIndex, startIndex + limit);
+      }
+
+      return res.status(200).json({
+        messages: messages.map((message) => ({
+          ...message.toObject(),
+        })),
+        unreadCount,
+      });
+    } else if (userId) {
+      const enrichedMessages = await getAdminNewChatList({userId});
+      // console.log("Enriched Messages:", enrichedMessages);
+      // Apply pagination if page and limit are provided
+      if (page !== null && limit !== null) {
+        const startIndex = (page - 1) * limit;
+        enrichedMessages = enrichedMessages.slice(startIndex, startIndex + limit);
+      }
+  
+      return res.status(200).json({messages : enrichedMessages});
     }  else {
       return res
         .status(400)
