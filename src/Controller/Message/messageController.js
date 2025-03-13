@@ -126,7 +126,7 @@ exports.sendMessage = async (req, res) => {
 
 //Mark Messages as Read
 exports.markMessagesAsRead = async (req, res) => {
-  const { chatId, receiverId, senderId } = req.body;
+  const { chatId, receiverId, senderId, messageIds } = req.body;
 
   try {
     const result = await Message.updateMany(
@@ -137,11 +137,11 @@ exports.markMessagesAsRead = async (req, res) => {
     // Notify the sender and receiver using Socket.io
     // console.log("receiverId", receiverId);
     const receiverSocketId = getReceiverSocketId(senderId);
-    const senderSocketId = getReceiverSocketId(receiverId);
+    // const senderSocketId = getReceiverSocketId(receiverId);
     // console.log("receiverSocketId", receiverSocketId);
     if (receiverSocketId) {
       // io.to(receiverSocketId).to(senderSocketId).emit("messageRead", {chatId, receiverId, senderId});
-      io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId});
+      io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId, messageIds});
     }
 
 
