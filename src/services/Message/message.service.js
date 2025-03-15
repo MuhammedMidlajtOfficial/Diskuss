@@ -57,7 +57,7 @@ exports.markMessagesAsRead = async (data) => {
 
 exports.getNewChatList = async (data) => {
   const {userId} = data; 
-  console.log("userId", userId);
+  // console.log("userId", userId);
   try {
      const messages = await Message.find({
             $or: [
@@ -160,7 +160,139 @@ exports.getNewChatList = async (data) => {
   }
 }
 
+exports.getAdminNewChatList = async (data) => {
+  const {userId} = data;
+  try {
+    const messages = await Message.find({
+           $or: [
+             { senderId: new mongoose.Types.ObjectId(userId) },
+             { receiverId: new mongoose.Types.ObjectId(userId) },
+             { isAdmin: true },
+           ],
+         }).sort({ timestamp: -1 });
+
+        //  const lastAdminMessagesMap = await Message.find({ isAdmin: true }).sort({ timestamp: -1 });
+        //  console.log("Last Messages Map:", lastAdminMessagesMap[0]); 
+        //  messages.push(lastAdminMessagesMap[0]);
+
+         // Group messages by chatId and pick the latest message
+         const lastMessagesMap = new Map();
+         for (const message of messages) {
+           if (!lastMessagesMap.has(message.chatId)) {
+             lastMessagesMap.set(message.chatId, message);
+           }
+         }
+         // console.log("Last Messages Map:", lastMessagesMap);
+         let lastMessages = Array.from(lastMessagesMap.values());
+         // console.log("Last Messages:", lastMessages);
+     
+         // Enrich each last message with additional information
+         let enrichedMessages = await Promise.all(
+           lastMessages.map(async (lastMessage) => {
+            if(lastMessage.isAdmin){
+              const count  = await countUnreadAdminMessage(userId);
+              return {
+                ...lastMessage.toObject(),
+                senderName: "Admin",
+                senderNumber: "Admin",
+                receiverName: "",
+                receiverNumber:"" ,
+                senderProfilePic: "",
+                receiverProfilePic: "",
+                unreadCount: count,
+              };
+            }
+             // Fetch sender info
+             const senderUserInfo = await User.findById(lastMessage.senderId);
+             const senderEnterpriseInfo = await EnterpriseUser.findById(lastMessage.senderId);
+             const senderEmployeeInfo = await EnterpriseEmployee.findById(lastMessage.senderId);
+     
+             // Fetch receiver info
+             const receiverUserInfo = await User.findById(lastMessage.receiverId);
+             const receiverEnterpriseInfo = await EnterpriseUser.findById(lastMessage.receiverId);
+             const receiverEmployeeInfo = await EnterpriseEmployee.findById(lastMessage.receiverId);
+     
+             // Fetch mutual connection info
+             const contacts = await Contact.find({
+               $or: [
+                 {
+                   contactOwnerId: lastMessage.senderId,
+                   "contacts.userId": lastMessage.receiverId,
+                 },
+                 {
+                   contactOwnerId: lastMessage.receiverId,
+                   "contacts.userId": lastMessage.senderId,
+                 },
+               ],
+             });
+             
+             let senderName = null;
+             let receiverName = null;
+             
+             // Iterate through the contacts to determine sender and receiver names
+             if (contacts && contacts.length > 0) {
+               contacts.forEach((contact) => {
+                 contact.contacts.forEach((c) => {
+                   // Check for sender name
+                   if (
+                     c.userId.toString() === lastMessage.senderId.toString() &&
+                     contact.contactOwnerId.toString() === lastMessage.receiverId.toString()
+                   ) {
+                     senderName = c.name;
+                   }
+             
+                   // Check for receiver name
+                   if (
+                     c.userId.toString() === lastMessage.receiverId.toString() &&
+                     contact.contactOwnerId.toString() === lastMessage.senderId.toString()
+                   ) {
+                     receiverName = c.name;
+                   }
+                 });
+               });
+             }
+             
+             // console.log("Sender Name:", senderName);
+             // console.log("Receiver Name:", receiverName);       
+     
+             // Add all enriched fields
+             return {
+               ...lastMessage.toObject(),
+               senderName: senderName || senderUserInfo?.phnNumber || senderEnterpriseInfo?.phnNumber || senderEmployeeInfo?.phnNumber || "User Deleted",
+               senderNumber: senderUserInfo?.phnNumber || senderEnterpriseInfo?.phnNumber || senderEmployeeInfo?.phnNumber || "Receiver is not a diskuss user",
+               receiverName: receiverName || receiverUserInfo?.phnNumber || receiverEnterpriseInfo?.phnNumber || receiverEmployeeInfo?.phnNumber || "User Deleted",
+               receiverNumber: receiverUserInfo?.phnNumber || receiverEnterpriseInfo?.phnNumber || receiverEmployeeInfo?.phnNumber || "Receiver is not a diskuss user",
+               senderProfilePic: senderUserInfo?.image || senderEnterpriseInfo?.image || senderEmployeeInfo?.image || "",
+               receiverProfilePic: receiverUserInfo?.image || receiverEnterpriseInfo?.image || receiverEmployeeInfo?.image || "",
+               unreadCount: messages.filter(
+                 (msg) =>
+                   !msg.isRead &&
+                   msg.receiverId.toString() === userId.toString() &&
+                   msg.chatId.toString() === lastMessage.chatId.toString()
+               ).length,
+             };
+           })
+         );
+
+         return enrichedMessages;
+               
+     }catch (error) {
+   console.error("Error getting chat list:", error);
+   return;
+ }
+}
 
 exports.setSocketIO = (socketIO) =>  {
     io = socketIO;
 };
+
+
+const countUnreadAdminMessage = async (userId) => {
+  const count =  await Message.countDocuments({
+    isAdmin: true, // Admin messages
+      isRead: false, // Unread messages
+      readBy: { $nin: ["67bdb074ed52c8f211cc44f9"] }, // User has not read the message
+    });
+    // console.log("unread count", count);
+    return count
+  }

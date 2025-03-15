@@ -8,6 +8,8 @@ const messageSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },           
   localTime: { type: String },
   isRead: { type: Boolean, default: false },
+  isAdmin : { type: Boolean },
+  readBy : { type: Array }
 });
 
 
