@@ -52,6 +52,8 @@ exports.sendAdminMessage = async (req, res) => {
   return res.status(201).json({
     ...message.toObject(),
     // newChatList
+    senderName:  "Admin",
+    receiverName: "All Users",
   });
 
   } catch (error) {
