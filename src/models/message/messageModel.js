@@ -9,7 +9,10 @@ const messageSchema = new mongoose.Schema({
   localTime: { type: String },
   isRead: { type: Boolean, default: false },
   isAdmin : { type: Boolean },
-  readBy : { type: Array }
+  readBy : { type: Array },
+  forUserType : { type: String, enum: ['INDIVIDUAL', 'ENTEPRISE', 'EMPLOYEE'], default: 'INDIVIDUAL' },
+  image : { type: String },
+  isDeleted : { type: Boolean, default: false },
 });
 
 

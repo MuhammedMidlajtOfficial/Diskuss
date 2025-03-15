@@ -14,10 +14,17 @@ exports.setSocketIO = (socketIO) => {
 };
 
 const admin_userId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462c9")
+const admin_ind_chatId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462d9")
+const admin_ent_chatId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462e9")
+const admin_emp_chatId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462f9")
 
 // send Message From Admin
 exports.sendAdminMessage = async (req, res) => {
-  const { content } = req.body;
+  const { content, userType } = req.body;
+
+  if (userType !== "INDIVIDUAL" && userType !== "ENTEPRISE" && userType !== "EMPLOYEE") {
+    return res.status(400).json({ error: "Invalid user type" });
+  }
 
   try {
   // Create the message
@@ -29,15 +36,18 @@ exports.sendAdminMessage = async (req, res) => {
     timeZone: "Asia/Kolkata", // Replace with your desired timezone
   }).format(now);
 
+  const chatId = userType === "INDIVIDUAL" ? admin_ind_chatId : userType === "ENTEPRISE" ? admin_ent_chatId : admin_emp_chatId;
+
   const message = await Message.create({
-    chatId: admin_userId,
+    chatId: chatId,
     senderId: admin_userId,
     receiverId: admin_userId,
     timestamp: now,
     content,
     localTime, // Add the formatted local time
     isAdmin : true,
-    readBy : []
+    readBy : [],
+    forUserType : userType
   });
   await message.save();
 
@@ -52,8 +62,8 @@ exports.sendAdminMessage = async (req, res) => {
   return res.status(201).json({
     ...message.toObject(),
     // newChatList
-    senderName:  "Admin",
-    receiverName: "All Users",
+    senderName:  "Know Connection",
+    receiverName: userType,
   });
 
   } catch (error) {

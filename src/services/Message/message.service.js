@@ -5,6 +5,7 @@ const EnterpriseUser = require('../../models/users/enterpriseUser');
 const Message = require('../../models/message/messageModel');
 const axios = require('axios');
 const Contact = require("../../models/contacts/contact.individual.model");
+const { checkUserType } = require('../../util/HelperFunctions');
 
 // const { getReceiverSocketId, userSocketMap } = require('../../Controller/Socketio/socketController');
 const socketController = require('../../Controller/Socketio/socketController');
@@ -163,11 +164,17 @@ exports.getNewChatList = async (data) => {
 exports.getAdminNewChatList = async (data) => {
   const {userId} = data;
   try {
+    const userType = await checkUserType(userId).userType;
+    
+    userType === 'individual' ? forUserType = 'INDIVIDUAL' : userType === 'enterprise' ? forUserType = 'ENTERPRISE' : forUserType = 'EMPLOYEE';
+    console.log("userType", userType);
+    
     const messages = await Message.find({
            $or: [
              { senderId: new mongoose.Types.ObjectId(userId) },
              { receiverId: new mongoose.Types.ObjectId(userId) },
-             { isAdmin: true },
+             {isAdmin: true},
+            //  { $and : [{isAdmin: true}, {forUserType: userType}] },
            ],
          }).sort({ timestamp: -1 });
 
@@ -193,8 +200,8 @@ exports.getAdminNewChatList = async (data) => {
               const count  = await countUnreadAdminMessage(userId);
               return {
                 ...lastMessage.toObject(),
-                senderName: "Admin",
-                senderNumber: "Admin",
+                senderName: "Know Connection",
+                senderNumber: "Know Connection",
                 receiverName: "",
                 receiverNumber:"" ,
                 senderProfilePic: "",
