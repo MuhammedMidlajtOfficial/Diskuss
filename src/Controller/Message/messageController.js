@@ -549,7 +549,7 @@ exports.getMessagesNew = async (req, res) => {
         enrichedMessages = enrichedMessages.slice(startIndex, startIndex + limit);
       }
   
-      return res.status(200).json({messages : enrichedMessages});
+      return res.status(200).json(enrichedMessages);
     }  else {
       return res
         .status(400)
