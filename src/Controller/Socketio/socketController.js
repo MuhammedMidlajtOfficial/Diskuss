@@ -35,7 +35,7 @@ exports.setSocketIO = (socketIO) => {
 
     socket.on("messageRead", async (data) => {
       console.log("messageRead", data);
-      // const { messageId, chatId, userId } = data; // data = messageId, chatId, userId
+      // const { messageId, chatId, userId } = data; // data = messageId, chatId, userId 
       await messageService.markMessagesAsRead(data);
   });
 
