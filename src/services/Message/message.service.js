@@ -13,6 +13,10 @@ const socketController = require('../../Controller/Socketio/socketController');
 const { ObjectId } = require('mongoose').Types;
 let io;
 
+const admin_ind_chatId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462d9")
+const admin_ent_chatId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462e9")
+const admin_emp_chatId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462f9")
+
 exports.markMessagesAsRead = async (data) => {
   const {  chatId, receiverId, senderId } = data; // data = messageId, chatId, userId
       try {
@@ -164,19 +168,25 @@ exports.getNewChatList = async (data) => {
 exports.getAdminNewChatList = async (data) => {
   const {userId} = data;
   try {
-    const userType = await checkUserType(userId).userType;
+    const {userType, data} = await checkUserType(userId);
+    const chatId = userType === 'individual' ? admin_ind_chatId : userType === 'enterprise' ? admin_ent_chatId : admin_emp_chatId;
+    
+    // console.log("userType", userType);
+    // console.log("userId", userId);
     
     userType === 'individual' ? forUserType = 'INDIVIDUAL' : userType === 'enterprise' ? forUserType = 'ENTERPRISE' : forUserType = 'EMPLOYEE';
-    console.log("userType", userType);
+    // console.log("userType", userType);
     
     const messages = await Message.find({
            $or: [
              { senderId: new mongoose.Types.ObjectId(userId) },
              { receiverId: new mongoose.Types.ObjectId(userId) },
-             {isAdmin: true},
-            //  { $and : [{isAdmin: true}, {forUserType: userType}] },
+            //  {isAdmin: true},
+             { $and : [  {chatId : chatId},{isAdmin: true}, {forUserType: forUserType}] },
            ],
          }).sort({ timestamp: -1 });
+
+        //  console.log("Messages:", messages);  
 
         //  const lastAdminMessagesMap = await Message.find({ isAdmin: true }).sort({ timestamp: -1 });
         //  console.log("Last Messages Map:", lastAdminMessagesMap[0]); 
@@ -197,7 +207,7 @@ exports.getAdminNewChatList = async (data) => {
          let enrichedMessages = await Promise.all(
            lastMessages.map(async (lastMessage) => {
             if(lastMessage.isAdmin){
-              const count  = await countUnreadAdminMessage(userId);
+              const count  = await countUnreadAdminMessage(userId, forUserType);
               return {
                 ...lastMessage.toObject(),
                 senderName: "Know Connection",
@@ -294,10 +304,11 @@ exports.setSocketIO = (socketIO) =>  {
 };
 
 
-const countUnreadAdminMessage = async (userId) => {
+const countUnreadAdminMessage = async (userId, userType) => {
   const count =  await Message.countDocuments({
     isAdmin: true, // Admin messages
       isRead: false, // Unread messages
+      forUserType: userType, // User has not read the message
       readBy: { $nin: [userId] }, // User has not read the message
     });
     // console.log("unread count", count);
