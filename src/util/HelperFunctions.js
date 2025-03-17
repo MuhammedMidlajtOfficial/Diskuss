@@ -36,9 +36,14 @@ const  convertToMonthlyCounts = (year, data) => {
 }
 
 const checkUserType = async (userId) => {
-    const individualUser = await IndividualUser.findById(userId).exec();
-    const enterpriseUser = await EnterpriseUser.findById(userId).exec();
-    const enterpriseEmployeeUser = await EnterpriseEmployeeUser.findById(userId).exec();
+    const [individualUser, enterpriseUser, enterpriseEmployeeUser] = await Promise.all([
+        IndividualUser.findById(userId).exec(),
+        EnterpriseUser.findById(userId).exec(),
+        EnterpriseEmployeeUser.findById(userId).exec()
+    ]);
+    // const individualUser = await IndividualUser.findById(userId).exec();
+    // const enterpriseUser = await EnterpriseUser.findById(userId).exec();
+    // const enterpriseEmployeeUser = await EnterpriseEmployeeUser.findById(userId).exec();
 
     if (!individualUser && !enterpriseUser && !enterpriseEmployeeUser) {
         throw new Error('Invalid user');
@@ -51,6 +56,8 @@ const checkUserType = async (userId) => {
     }
     else if (enterpriseEmployeeUser) {
         return {userType : 'enterpriseEmployee', data : enterpriseEmployeeUser};
+    }else {
+        throw new Error('Invalid user');
     }
 }
 
