@@ -83,7 +83,7 @@ exports.markAdminMessagesAsRead = async (req, res) => {
     
     // Update all messages with the specified chatId
     const result = await Message.updateMany(
-      { chatId: chatId, isRead: false }, // Find all messages in this chat that are not read
+      { isAdmin : true, readBy: { $nin: [receiverId]} }, // Find all messages in this chat that are not read
       { $addToSet: { readBy: receiverId } } // Add userId to readBy and mark as read
     );
 
