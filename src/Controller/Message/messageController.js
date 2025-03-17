@@ -8,16 +8,19 @@ const EnterpriseEmployee = require("../../models/users/enterpriseEmploye.model")
 const axios = require("axios");
 const {getReceiverSocketId, userSocketMap} = require("../../Controller/Socketio/socketController")
 const { getNewChatList, getAdminNewChatList } = require("../../services/Message/message.service")
+const { checkUserType } = require("../../util/HelperFunctions");
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
 };
 
 const admin_userId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462c9")
-const admin_ind_chatId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462d9")
-const admin_ent_chatId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462e9")
-const admin_emp_chatId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462f9")
 
+const admin_ind_chatId = "67d2de6eb9df3ccb48c462d9";
+const admin_ent_chatId = "67d2de6eb9df3ccb48c462e9";
+const admin_emp_chatId = "67d2de6eb9df3ccb48c462f9";
+
+// Todo : Add Image in the message
 // send Message From Admin
 exports.sendAdminMessage = async (req, res) => {
   const { content, userType } = req.body;
@@ -28,6 +31,15 @@ exports.sendAdminMessage = async (req, res) => {
 
   try {
   // Create the message
+
+  // // The folder name in the S3 bucket
+  // const folderName = "vcards";
+  // const fileName = req.file.originalname;
+
+  // // Upload the file to S3
+  // const result = await uploadImageToS3(req.file.buffer, folderName, fileName);
+  // const originalUrl = result.Location; // S3 URL of the uploaded file
+
   // Get the current timestamp and local time
   const now = new Date();
   const localTime = new Intl.DateTimeFormat("en-US", {
@@ -77,13 +89,19 @@ exports.sendAdminMessage = async (req, res) => {
 // Read Messafe from Admin
 exports.markAdminMessagesAsRead = async (req, res) => {
   const { receiverId, messageIds } = req.body;
-  const chatId = admin_userId
-
+  let { chatId } = req.body;
+  if (!chatId) {
+    const {userType} = await checkUserType(receiverId);
+    chatId = userType === 'individual' ? admin_ind_chatId : userType === 'enterprise' ? admin_ent_chatId : admin_emp_chatId;
+  }
+  // console.log("receiverId", receiverId);    
+  
   try {
+    // console.log("chatId", chatId);
     
     // Update all messages with the specified chatId
     const result = await Message.updateMany(
-      { isAdmin : true, readBy: { $nin: [receiverId]} }, // Find all messages in this chat that are not read
+      { chatId : chatId, readBy: { $nin: [receiverId]} }, // Find all messages in this chat that are not read
       { $addToSet: { readBy: receiverId } } // Add userId to readBy and mark as read
     );
 
