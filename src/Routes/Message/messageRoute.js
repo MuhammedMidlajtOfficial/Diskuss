@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const messageController = require("../../Controller/Message/messageController");
-const { uploadChannelImage } = require("../../middleware/multerConfig")
+const { uploadChannelImage } = require("../../Middleware/multerConfig")
 
 router.post("/sendMessageOld", messageController.sendMessage); // This should handle POST requests
 router.post("/sendMessage", messageController.sendMessageNew); // This should handle POST requests
