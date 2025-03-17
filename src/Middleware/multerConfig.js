@@ -22,4 +22,19 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // Set max file size to 10 MB
 });
 
-module.exports = upload;
+const uploadChannelImage = multer({
+  storage: storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // Limit to 2MB per file
+  fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+          cb(null, true); // Accept only image files
+      } else {
+          cb(new Error('Only image files are allowed!'), false); // Reject other files
+      }
+  },
+})
+
+module.exports = {
+  upload,
+  uploadChannelImage
+};

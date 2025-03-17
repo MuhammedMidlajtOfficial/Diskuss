@@ -9,6 +9,7 @@ const axios = require("axios");
 const {getReceiverSocketId, userSocketMap} = require("../../Controller/Socketio/socketController")
 const { getNewChatList, getAdminNewChatList } = require("../../services/Message/message.service")
 const { checkUserType } = require("../../util/HelperFunctions");
+const { uploadImageToS3 } = require("../../services/AWS/awsService")
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
@@ -23,17 +24,29 @@ const admin_emp_chatId = "67d2de6eb9df3ccb48c462f9";
 // Todo : Add Image in the message
 // send Message From Admin
 exports.sendAdminMessage = async (req, res) => {
+  //getting body content and usertype
+  // const { content, userType } = req.body;
+
+  //getting formdata content and usertype
   const { content, userType } = req.body;
 
-  if (userType !== "INDIVIDUAL" && userType !== "ENTEPRISE" && userType !== "EMPLOYEE") {
+  let image = ""
+  console.log("req.body", req.body);
+  console.log("req.file", req.file);
+  
+  // let image = "https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/profile-images/67b82f0a703ea2f81ccd6263-profile.jpg";
+
+  if (userType !== "INDIVIDUAL" && userType !== "ENTERPRISE" && userType !== "EMPLOYEE") {
     return res.status(400).json({ error: "Invalid user type" });
   }
+  // if (!req.file) {
+  //   return res.status(400).send({ error: "No file uploaded" });
+  // }
 
   try {
-  // Create the message
-
+  image = await uploadMessageImage(req, res);
   // // The folder name in the S3 bucket
-  // const folderName = "vcards";
+  // const folderName = "admin_messages";
   // const fileName = req.file.originalname;
 
   // // Upload the file to S3
@@ -48,8 +61,9 @@ exports.sendAdminMessage = async (req, res) => {
     timeZone: "Asia/Kolkata", // Replace with your desired timezone
   }).format(now);
 
-  const chatId = userType === "INDIVIDUAL" ? admin_ind_chatId : userType === "ENTEPRISE" ? admin_ent_chatId : admin_emp_chatId;
+  const chatId = userType === "INDIVIDUAL" ? admin_ind_chatId : userType === "ENTERPRISE" ? admin_ent_chatId : admin_emp_chatId;
 
+  // Create the message
   const message = await Message.create({
     chatId: chatId,
     senderId: admin_userId,
@@ -59,7 +73,8 @@ exports.sendAdminMessage = async (req, res) => {
     localTime, // Add the formatted local time
     isAdmin : true,
     readBy : [],
-    forUserType : userType
+    forUserType : userType,
+    image: image
   });
   await message.save();
 
@@ -586,5 +601,84 @@ exports.getMessagesNew = async (req, res) => {
   } catch (error) {
     console.error("Error retrieving messages:", error);
     res.status(500).json({ error: "Error retrieving messages." });
+  }
+};
+
+// Handle Image upload request
+exports.uploadImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send({ error: "No file uploaded" });
+    }
+
+    // The folder name in the S3 bucket
+    const folderName = "admin_channel_images";
+    const fileName = req.file.originalname;
+
+    // Upload the file to S3
+    const result = await uploadImageToS3(req.file.buffer, folderName, fileName);
+    const originalUrl = result.Location; // S3 URL of the uploaded file
+
+    // // Generate a short code and ensure uniqueness in DB
+    // let shortCode;
+    // while (true) {
+    //   shortCode = shortId.generate();
+    //   const urlExists = await Url.findOne({ shortCode });
+    //   if (!urlExists) break; // If unique, exit loop
+    // }
+
+    // // Construct short URL
+    // const shortUrl = `${process.env.SHORT_BASE_URL}/${shortCode}`;
+
+    // // Save the shortened URL to the database
+    // const newUrl = new Url({ originalUrl, shortCode, shortUrl });
+    // await newUrl.save();
+
+    // Send back the shortened URL along with the original S3 URL
+    return res.status(200).json({
+      message: "File uploaded successfully",
+      originalUrl
+      // shortUrl,
+    });
+  } catch (error) {
+    console.error("Error in image upload:", error);
+    return res.status(500).send({ error: "Failed to upload image" });
+  }
+};
+
+const uploadMessageImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send({ error: "No file uploaded" });
+    }
+
+    // The folder name in the S3 bucket
+    const folderName = "admin_channel_images";
+    const fileName = req.file.originalname;
+
+    // Upload the file to S3
+    const result = await uploadImageToS3(req.file.buffer, folderName, fileName);
+    const originalUrl = result.Location; // S3 URL of the uploaded file
+
+    // // Generate a short code and ensure uniqueness in DB
+    // let shortCode;
+    // while (true) {
+    //   shortCode = shortId.generate();
+    //   const urlExists = await Url.findOne({ shortCode });
+    //   if (!urlExists) break; // If unique, exit loop
+    // }
+
+    // // Construct short URL
+    // const shortUrl = `${process.env.SHORT_BASE_URL}/${shortCode}`;
+
+    // // Save the shortened URL to the database
+    // const newUrl = new Url({ originalUrl, shortCode, shortUrl });
+    // await newUrl.save();
+
+    // Send back the shortened URL along with the original S3 URL
+    return originalUrl
+  } catch (error) {
+    console.error("Error in image upload:", error);
+    return 
   }
 };
