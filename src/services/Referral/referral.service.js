@@ -593,15 +593,22 @@ const validateWithdrawal = async (userId, amount, upiId) => {
     if (amount < settings.minWithdrawalAmount) {
         throw new Error('Minimum withdrawal amount is ' + settings.minWithdrawalAmount);
     }
-    let userData = {};
-    if (userType === 'individual') {
-        userData = await IndividualUser.findById(userId).select('coins coinsWithdrawn').lean().exec();
-    } else {
-        userData = await EnterpriseUser.findById(userId).select('coins coinsWithdrawn').lean().exec();
-    }
-    const totalCoins = userData ? userData.coins : 0; // Default to 0 if no user found
-    const coinsWithdrawn = userData ? userData.coinsWithdrawn : 0; // Default to 0 if no user found
-    const remainingCoins = totalCoins - coinsWithdrawn; // Default to 0 if no user found
+    // let userData = {};
+    // if (userType === 'individual') {
+    //     userData = await IndividualUser.findById(userId).select('coins coinsWithdrawn').lean().exec();
+    // } else {
+    //     userData = await EnterpriseUser.findById(userId).select('coins coinsWithdrawn').lean().exec();
+    // }
+    // const totalCoins = userData ? userData.coins : 0; // Default to 0 if no user found
+    // const coinsWithdrawn = userData ? userData.coinsWithdrawn : 0; // Default to 0 if no user found
+    // const remainingCoins = totalCoins - coinsWithdrawn; // Default to 0 if no user found
+    const [ coinsWithdrawn, coinsRewarded] = await Promise.all([
+        countTotalCoinsWithdrawn(userId),
+        countTotalCoinsRewarded(userId)
+    ]);
+
+    const remainingCoins = parseInt(coinsRewarded) - parseInt(coinsWithdrawn); // Default to 0 if no user found
+    
     if (amount > remainingCoins) {
         throw new Error('Insufficient coins for withdrawal');
     }
