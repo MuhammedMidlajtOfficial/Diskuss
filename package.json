@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node src/index.js",
-    "start": "nodemon src/index.js",
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
     "build": "echo 'No build step required'",
     "test": "jest",
     "cron-test": "nodemon src/crons/testCron.js"
