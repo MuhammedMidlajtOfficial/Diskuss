@@ -674,7 +674,8 @@ exports.uploadImage = async (req, res) => {
 const uploadMessageImage = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).send({ error: "No file uploaded" });
+      // return res.status(400).send({ error: "No file uploaded" });
+      return ""
     }
 
     // The folder name in the S3 bucket
