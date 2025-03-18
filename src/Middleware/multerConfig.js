@@ -22,6 +22,28 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // Set max file size to 10 MB
 });
 
+const adminFileFilter = (req, file, cb) => {
+  if (file.fieldname === 'image' && file.mimetype.startsWith('image/')) {
+    cb(null, true); // Accept image files
+  } else if (file.fieldname === 'video' && file.mimetype.startsWith('video/')) {
+    cb(null, true); // Accept video files
+  } else {
+    cb(new Error('Invalid file type!'), false); // Reject other files
+  }
+};
+
+const uploadChannelFile = multer({
+  storage: storage,
+  limits: { fileSize: 25 * 1024 * 1024 }, // Limit to 2MB per file
+  fileFilter: adminFileFilter
+})
+
+// Combine both fields into one middleware
+const uploadChannelFields = uploadChannelFile.fields([
+  { name: 'video', maxCount: 1 }, // Field for video
+  { name: 'image', maxCount: 1 }, // Field for image
+]);
+
 const uploadChannelImage = multer({
   storage: storage,
   limits: { fileSize: 2 * 1024 * 1024 }, // Limit to 2MB per file
@@ -34,7 +56,21 @@ const uploadChannelImage = multer({
   },
 })
 
+const uploadChannelVideo = multer({
+  storage: storage,
+  limits: { fileSize: 25 * 1024 * 1024 }, // Limit to 2MB per file
+  fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('video/')) {
+          cb(null, true); // Accept only image files
+      } else {
+          cb(new Error('Only video files are allowed!'), false); // Reject other files
+      }
+  },
+})
+
 module.exports = {
   upload,
-  uploadChannelImage
+  uploadChannelFields,
+  uploadChannelImage,
+  uploadChannelVideo
 };

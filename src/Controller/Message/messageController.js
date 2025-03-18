@@ -31,8 +31,9 @@ exports.sendAdminMessage = async (req, res) => {
   const { content, userType } = req.body;
 
   let image = ""
-  console.log("req.body", req.body);
-  console.log("req.file", req.file);
+  let video = ""
+  // console.log("req.body", req.body);
+  // console.log("req.file", req.file);
   
   // let image = "https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/profile-images/67b82f0a703ea2f81ccd6263-profile.jpg";
 
@@ -45,6 +46,7 @@ exports.sendAdminMessage = async (req, res) => {
 
   try {
   image = await uploadMessageImage(req, res);
+  video = await uploadMessageVideo(req, res);
   // // The folder name in the S3 bucket
   // const folderName = "admin_messages";
   // const fileName = req.file.originalname;
@@ -74,9 +76,10 @@ exports.sendAdminMessage = async (req, res) => {
     isAdmin : true,
     readBy : [],
     forUserType : userType,
-    image: image
+    image: image,
+    video: video
   });
-  await message.save();
+  // await message.save();
 
   // io.emit("newMessage", message);  
 
@@ -672,18 +675,22 @@ exports.uploadImage = async (req, res) => {
 };
 
 const uploadMessageImage = async (req, res) => {
+  // console.log("files: ", req.files['image'][0].originalname);
   try {
-    if (!req.file) {
+    if (!req.files?.image) {
       // return res.status(400).send({ error: "No file uploaded" });
       return ""
     }
 
     // The folder name in the S3 bucket
     const folderName = "admin_channel_images";
-    const fileName = req.file.originalname;
+    // const fileName = req.files['image'][0].originalname ;
+    const file_ext = req.files['image'][0].originalname.split('.').pop();
+    const fileName = req.files['image'][0].originalname +"_"+ new Date().getTime()+"."+file_ext;
+    
 
     // Upload the file to S3
-    const result = await uploadImageToS3(req.file.buffer, folderName, fileName);
+    const result = await uploadImageToS3(req.files['image'][0].buffer, folderName, fileName);
     const originalUrl = result.Location; // S3 URL of the uploaded file
 
     // // Generate a short code and ensure uniqueness in DB
@@ -705,6 +712,47 @@ const uploadMessageImage = async (req, res) => {
     return originalUrl
   } catch (error) {
     console.error("Error in image upload:", error);
+    return 
+  }
+};
+
+const uploadMessageVideo = async (req, res) => {
+  // console.log("video : ", req.files.video[0].originalname);
+  try {
+    if (!req.files?.video) {
+      // return res.status(400).send({ error: "No file uploaded" });
+      return ""
+    }
+
+    // The folder name in the S3 bucket
+    const folderName = "admin_channel_videos";
+    // const fileName = req.files.video[0].originalname;
+    const file_ext = req.files['video'][0].originalname.split('.').pop();
+    const fileName = req.files.video[0].originalname+"_"+Date.now()+"."+file_ext;
+
+    // Upload the file to S3
+    const result = await uploadImageToS3(req.files['video'][0].buffer, folderName, fileName);
+    const originalUrl = result.Location; // S3 URL of the uploaded file
+
+    // // Generate a short code and ensure uniqueness in DB
+    // let shortCode;
+    // while (true) {
+    //   shortCode = shortId.generate();
+    //   const urlExists = await Url.findOne({ shortCode });
+    //   if (!urlExists) break; // If unique, exit loop
+    // }
+
+    // // Construct short URL
+    // const shortUrl = `${process.env.SHORT_BASE_URL}/${shortCode}`;
+
+    // // Save the shortened URL to the database
+    // const newUrl = new Url({ originalUrl, shortCode, shortUrl });
+    // await newUrl.save();
+
+    // Send back the shortened URL along with the original S3 URL
+    return originalUrl
+  } catch (error) {
+    console.error("Error in video upload:", error);
     return 
   }
 };
