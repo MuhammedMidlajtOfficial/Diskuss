@@ -604,6 +604,31 @@ exports.getMessagesNew = async (req, res) => {
   }
 };
 
+exports.getMessagesByChatId = async (req, res) => {
+  const { chatId } = req.query;
+
+  try {
+    if (chatId) {
+      let messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+
+      return res.status(200).json({
+        messages: messages.map((message) => ({
+          ...message.toObject(),
+        })),
+      });
+
+    } else {
+      return res
+        .status(400)
+        .json({ error: "chatId must be provided." });
+    }
+
+  } catch (error) {
+    console.error("Error retrieving messages:", error);
+    res.status(500).json({ error: "Error retrieving messages." });
+  }
+};
+
 // Handle Image upload request
 exports.uploadImage = async (req, res) => {
   try {
