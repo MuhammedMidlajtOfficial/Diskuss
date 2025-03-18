@@ -6,11 +6,140 @@ const Contact = require("../../models/contacts/contact.individual.model");
 const EnterpriseUser = require("../../models/users/enterpriseUser");
 const EnterpriseEmployee = require("../../models/users/enterpriseEmploye.model");
 const axios = require("axios");
-const {getReceiverSocketId} = require("../../Controller/Socketio/socketController")
-const { getNewChatList } = require("../../services/Message/message.service")
+const {getReceiverSocketId, userSocketMap} = require("../../Controller/Socketio/socketController")
+const { getNewChatList, getAdminNewChatList } = require("../../services/Message/message.service")
+const { checkUserType } = require("../../util/HelperFunctions");
+const { uploadImageToS3 } = require("../../services/AWS/awsService")
 
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
+};
+
+const admin_userId = new mongoose.Types.ObjectId("67d2de6eb9df3ccb48c462c9")
+
+const admin_ind_chatId = "67d2de6eb9df3ccb48c462d9";
+const admin_ent_chatId = "67d2de6eb9df3ccb48c462e9";
+const admin_emp_chatId = "67d2de6eb9df3ccb48c462f9";
+
+// Todo : Add Image in the message
+// send Message From Admin
+exports.sendAdminMessage = async (req, res) => {
+  //getting body content and usertype
+  // const { content, userType } = req.body;
+
+  //getting formdata content and usertype
+  const { content, userType } = req.body;
+
+  let image = ""
+  console.log("req.body", req.body);
+  console.log("req.file", req.file);
+  
+  // let image = "https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/profile-images/67b82f0a703ea2f81ccd6263-profile.jpg";
+
+  if (userType !== "INDIVIDUAL" && userType !== "ENTERPRISE" && userType !== "EMPLOYEE") {
+    return res.status(400).json({ error: "Invalid user type" });
+  }
+  // if (!req.file) {
+  //   return res.status(400).send({ error: "No file uploaded" });
+  // }
+
+  try {
+  image = await uploadMessageImage(req, res);
+  // // The folder name in the S3 bucket
+  // const folderName = "admin_messages";
+  // const fileName = req.file.originalname;
+
+  // // Upload the file to S3
+  // const result = await uploadImageToS3(req.file.buffer, folderName, fileName);
+  // const originalUrl = result.Location; // S3 URL of the uploaded file
+
+  // Get the current timestamp and local time
+  const now = new Date();
+  const localTime = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata", // Replace with your desired timezone
+  }).format(now);
+
+  const chatId = userType === "INDIVIDUAL" ? admin_ind_chatId : userType === "ENTERPRISE" ? admin_ent_chatId : admin_emp_chatId;
+
+  // Create the message
+  const message = await Message.create({
+    chatId: chatId,
+    senderId: admin_userId,
+    receiverId: admin_userId,
+    timestamp: now,
+    content,
+    localTime, // Add the formatted local time
+    isAdmin : true,
+    readBy : [],
+    forUserType : userType,
+    image: image
+  });
+  await message.save();
+
+  // io.emit("newMessage", message);  
+
+  // const newChatList = await getAdminNewChatList({userId : "67bdb074ed52c8f211cc44f9"});
+  // console.log("newChatList", newChatList);
+  // io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
+  // io.emit("newChat", newChatList);
+  // io.to(receiverSocketId).emit("newChat", newChatList);
+
+  return res.status(201).json({
+    ...message.toObject(),
+    // newChatList
+    senderName:  "Know Connection",
+    receiverName: userType,
+  });
+
+  } catch (error) {
+    console.error("Error sending message:", error.message || error);
+    res
+      .status(500)
+      .json({ error: "Error sending message.", details: error.message });
+  }
+};
+
+// Read Messafe from Admin
+exports.markAdminMessagesAsRead = async (req, res) => {
+  const { receiverId, messageIds } = req.body;
+  let { chatId } = req.body;
+  if (!chatId) {
+    const {userType} = await checkUserType(receiverId);
+    chatId = userType === 'individual' ? admin_ind_chatId : userType === 'enterprise' ? admin_ent_chatId : admin_emp_chatId;
+  }
+  // console.log("receiverId", receiverId);    
+  
+  try {
+    // console.log("chatId", chatId);
+    
+    // Update all messages with the specified chatId
+    const result = await Message.updateMany(
+      { chatId : chatId, readBy: { $nin: [receiverId]} }, // Find all messages in this chat that are not read
+      { $addToSet: { readBy: receiverId } } // Add userId to readBy and mark as read
+    );
+
+    // // Notify the sender and receiver using Socket.io
+    // // console.log("receiverId", receiverId);
+    // const receiverSocketId = getReceiverSocketId(senderId);
+    // // const senderSocketId = getReceiverSocketId(receiverId);
+    // // console.log("receiverSocketId", receiverSocketId);
+    // if (receiverSocketId) {
+    //   // io.to(receiverSocketId).to(senderSocketId).emit("messageRead", {chatId, receiverId, senderId});
+    //   if (messageIds){
+    //     io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId, messageIds});
+    //   }else{
+    //     io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId});
+    //   }
+    // }
+
+
+    res.status(200).json({ message: "Messages marked as read", result });
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+    res.status(500).json({ error: "Failed to mark messages as read." });
+  }
 };
 
 // Send message
@@ -81,7 +210,7 @@ exports.sendMessage = async (req, res) => {
     if (receiverSocketId) {
       // io.to(receiverSocketId).to(senderSocketId).emit("newMessage", message);
       io.to(receiverSocketId).emit("newMessage", message);
-      const newChatList = await getNewChatList({userId: receiverId});
+      const newChatList = await getNewAdminChatList({userId: receiverId});
       // console.log("newChatList", newChatList);
       // io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
       io.to(receiverSocketId).emit("newChat", newChatList);
@@ -126,7 +255,7 @@ exports.sendMessage = async (req, res) => {
 
 //Mark Messages as Read
 exports.markMessagesAsRead = async (req, res) => {
-  const { chatId, receiverId, senderId } = req.body;
+  const { chatId, receiverId, senderId, messageIds } = req.body;
 
   try {
     const result = await Message.updateMany(
@@ -137,11 +266,15 @@ exports.markMessagesAsRead = async (req, res) => {
     // Notify the sender and receiver using Socket.io
     // console.log("receiverId", receiverId);
     const receiverSocketId = getReceiverSocketId(senderId);
-    const senderSocketId = getReceiverSocketId(receiverId);
+    // const senderSocketId = getReceiverSocketId(receiverId);
     // console.log("receiverSocketId", receiverSocketId);
     if (receiverSocketId) {
       // io.to(receiverSocketId).to(senderSocketId).emit("messageRead", {chatId, receiverId, senderId});
-      io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId});
+      if (messageIds){
+        io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId, messageIds});
+      }else{
+        io.to(receiverSocketId).emit("messageRead", {chatId, receiverId, senderId});
+      }
     }
 
 
@@ -168,6 +301,7 @@ exports.getMessages = async (req, res) => {
         isRead: false,
       });
 
+
        // Apply pagination if page and limit are provided
       if (page !== null && limit !== null) {
         const startIndex = (page - 1) * limit;
@@ -185,6 +319,7 @@ exports.getMessages = async (req, res) => {
         $or: [
           { senderId: new mongoose.Types.ObjectId(userId) },
           { receiverId: new mongoose.Types.ObjectId(userId) },
+          { isAdmin: true }
         ],
       }).sort({ timestamp: -1 });
   
@@ -291,5 +426,285 @@ exports.getMessages = async (req, res) => {
   } catch (error) {
     console.error("Error retrieving messages:", error);
     res.status(500).json({ error: "Error retrieving messages." });
+  }
+};
+
+
+
+// New Send Message
+exports.sendMessageNew = async (req, res) => {
+  const { senderId, receiverId, content } = req.body;
+
+  try {
+    // Search for the sender in three different collections
+    const [senderInUser, senderInContact, senderInEnterprise] =
+      await Promise.all([
+        User.findById(senderId),
+        EnterpriseEmployee.findById(senderId),
+        EnterpriseUser.findById(senderId),
+      ]);
+
+    // Determine the sender
+    const sender = senderInUser || senderInContact || senderInEnterprise;
+
+    if (!sender) {
+      return res
+        .status(404)
+        .json({ error: "Sender not found in any collection" });
+    }
+
+    // Search for the receiver in three different collections
+    const [receiverInUser, receiverInContact, receiverInEnterprise] =
+      await Promise.all([
+        User.findById(receiverId),
+        EnterpriseEmployee.findById(receiverId),
+        EnterpriseUser.findById(receiverId),
+      ]);
+
+    // Determine the receiver
+    const receiver =
+      receiverInUser || receiverInContact || receiverInEnterprise;
+
+    if (!receiver) {
+      return res
+        .status(404)
+        .json({ error: "Receiver not found in any collection" });
+    }
+
+    // Generate chatId by sorting senderId and receiverId to ensure consistency
+    const chatId = [senderId, receiverId].sort().join("-");
+
+    // Get the current timestamp and local time
+    const now = new Date();
+    const localTime = new Intl.DateTimeFormat("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "Asia/Kolkata", // Replace with your desired timezone
+    }).format(now);
+
+    // Create the message
+    const message = await Message.create({
+      chatId,
+      senderId,
+      receiverId,
+      content,  
+      timestamp: now,
+      localTime, // Add the formatted local time
+    });
+    await message.save();
+    
+    // Notify the sender and receiver using Socket.io
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    const senderSocketId = getReceiverSocketId(senderId);
+    if (receiverSocketId) {
+      // io.to(receiverSocketId).to(senderSocketId).emit("newMessage", message);
+      io.to(receiverSocketId).emit("newMessage", message);
+      const newChatList = await getAdminNewChatList({userId: receiverId});
+      // console.log("newChatList", newChatList);
+      // io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
+      io.to(receiverSocketId).emit("newChat", newChatList);
+    }
+
+
+    // // Emit the message to the respective chat room (chatId)
+    // io.to(chatId).emit("receiveMessage", {
+    //   ...message.toObject(),
+    //   senderName: sender.username || sender.name || "Unknown Sender", // Use appropriate field for sender name
+    //   receiverName: receiver.username || receiver.name || "Unknown Receiver", // Use appropriate field for receiver name
+    // });
+
+    // Notify the receiver using the admin backend
+    try {
+      await axios.post(
+        "http://13.203.24.247:9000/api/v1/fcm/sendMessageNotification",
+        {
+          receiverId,
+          senderName: sender.username || sender.name || "Unknown Sender",
+          content,
+          chatId,
+        }
+      );
+    } catch (notificationError) {
+      console.error("Error sending notification:", notificationError.message);
+    }
+
+    // Respond with the message
+    res.status(201).json({
+      ...message.toObject(),
+      senderName: sender.username || sender.name || "Unknown Sender",
+      receiverName: receiver.username || receiver.name || "Unknown Receiver",
+    });
+  } catch (error) {
+    console.error("Error sending message:", error.message || error);
+    res
+      .status(500)
+      .json({ error: "Error sending message.", details: error.message });
+  }
+};
+
+// New Get Message
+exports.getMessagesNew = async (req, res) => {
+  const { chatId, userId } = req.query;
+  let { page = null, limit = null } = req.query;
+
+  try {
+    if (chatId) {
+      let messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+
+      // Get unread messages count for the current user in this chat
+      const unreadCount = await Message.countDocuments({
+        chatId,
+        receiverId: userId,
+        isRead: false,
+      });
+
+
+       // Apply pagination if page and limit are provided
+      if (page !== null && limit !== null) {
+        const startIndex = (page - 1) * limit;
+        messages = messages.slice(startIndex, startIndex + limit);
+      }
+      const isAdmin = chatId === admin_userId.toString();
+      console.log("isAdmin", isAdmin);
+      if (isAdmin) {
+        return res.status(200).json({
+          messages: messages.map((message) => ({
+            ...message.toObject(),
+          })),
+          unreadCount,
+          isAdmin : true
+        });
+      }
+
+      return res.status(200).json({
+        messages: messages.map((message) => ({
+          ...message.toObject(),
+        })),
+        unreadCount,
+        
+      });
+    } else if (userId) {
+      const enrichedMessages = await getAdminNewChatList({userId});
+      // console.log("Enriched Messages:", enrichedMessages);
+      // Apply pagination if page and limit are provided
+      if (page !== null && limit !== null) {
+        const startIndex = (page - 1) * limit;
+        enrichedMessages = enrichedMessages.slice(startIndex, startIndex + limit);
+      }
+  
+      return res.status(200).json(enrichedMessages);
+    }  else {
+      return res
+        .status(400)
+        .json({ error: "Either chatId or userId must be provided." });
+    }
+  } catch (error) {
+    console.error("Error retrieving messages:", error);
+    res.status(500).json({ error: "Error retrieving messages." });
+  }
+};
+
+exports.getMessagesByChatId = async (req, res) => {
+  const { chatId } = req.params;
+
+  try {
+    if (chatId) {
+      let messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+
+      return res.status(200).json({
+        messages: messages.map((message) => ({
+          ...message.toObject(),
+        })),
+      });
+
+    } else {
+      return res
+        .status(400)
+        .json({ error: "chatId must be provided." });
+    }
+
+  } catch (error) {
+    console.error("Error retrieving messages:", error);
+    res.status(500).json({ error: "Error retrieving messages." });
+  }
+};
+
+// Handle Image upload request
+exports.uploadImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send({ error: "No file uploaded" });
+    }
+
+    // The folder name in the S3 bucket
+    const folderName = "admin_channel_images";
+    const fileName = req.file.originalname;
+
+    // Upload the file to S3
+    const result = await uploadImageToS3(req.file.buffer, folderName, fileName);
+    const originalUrl = result.Location; // S3 URL of the uploaded file
+
+    // // Generate a short code and ensure uniqueness in DB
+    // let shortCode;
+    // while (true) {
+    //   shortCode = shortId.generate();
+    //   const urlExists = await Url.findOne({ shortCode });
+    //   if (!urlExists) break; // If unique, exit loop
+    // }
+
+    // // Construct short URL
+    // const shortUrl = `${process.env.SHORT_BASE_URL}/${shortCode}`;
+
+    // // Save the shortened URL to the database
+    // const newUrl = new Url({ originalUrl, shortCode, shortUrl });
+    // await newUrl.save();
+
+    // Send back the shortened URL along with the original S3 URL
+    return res.status(200).json({
+      message: "File uploaded successfully",
+      originalUrl
+      // shortUrl,
+    });
+  } catch (error) {
+    console.error("Error in image upload:", error);
+    return res.status(500).send({ error: "Failed to upload image" });
+  }
+};
+
+const uploadMessageImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      // return res.status(400).send({ error: "No file uploaded" });
+      return ""
+    }
+
+    // The folder name in the S3 bucket
+    const folderName = "admin_channel_images";
+    const fileName = req.file.originalname;
+
+    // Upload the file to S3
+    const result = await uploadImageToS3(req.file.buffer, folderName, fileName);
+    const originalUrl = result.Location; // S3 URL of the uploaded file
+
+    // // Generate a short code and ensure uniqueness in DB
+    // let shortCode;
+    // while (true) {
+    //   shortCode = shortId.generate();
+    //   const urlExists = await Url.findOne({ shortCode });
+    //   if (!urlExists) break; // If unique, exit loop
+    // }
+
+    // // Construct short URL
+    // const shortUrl = `${process.env.SHORT_BASE_URL}/${shortCode}`;
+
+    // // Save the shortened URL to the database
+    // const newUrl = new Url({ originalUrl, shortCode, shortUrl });
+    // await newUrl.save();
+
+    // Send back the shortened URL along with the original S3 URL
+    return originalUrl
+  } catch (error) {
+    console.error("Error in image upload:", error);
+    return 
   }
 };
