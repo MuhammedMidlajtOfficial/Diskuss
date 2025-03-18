@@ -79,9 +79,9 @@ exports.sendAdminMessage = async (req, res) => {
     image: image,
     video: video
   });
-  // await message.save();
+  await message.save();
 
-  // io.emit("newMessage", message);  
+  io.emit("newMessage", message);  
 
   // const newChatList = await getAdminNewChatList({userId : "67bdb074ed52c8f211cc44f9"});
   // console.log("newChatList", newChatList);
