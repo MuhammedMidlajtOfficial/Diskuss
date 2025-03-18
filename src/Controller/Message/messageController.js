@@ -605,7 +605,7 @@ exports.getMessagesNew = async (req, res) => {
 };
 
 exports.getMessagesByChatId = async (req, res) => {
-  const { chatId } = req.query;
+  const { chatId } = req.params;
 
   try {
     if (chatId) {
