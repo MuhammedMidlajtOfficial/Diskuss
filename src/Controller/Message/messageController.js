@@ -613,72 +613,14 @@ exports.getMessagesByChatId = async (req, res) => {
 
   try {
     if (chatId) {
-      let messages = await Message.find({ chatId }).sort({ timestamp: 1 }).skip((page - 1) * limit).limit(limit).lean();
-      // console.log("messages", messages);
-      // const userType = messages[0].forUserType;
-      // console.log("userType", userType);
-      // messages = await Promise.all(messages.map(async (message) => {
-      //   // console.log("message.readBy", message.readBy);
-      //   // Fetch sender info
-      //   // console.log("userType", userType);
-      //   switch (userType) {
-      //     case "INDIVIDUAL":
-      //       message.readBy = await Promise.all([
-      //         message.readBy.map(async (userId) => {
-      //           // console.log("userId : ", userId);
-      //           return await User.findById(userId).select("username phnNumber image").lean();
-      //         })
-      //       ])
-      //       console.log("message.readBy : ", message.readBy);
-      //       break;
-      //     case "ENTERPRISE":
-      //       message.readBy = await Promise.all([
-      //         message.readBy.map(async (userId) => {
-      //           return await EnterpriseUser.findById(userId).select("username phnNumber image").lean();
-      //         })])
-      //       break;
-      //     case "EMPLOYEE":
-      //       message.readBy = await Promise.all([
-      //         message.readBy.map(async (userId) => {
-      //           return await EnterpriseEmployee.findById(userId).select("username phnNumber image").lean();
-      //         })])
-      //       break;
-      //   }
-
-        // const message = messages[0].readBy;
-        // console.log("message", message);
-        // message.map( async (id) => {
-        //   console.log(id);
-        //   return await 
-        //         User.findById(id).select('username image phnNumber').lean();
-        // })
-
-        // console.log("messagess : ", message);
-
-//         const message = messages[0].readBy;
-// console.log("message", message);
-
-// const userPromises = message.map(async (id) => {
-//     console.log(id);
-//     return await User.findById(id).select('username image phnNumber').lean();
-// });
-
-// // Wait for all promises to resolve
-// Promise.all(userPromises)
-//     .then(users => {
-//         console.log("Users:", users);
-//     })
-//     .catch(error => {
-//         console.error("Error fetching users:", error);
-//     });        
-
+      const messages = await Message.find({ chatId }).sort({ timestamp: 1 }).skip((page - 1) * limit).limit(limit).lean();
+      const totalMessages = await Message.countDocuments({chatId});
+      const totalPages =  Math.ceil(totalMessages / limit);
     return res.status(200).json({
       messages,
-      // messages: messages.map((message) => ({
-      //   ...message.toObject(),
-      // })),
       page,
-      limit
+      limit,
+      totalPages
     });
 
     } else {
@@ -819,5 +761,19 @@ const uploadMessageVideo = async (req, res) => {
 };
 
 const enrichReadBy = async (message) => {
+  const userPromises = message.readBy.map(async (id) => {
+      console.log(id);
+      return await User.findById(id).select('username image phnNumber').lean();
+  });
   
+  // Wait for all promises to resolve
+  Promise.all(userPromises)
+      .then(users => {
+          console.log("Users:", users);
+      })
+      .catch(error => {
+          console.error("Error fetching users:", error);
+      });     
+
+    return message
 }
