@@ -611,81 +611,31 @@ exports.getMessagesByChatId = async (req, res) => {
   const { chatId } = req.params;
   const { page = 1, limit = 10 } = req.query;
 
+  if (!chatId) {
+    return res.status(400).json({ error: "chatId must be provided." });
+  }
+
+  // Convert page and limit to integers
+  const pageNum = Math.max(1, parseInt(page, 10));
+  const limitNum = Math.max(1, parseInt(limit, 10)); // Ensure limit is at least 1
+
   try {
-    if (chatId) {
-      let messages = await Message.find({ chatId }).sort({ timestamp: 1 }).skip((page - 1) * limit).limit(limit).lean();
-      // console.log("messages", messages);
-      // const userType = messages[0].forUserType;
-      // console.log("userType", userType);
-      // messages = await Promise.all(messages.map(async (message) => {
-      //   // console.log("message.readBy", message.readBy);
-      //   // Fetch sender info
-      //   // console.log("userType", userType);
-      //   switch (userType) {
-      //     case "INDIVIDUAL":
-      //       message.readBy = await Promise.all([
-      //         message.readBy.map(async (userId) => {
-      //           // console.log("userId : ", userId);
-      //           return await User.findById(userId).select("username phnNumber image").lean();
-      //         })
-      //       ])
-      //       console.log("message.readBy : ", message.readBy);
-      //       break;
-      //     case "ENTERPRISE":
-      //       message.readBy = await Promise.all([
-      //         message.readBy.map(async (userId) => {
-      //           return await EnterpriseUser.findById(userId).select("username phnNumber image").lean();
-      //         })])
-      //       break;
-      //     case "EMPLOYEE":
-      //       message.readBy = await Promise.all([
-      //         message.readBy.map(async (userId) => {
-      //           return await EnterpriseEmployee.findById(userId).select("username phnNumber image").lean();
-      //         })])
-      //       break;
-      //   }
-
-        // const message = messages[0].readBy;
-        // console.log("message", message);
-        // message.map( async (id) => {
-        //   console.log(id);
-        //   return await 
-        //         User.findById(id).select('username image phnNumber').lean();
-        // })
-
-        // console.log("messagess : ", message);
-
-//         const message = messages[0].readBy;
-// console.log("message", message);
-
-// const userPromises = message.map(async (id) => {
-//     console.log(id);
-//     return await User.findById(id).select('username image phnNumber').lean();
-// });
-
-// // Wait for all promises to resolve
-// Promise.all(userPromises)
-//     .then(users => {
-//         console.log("Users:", users);
-//     })
-//     .catch(error => {
-//         console.error("Error fetching users:", error);
-//     });        
-
-    return res.status(200).json({
-      messages,
-      // messages: messages.map((message) => ({
-      //   ...message.toObject(),
-      // })),
-      page,
-      limit
-    });
-
-    } else {
-      return res
-        .status(400)
-        .json({ error: "chatId must be provided." });
-    }
+    const [messages, totalMessages] = await Promise.all([
+      Message.find({ chatId })
+        .sort({ timestamp: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
+        .select('content timestamp localTime image '),
+      Message.countDocuments({ chatId })
+    ]);
+      const totalPages =  Math.ceil(totalMessages / limit);
+      return res.status(200).json({
+        messages,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages
+      });
 
   } catch (error) {
     console.error("Error retrieving messages:", error);
@@ -819,5 +769,19 @@ const uploadMessageVideo = async (req, res) => {
 };
 
 const enrichReadBy = async (message) => {
+  const userPromises = message.readBy.map(async (id) => {
+      console.log(id);
+      return await User.findById(id).select('username image phnNumber').lean();
+  });
   
+  // Wait for all promises to resolve
+  Promise.all(userPromises)
+      .then(users => {
+          console.log("Users:", users);
+      })
+      .catch(error => {
+          console.error("Error fetching users:", error);
+      });     
+
+    return message
 }
