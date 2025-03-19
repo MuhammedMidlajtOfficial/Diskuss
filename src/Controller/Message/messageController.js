@@ -611,23 +611,31 @@ exports.getMessagesByChatId = async (req, res) => {
   const { chatId } = req.params;
   const { page = 1, limit = 10 } = req.query;
 
-  try {
-    if (chatId) {
-      const messages = await Message.find({ chatId }).sort({ timestamp: 1 }).skip((page - 1) * limit).limit(limit).lean();
-      const totalMessages = await Message.countDocuments({chatId});
-      const totalPages =  Math.ceil(totalMessages / limit);
-    return res.status(200).json({
-      messages,
-      page,
-      limit,
-      totalPages
-    });
+  if (!chatId) {
+    return res.status(400).json({ error: "chatId must be provided." });
+  }
 
-    } else {
-      return res
-        .status(400)
-        .json({ error: "chatId must be provided." });
-    }
+  // Convert page and limit to integers
+  const pageNum = Math.max(1, parseInt(page, 10));
+  const limitNum = Math.max(1, parseInt(limit, 10)); // Ensure limit is at least 1
+
+  try {
+    const [messages, totalMessages] = await Promise.all([
+      Message.find({ chatId })
+        .sort({ timestamp: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
+        .select('content timestamp localTime image '),
+      Message.countDocuments({ chatId })
+    ]);
+      const totalPages =  Math.ceil(totalMessages / limit);
+      return res.status(200).json({
+        messages,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages
+      });
 
   } catch (error) {
     console.error("Error retrieving messages:", error);
