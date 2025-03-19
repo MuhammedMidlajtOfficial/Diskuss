@@ -81,7 +81,7 @@ exports.sendAdminMessage = async (req, res) => {
   });
   await message.save();
 
-  io.emit("newMessage", message);  
+  io.emit("newMessage", message);
 
   // const newChatList = await getAdminNewChatList({userId : "67bdb074ed52c8f211cc44f9"});
   // console.log("newChatList", newChatList);
@@ -609,16 +609,77 @@ exports.getMessagesNew = async (req, res) => {
 
 exports.getMessagesByChatId = async (req, res) => {
   const { chatId } = req.params;
+  const { page = 1, limit = 10 } = req.query;
 
   try {
     if (chatId) {
-      let messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+      let messages = await Message.find({ chatId }).sort({ timestamp: 1 }).skip((page - 1) * limit).limit(limit).lean();
+      // console.log("messages", messages);
+      // const userType = messages[0].forUserType;
+      // console.log("userType", userType);
+      // messages = await Promise.all(messages.map(async (message) => {
+      //   // console.log("message.readBy", message.readBy);
+      //   // Fetch sender info
+      //   // console.log("userType", userType);
+      //   switch (userType) {
+      //     case "INDIVIDUAL":
+      //       message.readBy = await Promise.all([
+      //         message.readBy.map(async (userId) => {
+      //           // console.log("userId : ", userId);
+      //           return await User.findById(userId).select("username phnNumber image").lean();
+      //         })
+      //       ])
+      //       console.log("message.readBy : ", message.readBy);
+      //       break;
+      //     case "ENTERPRISE":
+      //       message.readBy = await Promise.all([
+      //         message.readBy.map(async (userId) => {
+      //           return await EnterpriseUser.findById(userId).select("username phnNumber image").lean();
+      //         })])
+      //       break;
+      //     case "EMPLOYEE":
+      //       message.readBy = await Promise.all([
+      //         message.readBy.map(async (userId) => {
+      //           return await EnterpriseEmployee.findById(userId).select("username phnNumber image").lean();
+      //         })])
+      //       break;
+      //   }
 
-      return res.status(200).json({
-        messages: messages.map((message) => ({
-          ...message.toObject(),
-        })),
-      });
+        // const message = messages[0].readBy;
+        // console.log("message", message);
+        // message.map( async (id) => {
+        //   console.log(id);
+        //   return await 
+        //         User.findById(id).select('username image phnNumber').lean();
+        // })
+
+        // console.log("messagess : ", message);
+
+//         const message = messages[0].readBy;
+// console.log("message", message);
+
+// const userPromises = message.map(async (id) => {
+//     console.log(id);
+//     return await User.findById(id).select('username image phnNumber').lean();
+// });
+
+// // Wait for all promises to resolve
+// Promise.all(userPromises)
+//     .then(users => {
+//         console.log("Users:", users);
+//     })
+//     .catch(error => {
+//         console.error("Error fetching users:", error);
+//     });        
+
+    return res.status(200).json({
+      messages,
+      // messages: messages.map((message) => ({
+      //   ...message.toObject(),
+      // })),
+      page,
+      limit
+    });
 
     } else {
       return res
@@ -756,3 +817,7 @@ const uploadMessageVideo = async (req, res) => {
     return 
   }
 };
+
+const enrichReadBy = async (message) => {
+  
+}
