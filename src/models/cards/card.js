@@ -31,7 +31,7 @@ const cardSchema = new mongoose.Schema({
   },
   location:  {
     type:String,
-    required : true
+    required : false
   },
   services: [ {
     type:String,
