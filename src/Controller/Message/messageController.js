@@ -31,8 +31,9 @@ exports.sendAdminMessage = async (req, res) => {
   const { content, userType } = req.body;
 
   let image = ""
-  console.log("req.body", req.body);
-  console.log("req.file", req.file);
+  let video = ""
+  // console.log("req.body", req.body);
+  // console.log("req.file", req.file);
   
   // let image = "https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/profile-images/67b82f0a703ea2f81ccd6263-profile.jpg";
 
@@ -45,6 +46,7 @@ exports.sendAdminMessage = async (req, res) => {
 
   try {
   image = await uploadMessageImage(req, res);
+  video = await uploadMessageVideo(req, res);
   // // The folder name in the S3 bucket
   // const folderName = "admin_messages";
   // const fileName = req.file.originalname;
@@ -74,11 +76,12 @@ exports.sendAdminMessage = async (req, res) => {
     isAdmin : true,
     readBy : [],
     forUserType : userType,
-    image: image
+    image: image,
+    video: video
   });
   await message.save();
 
-  // io.emit("newMessage", message);  
+  io.emit("newMessage", message);
 
   // const newChatList = await getAdminNewChatList({userId : "67bdb074ed52c8f211cc44f9"});
   // console.log("newChatList", newChatList);
@@ -606,22 +609,33 @@ exports.getMessagesNew = async (req, res) => {
 
 exports.getMessagesByChatId = async (req, res) => {
   const { chatId } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+
+  if (!chatId) {
+    return res.status(400).json({ error: "chatId must be provided." });
+  }
+
+  // Convert page and limit to integers
+  const pageNum = Math.max(1, parseInt(page, 10));
+  const limitNum = Math.max(1, parseInt(limit, 10)); // Ensure limit is at least 1
 
   try {
-    if (chatId) {
-      let messages = await Message.find({ chatId }).sort({ timestamp: 1 });
-
+    const [messages, totalMessages] = await Promise.all([
+      Message.find({ chatId })
+        .sort({ timestamp: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
+        .select('content timestamp localTime image readBy'),
+      Message.countDocuments({ chatId })
+    ]);
+      const totalPages =  Math.ceil(totalMessages / limit);
       return res.status(200).json({
-        messages: messages.map((message) => ({
-          ...message.toObject(),
-        })),
+        messages,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages
       });
-
-    } else {
-      return res
-        .status(400)
-        .json({ error: "chatId must be provided." });
-    }
 
   } catch (error) {
     console.error("Error retrieving messages:", error);
@@ -672,18 +686,22 @@ exports.uploadImage = async (req, res) => {
 };
 
 const uploadMessageImage = async (req, res) => {
+  // console.log("files: ", req.files['image'][0].originalname);
   try {
-    if (!req.file) {
+    if (!req.files?.image) {
       // return res.status(400).send({ error: "No file uploaded" });
       return ""
     }
 
     // The folder name in the S3 bucket
     const folderName = "admin_channel_images";
-    const fileName = req.file.originalname;
+    // const fileName = req.files['image'][0].originalname ;
+    const file_ext = req.files['image'][0].originalname.split('.').pop();
+    const fileName = req.files['image'][0].originalname +"_"+ new Date().getTime()+"."+file_ext;
+    
 
     // Upload the file to S3
-    const result = await uploadImageToS3(req.file.buffer, folderName, fileName);
+    const result = await uploadImageToS3(req.files['image'][0].buffer, folderName, fileName);
     const originalUrl = result.Location; // S3 URL of the uploaded file
 
     // // Generate a short code and ensure uniqueness in DB
@@ -708,3 +726,62 @@ const uploadMessageImage = async (req, res) => {
     return 
   }
 };
+
+const uploadMessageVideo = async (req, res) => {
+  // console.log("video : ", req.files.video[0].originalname);
+  try {
+    if (!req.files?.video) {
+      // return res.status(400).send({ error: "No file uploaded" });
+      return ""
+    }
+
+    // The folder name in the S3 bucket
+    const folderName = "admin_channel_videos";
+    // const fileName = req.files.video[0].originalname;
+    const file_ext = req.files['video'][0].originalname.split('.').pop();
+    const fileName = req.files.video[0].originalname+"_"+Date.now()+"."+file_ext;
+
+    // Upload the file to S3
+    const result = await uploadImageToS3(req.files['video'][0].buffer, folderName, fileName);
+    const originalUrl = result.Location; // S3 URL of the uploaded file
+
+    // // Generate a short code and ensure uniqueness in DB
+    // let shortCode;
+    // while (true) {
+    //   shortCode = shortId.generate();
+    //   const urlExists = await Url.findOne({ shortCode });
+    //   if (!urlExists) break; // If unique, exit loop
+    // }
+
+    // // Construct short URL
+    // const shortUrl = `${process.env.SHORT_BASE_URL}/${shortCode}`;
+
+    // // Save the shortened URL to the database
+    // const newUrl = new Url({ originalUrl, shortCode, shortUrl });
+    // await newUrl.save();
+
+    // Send back the shortened URL along with the original S3 URL
+    return originalUrl
+  } catch (error) {
+    console.error("Error in video upload:", error);
+    return 
+  }
+};
+
+const enrichReadBy = async (message) => {
+  const userPromises = message.readBy.map(async (id) => {
+      console.log(id);
+      return await User.findById(id).select('username image phnNumber').lean();
+  });
+  
+  // Wait for all promises to resolve
+  Promise.all(userPromises)
+      .then(users => {
+          console.log("Users:", users);
+      })
+      .catch(error => {
+          console.error("Error fetching users:", error);
+      });     
+
+    return message
+}

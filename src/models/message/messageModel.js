@@ -12,10 +12,11 @@ const messageSchema = new mongoose.Schema({
   readBy : { type: Array },
   forUserType : { type: String, enum: ['INDIVIDUAL', 'ENTERPRISE', 'EMPLOYEE', 'OTHER'], default: 'OTHER' },
   image : { type: String },
+  video : { type: String },
   isDeleted : { type: Boolean, default: false },
 });
 
-
+messageSchema.index({chatId : 1});
 // // Custom transformation
 // messageSchema.set('toJSON', {
 //   transform: function (doc, ret) {
