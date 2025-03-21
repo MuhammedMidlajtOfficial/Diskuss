@@ -172,7 +172,7 @@ const createUserSubscription = async (data) => {
         { new: true }  // Return the updated document
       ).exec();
 
-      if (updatedUserSubscription.status === "active") {
+      if (updateData.status === "active") {
         // Make Referral's isSubscribed true
         await Referral.updateOne({ invitee: data.userId }, { isSubscribed: true });
       }
