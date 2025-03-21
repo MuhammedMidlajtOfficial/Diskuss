@@ -433,6 +433,8 @@ const getReferralDetails = async (userId) => {
         countTotalCoinsRewarded(userId)
     ]);
 
+    // console.log("coinswithdrawan: ", coinsWithdrawn)
+    // console.log("coinsRewarded: ", coinsRewarded)
     const remainingCoins = parseInt(coinsRewarded) - parseInt(coinsWithdrawn); // Default to 0 if no user found
     const pendingCoins = parseInt(totalCoins) - parseInt(coinsRewarded);
 

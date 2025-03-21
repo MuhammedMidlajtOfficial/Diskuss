@@ -16,7 +16,7 @@ const messageSchema = new mongoose.Schema({
   isDeleted : { type: Boolean, default: false },
 });
 
-
+messageSchema.index({chatId : 1});
 // // Custom transformation
 // messageSchema.set('toJSON', {
 //   transform: function (doc, ret) {

@@ -626,7 +626,7 @@ exports.getMessagesByChatId = async (req, res) => {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
-        .select('content timestamp localTime image '),
+        .select('content timestamp localTime image readBy'),
       Message.countDocuments({ chatId })
     ]);
       const totalPages =  Math.ceil(totalMessages / limit);
