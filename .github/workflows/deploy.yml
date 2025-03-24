@@ -1,30 +1,48 @@
-name: Deploy to Development Server
+name: Deploy to Development EC2
 
 on:
   push:
     branches:
-      - Development  # Runs when you push to 'Development' branch
+      - Development  # Change to your development branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+    # Checkout the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.KC_DEVELOPMENT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+    # Set up SSH agent and add SSH key from GitHub Secrets
+    - name: Set up SSH Agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.DISKUSS_DEV_SSH_PRIVATE_KEY }}
 
-      - name: Deploy to EC2
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            cd Diskuss
-            git pull origin Development
-            npm install
-            pm2 restart all
-          EOF
+    # Deploy to EC2 instance
+    - name: Deploy to Development EC2
+      run: |
+        # Ensure known_hosts is set up (to avoid SSH confirmation prompts)
+        mkdir -p ~/.ssh
+        ssh-keyscan -H 13.203.24.247 >> ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/known_hosts
+        
+        # Connect and deploy to the EC2 instance
+        ssh -o StrictHostKeyChecking=no ubuntu@13.203.24.247 << 'EOF'
+          cd ~/Diskuss
+          git checkout Development  # Ensure we are on the correct branch
+          git pull origin Development  # Pull latest code
+
+          echo "Installing dependencies..."
+          npm install --production
+
+          echo "Restarting application..."
+          pm2 restart all || pm2 start server.js
+
+          echo "Deployment to Development server completed!"
+        EOF
+
+    # Indicate job completion
+    - name: Complete Deployment
+      run: echo "Development Deployment successful!"
