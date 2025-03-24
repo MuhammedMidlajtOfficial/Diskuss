@@ -3,7 +3,7 @@ name: Deploy to Development Server
 on:
   push:
     branches:
-      - Deployment  # Runs when you push to 'Deployment' branch
+      - Development  # Runs when you push to 'Development' branch
 
 jobs:
   deploy:
@@ -24,7 +24,7 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd Diskuss
-            git pull origin Deployment
+            git pull origin Development
             npm install
             pm2 restart all
           EOF
