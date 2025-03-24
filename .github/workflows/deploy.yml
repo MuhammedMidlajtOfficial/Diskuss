@@ -25,11 +25,11 @@ jobs:
       run: |
         # Ensure known_hosts is set up (to avoid SSH confirmation prompts)
         mkdir -p ~/.ssh
-        ssh-keyscan -H 13.203.24.247 >> ~/.ssh/known_hosts
+        ssh-keyscan -H 15.206.211.84 >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
         
         # Connect and deploy to the EC2 instance
-        ssh -o StrictHostKeyChecking=no ubuntu@13.203.24.247 << 'EOF'
+        ssh -o StrictHostKeyChecking=no ubuntu@15.206.211.84 << 'EOF'
           cd ~/Diskuss
           git checkout Development  # Ensure we are on the correct branch
           git pull origin Development  # Pull latest code
