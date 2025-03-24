@@ -3,4 +3,4 @@ node_modules
 ./src/logs/*
 ./src/logs/combined.log
 /src/logs/error.log
-
+.github
