@@ -172,9 +172,9 @@ const createUserSubscription = async (data) => {
         { new: true }  // Return the updated document
       ).exec();
 
-      if (updatedUserSubscription.status === "active") {
+      if (updateData.status === "active") {
         // Make Referral's isSubscribed true
-        await Referral.updateOne({ invitee: data.userId }, { isSubscribed: true });
+        await Referral.updateOne({ invitee: updateData.userId }, { isSubscribed: true });
       }
   
       return updatedUserSubscription;  // Return the result of the update operation
@@ -195,6 +195,9 @@ const createUserSubscription = async (data) => {
       }
       
         const userId = userSubscription.userId;
+
+        const isSubscribed = await Referral.updateOne({ invitee: userId }, { isSubscribed: true });
+        console.log("user with "+ userId + " status in referral updated.");
 
         const isIndividualUserExist = await individualUserCollection.findOne({ _id:userId }).exec();
         const isEnterpriseEmployeExist = await enterpriseEmployeModel.findOne({ _id:userId }).exec();
