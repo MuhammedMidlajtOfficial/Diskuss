@@ -3,10 +3,9 @@ const nodemailer = require("nodemailer")
 const mailSender = async (email, title, body) => {
     try {
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            host: 'smtp.gmail.com',
-            port: 587,
-            // secure: false,
+            host: 'smtppro.zoho.in',
+            port: 465,
+            secure: true,
             // requireTLS: true,
             auth: {
                 user: process.env.MAIL_USER,
@@ -17,7 +16,7 @@ const mailSender = async (email, title, body) => {
             // },
         });
         const info = await transporter.sendMail({
-            from: 'connectthesocialmedia@gmail.com',
+            from: process.env.MAIL_USER,
             to: email,
             subject: title,
             html: body,
