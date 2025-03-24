@@ -244,7 +244,7 @@ module.exports.createCard = async (req, res) => {
           message: "Enterprise employee Card added successfully",
           entryId: result._id,
         });
-        sendVerificationEmail(email, newUser.email, passwordRaw);
+        sendVerificationEmail(email, newUser.email, newUser.phnNumber);
       } else {
         return res
           .status(500)
@@ -399,7 +399,7 @@ async function isValidUserId(userId) {
   }
 }
 
-async function sendVerificationEmail(email, newEmail, newPassword) {
+async function sendVerificationEmail(email, newEmail, phnNumber) {
   try {
     const mailResponse = await mailSender(
       email,
@@ -410,8 +410,8 @@ async function sendVerificationEmail(email, newEmail, newPassword) {
       <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
         <p style="font-size: 18px; color: #555; margin: 10px 0;">Your new email:</p>
         <p style="font-size: 18px; color: #333; font-weight: 600;">${newEmail}</p>
-        <p style="font-size: 18px; color: #555; margin: 10px 0;">Your temporary password:</p>
-        <p style="font-size: 18px; color: #333; font-weight: 600;">${newPassword}</p>
+        <p style="font-size: 18px; color: #555; margin: 10px 0;">Your new phone number:</p>
+        <p style="font-size: 18px; color: #333; font-weight: 600;">${phnNumber}</p>
       </div>
       <p style="font-size: 14px; color: #777; margin-top: 20px; text-align: center;">
         If you didn’t request this, please ignore this email or contact our support team.
