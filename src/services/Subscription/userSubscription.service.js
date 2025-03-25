@@ -501,14 +501,14 @@ async function sendSuccessSubscriptionNotification(usermail, createdAt, subscrip
       <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; color: #333; border-radius: 10px; border: 1px solid #e0e0e0;">
         <!-- Header Section -->
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/Diskuss+Logo+Blue.png" alt="Diskuss Logo" style="max-width: 150px;">
+          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/Diskuss+Logo+Blue.png" alt="KC Logo" style="max-width: 150px;">
         </div>
 
         <!-- Main Content Section -->
         <div style="background-color: #f0f8ff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
           <h2 style="font-size: 26px; color: #3e4a59; font-weight: bold; text-align: center; margin-bottom: 20px;">Subscription Successful</h2>
           <p style="font-size: 18px; color: #555; line-height: 1.6; text-align: center; margin-bottom: 30px;">
-            Thank you for subscribing to Diskuss! Your subscription has been successfully activated.
+            Thank you for subscribing to Know Connections! Your subscription has been successfully activated.
           </p>
 
           <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px;">
@@ -533,7 +533,7 @@ async function sendSuccessSubscriptionNotification(usermail, createdAt, subscrip
 
         <!-- Footer Section -->
         <div style="background-color: #f8f8f8; padding: 15px; border-radius: 8px; margin-top: 30px; text-align: center;">
-          <p style="font-size: 14px; color: #888;">© 2025 Diskuss. All rights reserved.</p>
+          <p style="font-size: 14px; color: #888;">© 2025 Know Connections. All rights reserved.</p>
         </div>
       </div>
     `;
@@ -541,7 +541,7 @@ async function sendSuccessSubscriptionNotification(usermail, createdAt, subscrip
     // Send the email using mailSender
     const mailResponse = await mailSender(
       usermail,
-      "Digital Card Admin - Subscription Successful",
+      "Know Connections Admin - Subscription Successful",
       emailBody
     );
 
@@ -559,14 +559,14 @@ async function sendFailedSubscriptionNotification(usermail, attemptedPlan) {
       <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; color: #333; border-radius: 10px; border: 1px solid #e0e0e0;">
         <!-- Header Section -->
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/Diskuss+Logo+Blue.png" alt="Diskuss Logo" style="max-width: 150px;">
+          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/Diskuss+Logo+Blue.png" alt="Know Connections Logo" style="max-width: 150px;">
         </div>
 
         <!-- Main Content Section -->
         <div style="background-color: #ffe5e5; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
           <h2 style="font-size: 26px; color: #b71c1c; font-weight: bold; text-align: center; margin-bottom: 20px;">Subscription Failed</h2>
           <p style="font-size: 18px; color: #555; line-height: 1.6; text-align: center; margin-bottom: 30px;">
-            Unfortunately, we could not process your subscription to Diskuss at this time. Please review your payment details and try again.
+            Unfortunately, we could not process your subscription to Know Connections at this time. Please review your payment details and try again.
           </p>
 
           <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px;">
@@ -589,7 +589,7 @@ async function sendFailedSubscriptionNotification(usermail, attemptedPlan) {
 
         <!-- Footer Section -->
         <div style="background-color: #f8f8f8; padding: 15px; border-radius: 8px; margin-top: 30px; text-align: center;">
-          <p style="font-size: 14px; color: #888;">© 2025 Diskuss. All rights reserved.</p>
+          <p style="font-size: 14px; color: #888;">© 2025 Know Connections. All rights reserved.</p>
         </div>
       </div>
     `;
