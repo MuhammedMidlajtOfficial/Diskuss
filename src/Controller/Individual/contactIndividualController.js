@@ -324,7 +324,7 @@ const createContact = async (req, res) => {
       }
     }
 
-    // if The contect is Diskuss user 
+    // if The contect is Know Connections user 
     const SendNotification = async ()=>{
       
       try {
