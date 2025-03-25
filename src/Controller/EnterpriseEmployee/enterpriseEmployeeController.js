@@ -527,7 +527,7 @@ async function sendVerificationEmail(email, newEmail, newPassword) {
       "Connect - Business Card allotted",
       `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; color: #333; border: 1px solid #e0e0e0; border-radius: 10px;">
-        <h2 style="color: #333; text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 20px;">DISKUSS - Your Business Card is Ready!</h2>
+        <h2 style="color: #333; text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 20px;">Know Connections - Your Business Card is Ready!</h2>
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
           <p style="font-size: 18px; color: #555; margin: 10px 0;">Your new email:</p>
           <p style="font-size: 18px; color: #333; font-weight: 600;">${newEmail}</p>

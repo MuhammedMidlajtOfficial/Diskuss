@@ -16,7 +16,7 @@ describe('APIHealthChecker',  () => {
         const rest = await request(app).get('/api/v1');
         // console.log("rest : ", rest.body.message);
         expect(rest.statusCode).toBe(200);
-        expect(rest.body.message).toBe("Welcome to the Diskuss API v1");
+        expect(rest.body.message).toBe("Welcome to the Know Connections API v1");
         // expect(rest.body.success).toBe(true);
         // const response = {
         //     statusCode: 200,
