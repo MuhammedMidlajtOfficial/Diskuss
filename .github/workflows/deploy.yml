@@ -1,9 +1,9 @@
-name: Deploy to Development EC2
+name: Deploy to Development Server
 
 on:
   push:
     branches:
-      - Development  # Change to your development branch
+      - Development  # Runs when you push to 'Development' branch
 
 jobs:
   deploy:
