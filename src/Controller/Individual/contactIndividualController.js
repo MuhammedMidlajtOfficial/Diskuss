@@ -197,11 +197,11 @@ const createContact = async (req, res) => {
 
       const ContactOwner = await individualUserCollection.findById(contactOwnerId)
 
-      if (ContactOwner) {
+      if (ContactOwner && userId) {
         const contactDetails = {
-          contactOwnerId: existIndividualUserNumber._id,
-          contactOwnerName: existIndividualUserNumber.username,
-          contactOwnerPhnNumber: existIndividualUserNumber.phnNumber,
+          contactOwnerId: userId,
+          contactOwnerName: existIndividualUserNumber?.username,
+          contactOwnerPhnNumber: existIndividualUserNumber?.phnNumber,
           contacts: [
             {
               name: ContactOwner?.username,
@@ -226,7 +226,7 @@ const createContact = async (req, res) => {
         const newContact = await Contact.create(contactDetails);
       }
 
-    } else if (existEnterpriseUser) {
+    } else if (existEnterpriseUser && userId) {
       // Add the contact to enterpriseUserCollection
       await enterpriseUser.updateOne(
         { _id: contactOwnerId },
@@ -263,7 +263,7 @@ const createContact = async (req, res) => {
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
       }
-    } else if (existEnterpriseEmploye) {
+    } else if (existEnterpriseEmploye && userId) {
 
       const ContactOwner = await enterpriseEmployeModel.findById(contactOwnerId)
 
@@ -324,7 +324,7 @@ const createContact = async (req, res) => {
       }
     }
 
-    // if The contect is Diskuss user 
+    // if The contect is Know Connections user 
     const SendNotification = async ()=>{
       
       try {

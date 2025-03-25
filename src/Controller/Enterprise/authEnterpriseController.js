@@ -252,7 +252,7 @@ module.exports.postEnterpriseSignup = async (req, res) => {
         { "contacts.phnNumber": newUser.phnNumber },
         {
           $set: {
-            "contacts.$.isDiskussUser": true, // Mark as a Diskuss user
+            "contacts.$.isDiskussUser": true, // Mark as a Know Connections user
             "contacts.$.userId": newUser._id, // Assign userId
           },
         }
