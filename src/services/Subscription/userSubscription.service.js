@@ -501,7 +501,7 @@ async function sendSuccessSubscriptionNotification(usermail, createdAt, subscrip
       <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; color: #333; border-radius: 10px; border: 1px solid #e0e0e0;">
         <!-- Header Section -->
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/Diskuss+Logo+Blue.png" alt="KC Logo" style="max-width: 150px;">
+          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/KC+Logo.png" alt="Diskuss Logo" style="max-width: 150px;">
         </div>
 
         <!-- Main Content Section -->
@@ -559,7 +559,7 @@ async function sendFailedSubscriptionNotification(usermail, attemptedPlan) {
       <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; color: #333; border-radius: 10px; border: 1px solid #e0e0e0;">
         <!-- Header Section -->
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/Diskuss+Logo+Blue.png" alt="Know Connections Logo" style="max-width: 150px;">
+          <img src="https://diskuss-application-bucket.s3.ap-south-1.amazonaws.com/Static-files/KC+Logo.png" alt="Diskuss Logo" style="max-width: 150px;">
         </div>
 
         <!-- Main Content Section -->
