@@ -68,13 +68,13 @@ const createContact = async (req, res) => {
       cardFrontImage,
       cardBackImage,
       contactOwnerId,
-      contactOwnerName,
+      contactOwnerName = "Unknown",
       contactOwnerPhnNumber
     } = req.body;
 
     console.log("body:", req.body);
 
-    if (!name || !phnNumber || !contactOwnerId) {
+    if (!name || !phnNumber || !contactOwnerId || !contactOwnerName || !contactOwnerId ) {
       return res.status(400).json({ message: "All fields are required" });
     }
     console.log("contactOwnerId--", contactOwnerId);
@@ -200,7 +200,7 @@ const createContact = async (req, res) => {
       if (ContactOwner && userId) {
         const contactDetails = {
           contactOwnerId: userId,
-          contactOwnerName: existIndividualUserNumber?.username,
+          contactOwnerName: existIndividualUserNumber?.username || "Unknown",
           contactOwnerPhnNumber: existIndividualUserNumber?.phnNumber,
           contacts: [
             {
@@ -238,7 +238,7 @@ const createContact = async (req, res) => {
       if (ContactOwner) {
         const contactDetails = {
           contactOwnerId: existIndividualUserNumber._id,
-          contactOwnerName: existIndividualUserNumber.username,
+          contactOwnerName: existIndividualUserNumber.username || "Unknown",
           contactOwnerPhnNumber: existIndividualUserNumber.phnNumber,
           contacts: [
             {
@@ -270,7 +270,7 @@ const createContact = async (req, res) => {
       if (ContactOwner) {
         const contactDetails = {
           contactOwnerId: existIndividualUserNumber._id,
-          contactOwnerName: existIndividualUserNumber.username,
+          contactOwnerName: existIndividualUserNumber.username || "Unknown",
           contactOwnerPhnNumber: existIndividualUserNumber.phnNumber,
           contacts: [
             {
