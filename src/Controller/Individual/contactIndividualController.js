@@ -6,9 +6,7 @@ const ContactService = require("../../services/contact.Individual.service");
 const { uploadImageToS3ForContact, deleteImageFromS3ForContact } = require("../../services/AWS/s3Bucket");
 const mongoose = require ('mongoose')
 const Notification = require("../../models/notification/NotificationModel");
-const {
-  emitNotification,
-} = require("../../Controller/Socket.io/NotificationSocketIo");
+const { emitNotification } = require("../../Controller/Socket.io/NotificationSocketIo");
 const axios = require("axios");
 
 /**
@@ -196,13 +194,108 @@ const createContact = async (req, res) => {
         { _id: contactOwnerId },
         { $push: { contacts: newContact._id } }
       );
+
+      const ContactOwner = await individualUserCollection.findById(contactOwnerId)
+
+      if (ContactOwner) {
+        const contactDetails = {
+          contactOwnerId: existIndividualUserNumber._id,
+          contactOwnerName: existIndividualUserNumber.username,
+          contactOwnerPhnNumber: existIndividualUserNumber.phnNumber,
+          contacts: [
+            {
+              name: ContactOwner?.username,
+              companyName: ContactOwner?.companyName,
+              designation: ContactOwner?.role,
+              phnNumber: ContactOwner?.phnNumber,
+              email: ContactOwner?.email,
+              website: ContactOwner?.website,
+              // businessCategory,
+              location: ContactOwner?.address,
+              // scheduled,
+              // scheduledTime,
+              // notes,
+              // cardImage, // Assign the cardImage object here
+              userId: ContactOwner?._id, // Set the userId based on the type of user
+              isDiskussUser: true,
+            },
+          ],
+        };
+        
+        // Create the new contact
+        const newContact = await Contact.create(contactDetails);
+      }
+
     } else if (existEnterpriseUser) {
       // Add the contact to enterpriseUserCollection
       await enterpriseUser.updateOne(
         { _id: contactOwnerId },
         { $push: { contacts: newContact._id } }
       );
+
+      const ContactOwner = await enterpriseUser.findById(contactOwnerId)
+
+      if (ContactOwner) {
+        const contactDetails = {
+          contactOwnerId: existIndividualUserNumber._id,
+          contactOwnerName: existIndividualUserNumber.username,
+          contactOwnerPhnNumber: existIndividualUserNumber.phnNumber,
+          contacts: [
+            {
+              name: ContactOwner?.username,
+              companyName: ContactOwner?.companyName,
+              designation: ContactOwner?.role,
+              phnNumber: ContactOwner?.phnNumber,
+              email: ContactOwner?.email,
+              website: ContactOwner?.website,
+              // businessCategory,
+              location: ContactOwner?.address,
+              // scheduled,
+              // scheduledTime,
+              // notes,
+              // cardImage, // Assign the cardImage object here
+              userId: ContactOwner?._id, // Set the userId based on the type of user
+              isDiskussUser: true,
+            },
+          ],
+        };
+        
+        // Create the new contact
+        const newContact = await Contact.create(contactDetails);
+      }
     } else if (existEnterpriseEmploye) {
+
+      const ContactOwner = await enterpriseEmployeModel.findById(contactOwnerId)
+
+      if (ContactOwner) {
+        const contactDetails = {
+          contactOwnerId: existIndividualUserNumber._id,
+          contactOwnerName: existIndividualUserNumber.username,
+          contactOwnerPhnNumber: existIndividualUserNumber.phnNumber,
+          contacts: [
+            {
+              name: ContactOwner?.username,
+              companyName: ContactOwner?.companyName,
+              designation: ContactOwner?.role,
+              phnNumber: ContactOwner?.phnNumber,
+              email: ContactOwner?.email,
+              website: ContactOwner?.website,
+              // businessCategory,
+              location: ContactOwner?.address,
+              // scheduled,
+              // scheduledTime,
+              // notes,
+              // cardImage, // Assign the cardImage object here
+              userId: ContactOwner?._id, // Set the userId based on the type of user
+              isDiskussUser: true,
+            },
+          ],
+        };
+        
+        // Create the new contact
+        const newContact = await Contact.create(contactDetails);
+      }
+
       // Add the contact to enterpriseEmployeeCollection
       await enterpriseEmployeModel.updateOne(
         { _id: contactOwnerId },

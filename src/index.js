@@ -22,7 +22,6 @@ const expressListRoutes = require('express-list-routes');
 // const { parseLogs } = require('./crons/testCron.js');
 require('dotenv').config()
 
-  
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
 // const authEnterpriseRouter = require('./Routes/Enterprise/authEnterpriseRouter.js')
 // const profileRoutes = require('./Routes/Profile/profileRoutes.js')
