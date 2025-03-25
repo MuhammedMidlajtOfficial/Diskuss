@@ -411,7 +411,7 @@ async function sendResponseTicketNotification(email, usermail, ticketNumber, tit
         </div>
   
         <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #888;">
-          <p>© 2025 Diskuss. All rights reserved.</p>
+          <p>© 2025 Know Connections. All rights reserved.</p>
         </div>
         ` 
       );
@@ -451,7 +451,7 @@ async function sendAssignTicketNotification(email, usermail, ticketNumber, title
         </div>
   
         <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #888;">
-          <p>© 2025 Diskuss. All rights reserved.</p>
+          <p>© 2025 Know Connections. All rights reserved.</p>
         </div>
         ` 
       );
@@ -490,7 +490,7 @@ async function sendCreateTicketNotification(email, usermail, ticketNumber, title
         </div>
   
         <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #888;">
-          <p>© 2025 Diskuss. All rights reserved.</p>
+          <p>© 2025 Know Connections. All rights reserved.</p>
         </div>
         `
       );

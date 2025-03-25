@@ -69,7 +69,7 @@ app.use('/api/v1', routes);
 
 app.get('/api/v1',(req,res)=>{
   res.send({
-    message : "Welcome to the Diskuss API v1"
+    message : "Welcome to the Know Connections API v1"
   })
 })
 
