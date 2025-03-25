@@ -1,48 +1,43 @@
-name: Deploy to Development Server
+name: Deploy to EC2
 
 on:
   push:
     branches:
-      - Development  # Runs when you push to 'Development' branch
+      - main  # You can change this to the branch you use for deployment
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
-    - name: Checkout Code
+    # Checkout the code
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    # Set up SSH agent and add SSH key from GitHub Secrets
-    - name: Set up SSH Agent
+    # Set up SSH Agent and add the SSH private key from GitHub Secrets
+    - name: Set up SSH agent
       uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-private-key: ${{ secrets.KC_DEVELOPMENT_SSH_PRIVATE_KEY }}
+        ssh-private-key: ${{ secrets.DISKUSS_SSH_PRIVATE_KEY }}
 
     # Deploy to EC2 instance
-    - name: Deploy to Development EC2
+    - name: Deploy to EC2
       run: |
-        # Ensure known_hosts is set up (to avoid SSH confirmation prompts)
+        # Ensure known_hosts is set up (to avoid interactive prompts)
         mkdir -p ~/.ssh
-        ssh-keyscan -H 15.206.211.84 >> ~/.ssh/known_hosts
+        ssh-keyscan -H 13.203.24.247 >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
         
-        # Connect and deploy to the EC2 instance
-        ssh -o StrictHostKeyChecking=no ubuntu@15.206.211.84 << 'EOF'
+        # Run the deploy commands on your EC2 instance
+        ssh -o StrictHostKeyChecking=no ubuntu@13.203.24.247 << 'EOF'
           cd ~/Diskuss
-          git checkout Development  # Ensure we are on the correct branch
-          git pull origin Development  # Pull latest code
-
-          echo "Installing dependencies..."
-          npm install --production
-
-          echo "Restarting application..."
-          pm2 restart all || pm2 start server.js
-
-          echo "Deployment to Development server completed!"
+          git pull origin main  # Pull latest code from GitHub
+          npm install  # Install dependencies
+          # Restart the application or any service you need here (e.g., pm2 restart, etc.)
+          pm2 restart all  # Example if you use pm2 to manage your application
         EOF
 
-    # Indicate job completion
-    - name: Complete Deployment
-      run: echo "Development Deployment successful!"
+    # Complete the job
+    - name: Complete job
+      run: echo "Deployment successful!"
+
