@@ -197,36 +197,39 @@ const createContact = async (req, res) => {
 
       const ContactOwner = await individualUserCollection.findById(contactOwnerId)
 
-      if (ContactOwner && userId) {
-        const contactDetails = {
-          contactOwnerId: userId,
-          contactOwnerName: existIndividualUserNumber?.username || "Unknown",
-          contactOwnerPhnNumber: existIndividualUserNumber?.phnNumber,
-          contacts: [
-            {
-              name: ContactOwner?.username,
-              companyName: ContactOwner?.companyName,
-              designation: ContactOwner?.role,
-              phnNumber: ContactOwner?.phnNumber,
-              email: ContactOwner?.email,
-              website: ContactOwner?.website,
-              // businessCategory,
-              location: ContactOwner?.address,
-              // scheduled,
-              // scheduledTime,
-              // notes,
-              // cardImage, // Assign the cardImage object here
-              userId: ContactOwner?._id, // Set the userId based on the type of user
-              isDiskussUser: true,
-            },
-          ],
-        };
+      const userObject = existIndividualUserNumber || existEnterpriseUserNumber || existEnterpriseEmployeNumber;
+      const contactDetails = createContactDetails(userId, userObject, ContactOwner);
+
+      // if (ContactOwner && userId) {
+      //   const contactDetails = {
+      //     contactOwnerId: userId,
+      //     contactOwnerName: existIndividualUserNumber?.username,
+      //     contactOwnerPhnNumber: existIndividualUserNumber?.phnNumber,
+      //     contacts: [
+      //       {
+      //         name: ContactOwner?.username,
+      //         companyName: ContactOwner?.companyName,
+      //         designation: ContactOwner?.role,
+      //         phnNumber: ContactOwner?.phnNumber,
+      //         email: ContactOwner?.email,
+      //         website: ContactOwner?.website,
+      //         // businessCategory,
+      //         location: ContactOwner?.address,
+      //         // scheduled,
+      //         // scheduledTime,
+      //         // notes,
+      //         // cardImage, // Assign the cardImage object here
+      //         userId: ContactOwner?._id, // Set the userId based on the type of user
+      //         isDiskussUser: true,
+      //       },
+      //     ],
+      //   };
         
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
-      }
+      // }
 
-    } else if (existEnterpriseUser && userId) {
+    } else if (existEnterpriseUser ) {
       // Add the contact to enterpriseUserCollection
       await enterpriseUser.updateOne(
         { _id: contactOwnerId },
@@ -235,62 +238,20 @@ const createContact = async (req, res) => {
 
       const ContactOwner = await enterpriseUser.findById(contactOwnerId)
 
-      if (ContactOwner) {
-        const contactDetails = {
-          contactOwnerId: existIndividualUserNumber._id,
-          contactOwnerName: existIndividualUserNumber.username || "Unknown",
-          contactOwnerPhnNumber: existIndividualUserNumber.phnNumber,
-          contacts: [
-            {
-              name: ContactOwner?.username,
-              companyName: ContactOwner?.companyName,
-              designation: ContactOwner?.role,
-              phnNumber: ContactOwner?.phnNumber,
-              email: ContactOwner?.email,
-              website: ContactOwner?.website,
-              // businessCategory,
-              location: ContactOwner?.address,
-              // scheduled,
-              // scheduledTime,
-              // notes,
-              // cardImage, // Assign the cardImage object here
-              userId: ContactOwner?._id, // Set the userId based on the type of user
-              isDiskussUser: true,
-            },
-          ],
-        };
+      if (ContactOwner && userId) {
+        const userObject = existIndividualUserNumber || existEnterpriseUserNumber || existEnterpriseEmployeNumber;
+        const contactDetails = createContactDetails(userId, userObject, ContactOwner);
         
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
       }
-    } else if (existEnterpriseEmploye && userId) {
+    } else if (existEnterpriseEmploye) {
 
       const ContactOwner = await enterpriseEmployeModel.findById(contactOwnerId)
 
-      if (ContactOwner) {
-        const contactDetails = {
-          contactOwnerId: existIndividualUserNumber._id,
-          contactOwnerName: existIndividualUserNumber.username || "Unknown",
-          contactOwnerPhnNumber: existIndividualUserNumber.phnNumber,
-          contacts: [
-            {
-              name: ContactOwner?.username,
-              companyName: ContactOwner?.companyName,
-              designation: ContactOwner?.role,
-              phnNumber: ContactOwner?.phnNumber,
-              email: ContactOwner?.email,
-              website: ContactOwner?.website,
-              // businessCategory,
-              location: ContactOwner?.address,
-              // scheduled,
-              // scheduledTime,
-              // notes,
-              // cardImage, // Assign the cardImage object here
-              userId: ContactOwner?._id, // Set the userId based on the type of user
-              isDiskussUser: true,
-            },
-          ],
-        };
+      if (ContactOwner && userId) {
+        const userObject = existIndividualUserNumber || existEnterpriseUserNumber || existEnterpriseEmployeNumber;
+        const contactDetails = createContactDetails(userId, userObject, ContactOwner);
         
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
@@ -303,9 +264,10 @@ const createContact = async (req, res) => {
       );
 
       const enterpriseUserId = await enterpriseUser
-        .findOne({ "empIds.empId": contactOwnerId })
-        .select("_id");
+      .findOne({ "empIds.empId": new mongoose.Types.ObjectId(contactOwnerId) }) // Ensure ObjectId conversion
+      .select("_id");
       if (!enterpriseUserId) {
+        console.log("status(400) - Enterprise user not Added");
         return res.status(400).json({ message: "Enterprise user not Added" });
       }
       contactDetails.contactOwnerId = enterpriseUserId._id;
@@ -392,6 +354,25 @@ const createContact = async (req, res) => {
       message: "An unexpected error occurred. Please try again later.",
     });
   }
+};
+
+const createContactDetails = ( userId, userObject, contactsData ) => {
+  return {
+    contactOwnerId: userId,
+    contactOwnerName: userObject?.username || "",
+    contactOwnerPhnNumber: userObject?.phnNumber || "",
+    contacts: [{
+      name: contactsData?.username || "",
+      companyName: contactsData?.companyName || "",
+      designation: contactsData?.role || "",
+      phnNumber: contactsData?.phnNumber || "",
+      email: contactsData?.email || "",
+      website: contactsData?.website || "",
+      location: contactsData?.address || "",
+      userId: contactsData?._id || "",
+      isDiskussUser: true,
+    }],
+  };
 };
 
 /**
@@ -869,7 +850,7 @@ const createPhoneContacts = async (req, res) => {
 
         // Also update the enterprise user
         const enterpriseUserId = await enterpriseUser
-          .findOne({ "empIds.empId": contactOwnerId })
+          .findOne({ "empIds.empId": new mongoose.Types.ObjectId(contactOwnerId) })
           .select("_id");
           
         if (enterpriseUserId) {
