@@ -1,43 +1,48 @@
-name: Deploy to EC2
+name: Deploy to Development Server
 
 on:
   push:
     branches:
-      - main  # You can change this to the branch you use for deployment
+      - Development  # Runs when you push to 'Development' branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the code
-    - name: Checkout code
+    # Checkout the repository
+    - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Set up SSH Agent and add the SSH private key from GitHub Secrets
-    - name: Set up SSH agent
+    # Set up SSH agent and add SSH key from GitHub Secrets
+    - name: Set up SSH Agent
       uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-private-key: ${{ secrets.DISKUSS_SSH_PRIVATE_KEY }}
+        ssh-private-key: ${{ secrets.KC_DEVELOPMENT_SSH_PRIVATE_KEY }}
 
     # Deploy to EC2 instance
-    - name: Deploy to EC2
+    - name: Deploy to Development EC2
       run: |
-        # Ensure known_hosts is set up (to avoid interactive prompts)
-        mkdir -p ~/.ssh
-        ssh-keyscan -H 13.203.24.247 >> ~/.ssh/known_hosts
+        # Ensure known_hosts is set up (to avoid SSH confirmation prompts)
+         mkdir -p ~/.ssh
+        ssh-keyscan -H 15.206.211.84 >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
         
-        # Run the deploy commands on your EC2 instance
-        ssh -o StrictHostKeyChecking=no ubuntu@13.203.24.247 << 'EOF'
-          cd ~/Know Connections
-          git pull origin main  # Pull latest code from GitHub
-          npm install  # Install dependencies
-          # Restart the application or any service you need here (e.g., pm2 restart, etc.)
-          pm2 restart all  # Example if you use pm2 to manage your application
+        # Connect and deploy to the EC2 instance
+        ssh -o StrictHostKeyChecking=no ubuntu@15.206.211.84 << 'EOF'
+          cd ~/Diskuss
+          git checkout Development  # Ensure we are on the correct branch
+          git pull origin Development  # Pull latest code
+
+          echo "Installing dependencies..."
+          npm install --production
+
+          echo "Restarting application..."
+          pm2 restart all || pm2 start server.js
+
+          echo "Deployment to Development server completed!"
         EOF
 
-    # Complete the job
-    - name: Complete job
-      run: echo "Deployment successful!"
-
+    # Indicate job completion
+    - name: Complete Deployment
+      run: echo "Development Deployment successful!"
