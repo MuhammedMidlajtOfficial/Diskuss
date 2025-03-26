@@ -68,13 +68,13 @@ const createContact = async (req, res) => {
       cardFrontImage,
       cardBackImage,
       contactOwnerId,
-      contactOwnerName,
+      contactOwnerName = "Unknown",
       contactOwnerPhnNumber
     } = req.body;
 
     console.log("body:", req.body);
 
-    if (!name || !phnNumber || !contactOwnerId) {
+    if (!name || !phnNumber || !contactOwnerId || !contactOwnerName || !contactOwnerId ) {
       return res.status(400).json({ message: "All fields are required" });
     }
     console.log("contactOwnerId--", contactOwnerId);
