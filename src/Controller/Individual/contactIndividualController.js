@@ -426,7 +426,7 @@ const updateContact = async (req, res) => {
     }
 
     // Check if the contact exists
-    const contact = await Contact.findOne({ _id: contact_id });
+    const contact = await Contact.findOne({ _id: new mongoose.Types.ObjectId(contact_id) });
     if (!contact) {
       return res.status(404).json({ message: "Contact not found using this contact id" });
     }
@@ -497,6 +497,7 @@ const updateContact = async (req, res) => {
     const updatedContact = await Contact.updateOne(
       {
         _id: contact_id,
+        contacts: { $exists: true, $ne: [] }, // Ensure contacts array exists
         "contacts._id": contact.contacts[0]._id
       },
       {
@@ -527,15 +528,19 @@ const updateContact = async (req, res) => {
 
     // Depending on the user type, update the contact in the relevant collection
     const updateQuery = { _id: contactOwnerId };
-    const updateData = { $set: { "contacts.$.phnNumber": phnNumber } };
-    const arrayFilters = [{ "contact._id": contact_id }];
+    const updateData = { $push: { "contacts": contact_id } };
+    // const arrayFilters = [{ "contact._id": contact_id }];
 
+    // console.log('updateQuery-',updateQuery);
+    console.log('updateData-',updateData);
+    // console.log('arrayFilters-',arrayFilters);
+    
     if (existIndividualUser) {
-      await individualUserCollection.updateOne(updateQuery, updateData, { arrayFilters });
+      await individualUserCollection.updateOne(updateQuery, updateData);
     } else if (existEnterpriseUser) {
-      await enterpriseUser.updateOne(updateQuery, updateData, { arrayFilters });
+      await enterpriseUser.updateOne(updateQuery, updateData);
     } else if (existEnterpriseEmploye) {
-      await enterpriseEmployeModel.updateOne(updateQuery, updateData, { arrayFilters });
+      await enterpriseEmployeModel.updateOne(updateQuery, updateData);
     }
 
     return res.status(200).json({ message: "Contact updated successfully" });
