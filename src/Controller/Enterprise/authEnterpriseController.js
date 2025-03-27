@@ -96,7 +96,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
     let otp;
 
     // Check for special phone number
-    if (phnNumber === '7061409421') {
+    if (phnNumber === '7061409421' || phnNumber === '8848866054') {
       otp = '000000';
     } else {
       // Generate OTP for other numbers
