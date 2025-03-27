@@ -226,7 +226,7 @@ const createContact = async (req, res) => {
       //   };
         
         // Create the new contact
-        const newContact = await Contact.create(contactDetails);
+        await Contact.create(contactDetails);
       // }
 
     } else if (existEnterpriseUser ) {
@@ -243,7 +243,7 @@ const createContact = async (req, res) => {
         const contactDetails = createContactDetails(userId, userObject, ContactOwner);
         
         // Create the new contact
-        const newContact = await Contact.create(contactDetails);
+        await Contact.create(contactDetails);
       }
     } else if (existEnterpriseEmploye) {
 
@@ -254,7 +254,7 @@ const createContact = async (req, res) => {
         const contactDetails = createContactDetails(userId, userObject, ContactOwner);
         
         // Create the new contact
-        const newContact = await Contact.create(contactDetails);
+        await Contact.create(contactDetails);
       }
 
       // Add the contact to enterpriseEmployeeCollection
