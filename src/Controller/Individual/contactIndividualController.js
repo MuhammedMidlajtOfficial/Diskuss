@@ -177,6 +177,11 @@ const createContact = async (req, res) => {
     // Create the new contact
     const newContact = await Contact.create(contactDetails);
 
+    // Send Notification
+    if (isDiskussUser && userId ) {
+      SendNotification( userId, contactOwnerId, contactOwnerName )
+    }
+
     const existIndividualUser = await individualUserCollection.findOne({
       _id: contactOwnerId,
     });
@@ -202,6 +207,8 @@ const createContact = async (req, res) => {
 
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
+        // Send Notification
+        SendNotification( ContactOwner?._id, userId, userObject.username )
       }
 
       // if (ContactOwner && userId) {
@@ -248,6 +255,8 @@ const createContact = async (req, res) => {
         
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
+        // Send Notification
+        SendNotification( ContactOwner?._id, userId, userObject.username )
       }
     } else if (existEnterpriseEmploye) {
 
@@ -259,6 +268,8 @@ const createContact = async (req, res) => {
         
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
+        // Send Notification
+        SendNotification( ContactOwner?._id, userId, userObject.username )
       }
 
       // Add the contact to enterpriseEmployeeCollection
@@ -291,7 +302,7 @@ const createContact = async (req, res) => {
     }
 
     // if The contect is Know Connections user 
-    const SendNotification = async ()=>{
+    const SendNotification = async (userId, contactOwnerId, contactOwnerName)=>{
       
       try {
         if (isDiskussUser && userId && contactOwnerName) {
@@ -344,10 +355,7 @@ const createContact = async (req, res) => {
         console.error("Error in SendNotification:", notificationError.message);
       }
     };
-      
-    if (isDiskussUser && userId ) {
-     SendNotification()
-    }
+    
 
     return res
       .status(201)
@@ -377,6 +385,10 @@ const createContactDetails = ( userId, userObject, contactsData ) => {
       isDiskussUser: true,
     }],
   };
+
+
+  // Send Notification
+  SendNotification()
 };
 
 /**
