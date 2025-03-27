@@ -196,9 +196,13 @@ const createContact = async (req, res) => {
       );
 
       const ContactOwner = await individualUserCollection.findById(contactOwnerId)
+      if (ContactOwner && userId) {
+        const userObject = existIndividualUserNumber || existEnterpriseUserNumber || existEnterpriseEmployeNumber;
+        const contactDetails = createContactDetails(userId, userObject, ContactOwner);
 
-      const userObject = existIndividualUserNumber || existEnterpriseUserNumber || existEnterpriseEmployeNumber;
-      const contactDetails = createContactDetails(userId, userObject, ContactOwner);
+        // Create the new contact
+        const newContact = await Contact.create(contactDetails);
+      }
 
       // if (ContactOwner && userId) {
       //   const contactDetails = {
@@ -225,8 +229,8 @@ const createContact = async (req, res) => {
       //     ],
       //   };
         
-        // Create the new contact
-        const newContact = await Contact.create(contactDetails);
+        // // Create the new contact
+        // const newContact = await Contact.create(contactDetails);
       // }
 
     } else if (existEnterpriseUser ) {
