@@ -16,8 +16,8 @@ module.exports.postEnterpriseLogin = async (req, res) => {
     const { email, password } = req.body;
 
     // Find enterprise user 
-    const enterprise = await enterpriseUser.findOne({ email });
-    const enterpriseEmp = await enterpriseEmployeModel.findOne({ email });
+    const enterprise = await enterpriseUser.findOne({ email, isDeleted : false  });
+    const enterpriseEmp = await enterpriseEmployeModel.findOne({ email, isDeleted : false  });
 
     // Check if neither user is found
     if (!enterprise && !enterpriseEmp) {
@@ -79,8 +79,8 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
     }
 
     // Find enterprise user 
-    const enterprise = await enterpriseUser.findOne({ phnNumber });
-    const enterpriseEmp = await enterpriseEmployeModel.findOne({ phnNumber });
+    const enterprise = await enterpriseUser.findOne({ phnNumber, isDeleted: false });
+    const enterpriseEmp = await enterpriseEmployeModel.findOne({ phnNumber, isDeleted: false });
 
     // Check if neither user is found
     if (!enterprise && !enterpriseEmp) {
@@ -142,8 +142,8 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
     let user = null;
     let emp = false;
     // Find enterprise user 
-    const enterprise = await enterpriseUser.findOne({ phnNumber });
-    const enterpriseEmp = await enterpriseEmployeModel.findOne({ phnNumber });
+    const enterprise = await enterpriseUser.findOne({ phnNumber, isDeleted : false });
+    const enterpriseEmp = await enterpriseEmployeModel.findOne({ phnNumber, isDeleted : false });
     // Check if neither user is found
     if (!enterprise && !enterpriseEmp) {
       return res.status(404).json({ message: 'Seems like you are new to Know Connection, register now to Login' });
@@ -194,7 +194,7 @@ module.exports.postEnterpriseSignup = async (req, res) => {
     }
 
     // ✅ 2. Check if email already exists
-    const isEmailExist = await enterpriseUser.findOne({ email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email, isDeleted : false  }).exec();
     
 
     if (isEmailExist) {
@@ -202,8 +202,8 @@ module.exports.postEnterpriseSignup = async (req, res) => {
     }
 
     // ✅ 2. Check if phone number already exists
-    const isPhnNumberExist = await enterpriseUser.findOne({ phnNumber }).exec();  
-    const isPhnNumberExist2 = await individualUserCollection.findOne({ phnNumber}).exec();
+    const isPhnNumberExist = await enterpriseUser.findOne({ phnNumber, isDeleted : false  }).exec();  
+    const isPhnNumberExist2 = await individualUserCollection.findOne({ phnNumber, isDeleted : false }).exec();
 
     if (isPhnNumberExist || isPhnNumberExist2) {
       return res.status(409).json({ message: "A user with this phone number already exists. Please login instead" });     
@@ -304,7 +304,7 @@ module.exports.postforgotPassword = async (req, res ) => {
       res.status(400, "All fields are Required")
     }
 
-    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email: email, isDeleted : false  }).exec();
     if(isEmailExist){
       // hash password
       const hashedPassword = await bcrypt.hash(passwordRaw, 10);
@@ -339,8 +339,8 @@ module.exports.OtpValidate = async (req, res ) => {
       return res.status(400).json({ message: "Both Phone Number and Otp are required" });
     }
 
-    const isPhoneInEnterpriseUser = await enterpriseUser.findOne({ phnNumber }).exec();
-    const isPhoneInEmployee = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+    const isPhoneInEnterpriseUser = await enterpriseUser.findOne({ phnNumber, isDeleted : false  }).exec();
+    const isPhoneInEmployee = await enterpriseEmployeModel.findOne({ phnNumber, isDeleted : false  }).exec();
 
     if (isPhoneInEnterpriseUser || isPhoneInEmployee) {
       const response = await otpCollection.find({ phnNumber }).sort({ createdAt: -1 }).limit(1);
@@ -403,9 +403,9 @@ module.exports.sendOTP = async (req, res) => {
 
     if(phnNumber){
       // Check if phone number exists in any of the collections
-      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
-      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
-      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber }).exec();
+      isIndividualExist = await individualUserCollection.findOne({ phnNumber, isDeleted : false  }).exec();
+      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber, isDeleted : false  }).exec();
+      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findOne({ phnNumber, isDeleted : false  }).exec();
     }
 
     if (isIndividualExist) {
@@ -462,7 +462,7 @@ module.exports.resetPassword = async (req, res ) => {
       return res.status(400).json({ message: "All fields are Required"})
     }
 
-    const isEmailExist = await enterpriseUser.findOne({ email: email }).exec();
+    const isEmailExist = await enterpriseUser.findOne({ email: email, isDeleted : false  }).exec();
     console.log("isEmailExist-",isEmailExist);
     if(!isEmailExist){
       return res.status(401).json({ message : "email not found"})
@@ -646,5 +646,28 @@ module.exports.getProfile = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+  }
+};
+
+
+module.exports.deleteUserByUserId = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Update the user to mark as deleted
+    const result = await enterpriseUser.updateOne(
+      { _id: userId },
+      { $set: { isDeleted: true } }
+    );
+
+    // Check if the user was found and updated
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "Enterprise User not found" });
+    }
+
+    return res.json({ message: "Enterprise User has been deleted" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'An unexpected error occurred while deleting the Enterprise user. Please try again later' });
   }
 };

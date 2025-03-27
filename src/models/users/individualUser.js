@@ -102,6 +102,7 @@ const IndividualUserSchema = new mongoose.Schema({
         required: false,
       },
     ],
+    isDeleted : {type: Boolean, default: false}
  }, { timestamps: true });
 
 // Set referral code as unique

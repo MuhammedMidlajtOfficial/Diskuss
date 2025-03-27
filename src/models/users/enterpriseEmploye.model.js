@@ -103,6 +103,8 @@ const EnterpriseEmployeeSchema = new mongoose.Schema({
     coinsWithdrawn: { type: Number, default: 0 },
     coinsPending: { type: Number, default: 0 },
     invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
+    isDeleted : {type: Boolean, default: false}
+
 } ,{ timestamps: true });
 
 // Generate a unique referral code using crypto or any other method
