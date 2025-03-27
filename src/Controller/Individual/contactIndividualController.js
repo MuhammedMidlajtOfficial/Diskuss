@@ -177,6 +177,61 @@ const createContact = async (req, res) => {
     // Create the new contact
     const newContact = await Contact.create(contactDetails);
 
+    // if The contect is Know Connections user 
+    const SendNotification = async (userId, contactOwnerId, contactOwnerName)=>{
+      
+      try {
+        if (isDiskussUser && userId && contactOwnerName) {
+          const notificationContent = `
+            <h3>
+              <strong>${contactOwnerName}</strong> has saved your contact.
+              You can now chat and create a meeting with them.
+            </h3>
+          `;
+
+          const notificationContentForMobile = `${contactOwnerName} has saved your contact You can now chat and create a meeting with them.`
+
+          const userArray = [userId.toString()]
+          console.log(userArray)
+
+          try {
+             const repose = await axios.post(
+                    "http://13.203.24.247:9000/api/v1/fcm/sendContactNotification",
+                    {
+                      userIds: userArray,
+                      notification: {
+                        title: "Contect Saved",
+                        body: notificationContentForMobile,
+                      },
+                    }
+                  );
+                  console.log("Notification sent to mobile:", repose.data);
+          } catch (error) {
+            console.log("Error in sending notification to mobile:", error.message);
+          }
+
+
+          const notification = new Notification({
+            sender: contactOwnerId,
+            receiver: userId,
+            type: "contact_saved",
+            content: notificationContent,
+            status: "unread",
+          });
+
+          await notification.save();
+
+          try {
+            emitNotification(userId, notification);
+          } catch (emitError) {
+            console.error("Failed to emit notification:", emitError.message);
+          }
+        }
+      } catch (notificationError) {
+        console.error("Error in SendNotification:", notificationError.message);
+      }
+    };
+
     // Send Notification
     if (isDiskussUser && userId ) {
       SendNotification( userId, contactOwnerId, contactOwnerName )
@@ -301,60 +356,7 @@ const createContact = async (req, res) => {
       }
     }
 
-    // if The contect is Know Connections user 
-    const SendNotification = async (userId, contactOwnerId, contactOwnerName)=>{
-      
-      try {
-        if (isDiskussUser && userId && contactOwnerName) {
-          const notificationContent = `
-            <h3>
-              <strong>${contactOwnerName}</strong> has saved your contact.
-              You can now chat and create a meeting with them.
-            </h3>
-          `;
-
-          const notificationContentForMobile = `${contactOwnerName} has saved your contact You can now chat and create a meeting with them.`
-
-          const userArray = [userId.toString()]
-          console.log(userArray)
-
-          try {
-             const repose = await axios.post(
-                    "http://13.203.24.247:9000/api/v1/fcm/sendContactNotification",
-                    {
-                      userIds: userArray,
-                      notification: {
-                        title: "Contect Saved",
-                        body: notificationContentForMobile,
-                      },
-                    }
-                  );
-                  console.log("Notification sent to mobile:", repose.data);
-          } catch (error) {
-            console.log("Error in sending notification to mobile:", error.message);
-          }
-
-
-          const notification = new Notification({
-            sender: contactOwnerId,
-            receiver: userId,
-            type: "contact_saved",
-            content: notificationContent,
-            status: "unread",
-          });
-
-          await notification.save();
-
-          try {
-            emitNotification(userId, notification);
-          } catch (emitError) {
-            console.error("Failed to emit notification:", emitError.message);
-          }
-        }
-      } catch (notificationError) {
-        console.error("Error in SendNotification:", notificationError.message);
-      }
-    };
+    
     
 
     return res
