@@ -196,13 +196,9 @@ const createContact = async (req, res) => {
       );
 
       const ContactOwner = await individualUserCollection.findById(contactOwnerId)
-      if (ContactOwner && userId) {
-        const userObject = existIndividualUserNumber || existEnterpriseUserNumber || existEnterpriseEmployeNumber;
-        const contactDetails = createContactDetails(userId, userObject, ContactOwner);
 
-        // Create the new contact
-        await Contact.create(contactDetails);
-      }
+      const userObject = existIndividualUserNumber || existEnterpriseUserNumber || existEnterpriseEmployeNumber;
+      const contactDetails = createContactDetails(userId, userObject, ContactOwner);
 
       // if (ContactOwner && userId) {
       //   const contactDetails = {
@@ -230,6 +226,7 @@ const createContact = async (req, res) => {
       //   };
         
         // Create the new contact
+        const newContact = await Contact.create(contactDetails);
       // }
 
     } else if (existEnterpriseUser ) {
@@ -246,7 +243,7 @@ const createContact = async (req, res) => {
         const contactDetails = createContactDetails(userId, userObject, ContactOwner);
         
         // Create the new contact
-        await Contact.create(contactDetails);
+        const newContact = await Contact.create(contactDetails);
       }
     } else if (existEnterpriseEmploye) {
 
@@ -257,7 +254,7 @@ const createContact = async (req, res) => {
         const contactDetails = createContactDetails(userId, userObject, ContactOwner);
         
         // Create the new contact
-        await Contact.create(contactDetails);
+        const newContact = await Contact.create(contactDetails);
       }
 
       // Add the contact to enterpriseEmployeeCollection
@@ -869,6 +866,65 @@ const createPhoneContacts = async (req, res) => {
         }
       }
     }
+
+    const SendNotification = async (userId, isDiskussUser)=>{
+      
+      try {
+        if (isDiskussUser && userId) {
+          const notificationContent = `
+            <h3>
+              <strong>${contactOwnerName}</strong> has added you to their contacts. 
+              Start a chat or schedule a meeting with them!.
+            </h3>
+          `;
+
+          const notification = new Notification({
+            sender: contactOwnerId,
+            receiver: userId,
+            type: "contact_saved",
+            content: notificationContent,
+            status: "unread",
+          });
+
+          await notification.save();
+
+          try {
+            emitNotification(userId, notification);
+          } catch (emitError) {
+            console.error("Failed to emit notification:", emitError.message);
+          }
+        }
+      } catch (notificationError) {
+        console.error("Error in SendNotification:", notificationError.message);
+      }
+    };
+      
+    
+      await Promise.all(validContacts.map((c) => SendNotification(c.userId, c.isDiskussUser)));
+    
+      const notificationContentForMobile = `${contactOwnerName} has saved your contact You can now chat and create a meeting with them.`
+
+      const userArray = validContacts.map(contact => contact.userId.toString());
+
+      if(userArray.length > 0){
+        try {
+          const repose = await axios.post(
+                 "http://13.203.24.247:9000/api/v1/fcm/sendContactNotification",
+                 {
+                   userIds: userArray,
+                   notification: {
+                     title: "Contect Saved",
+                     body: notificationContentForMobile,
+                   },
+                 }
+               );
+               console.log("Notification sent to mobile:", repose.data);
+       } catch (error) {
+         console.log("Error in sending notification to mobile:", error.message);
+       }
+      }
+
+
 
     return res.status(201).json({
       message: "Contacts created successfully",

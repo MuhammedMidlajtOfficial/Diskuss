@@ -18,5 +18,6 @@ authEnterpriseRouter.get('/getProfile/:id',authEnterpriseController.getProfile)
 authEnterpriseRouter.patch('/updateProfile',authEnterpriseController.updateProfile)
 authEnterpriseRouter.post('/resetpassword',authEnterpriseController.resetPassword)
 
+authEnterpriseRouter.delete('/:userId', authEnterpriseController.deleteUserByUserId);
 
 module.exports = authEnterpriseRouter

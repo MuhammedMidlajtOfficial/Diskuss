@@ -19,7 +19,7 @@ cron.schedule('0 0 * * *', async () => {
     console.error("Error triggering deactivation route:", error);
   }
 });
-let num = 1
+
 // MEETING NOTIFICATION 
 cron.schedule("* * * * *", async () => {
   try {
@@ -61,9 +61,9 @@ cron.schedule("* * * * *", async () => {
           : `Reminder: Your meeting "${meeting.meetingTitle}" is starting now!`;
 
           const notificationContent2 = 
-            type === "upcoming"
-              ? `<h3><strong>Reminder:</strong> Your meeting <strong>"${meeting.meetingTitle}"</strong> is scheduled at <strong>${meeting.startTime}</strong>. Be ready in 30 minutes!</h3>`
-              : `<h3><strong>Reminder:</strong> Your meeting <strong>"${meeting.meetingTitle}"</strong> is starting now!</h3>`;
+  type === "upcoming"
+    ? `<h3><strong>Reminder:</strong> Your meeting <strong>"${meeting.meetingTitle}"</strong> is scheduled at <strong>${meeting.startTime}</strong>. Be ready in 30 minutes!</h3>`
+    : `<h3><strong>Reminder:</strong> Your meeting <strong>"${meeting.meetingTitle}"</strong> is starting now!</h3>`;
 
 
       // Batch users into groups of 5 for API requests
@@ -71,8 +71,6 @@ cron.schedule("* * * * *", async () => {
         const batch = invitedPeople.slice(i, i + 5);
 
         try {
-          console.log('meeting notification call',num);
-          
           const response = await axios.post("http://13.203.24.247:9000/api/v1/fcm/sendMeetingNotification", {
             userIds: batch,
             notification: { title: "Meeting Reminder", body: notificationContent },
@@ -111,3 +109,5 @@ cron.schedule("* * * * *", async () => {
     console.error("🔥 Error in cron job:", error);
   }
 });
+
+

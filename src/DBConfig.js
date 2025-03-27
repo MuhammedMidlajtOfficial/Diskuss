@@ -153,7 +153,7 @@ connectDB();
     coinsWithdrawn: { type: Number, default: 0 },
     coinsPending: { type: Number, default: 0 },
     invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
-      
+    isDeleted : {type: Boolean, default: false}
   } ,{ timestamps: true });
 
   // const otpSchema = new mongoose.Schema({
