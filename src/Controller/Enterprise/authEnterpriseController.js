@@ -520,7 +520,7 @@ module.exports.updateProfile = async (req, res) => {
     let isEnterpriseExist;
     let isEnterpriseEmployeeExist;
 
-    if (phnNumber) {
+    if (phnNumber && isUserExist.phnNumber !== phnNumber) {
       // Check if phone number exists in any of the collections, excluding the current user
       isIndividualExist = await individualUserCollection.findOne({
         phnNumber,
