@@ -681,7 +681,7 @@ const deleteMeeting = async (req, res) => {
 
 
     
-const UpdateMeeting = async (req, res) => {
+const UpdateMeeting = = async (req, res) => {
   try {
     const { meetingId } = req.params;
     const updatedData = req.body;
