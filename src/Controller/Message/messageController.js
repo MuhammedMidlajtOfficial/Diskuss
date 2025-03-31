@@ -97,8 +97,8 @@ exports.sendAdminMessage = async (req, res) => {
       {
         content,
         userType: userType.toLowerCase(), 
-        image : image,
-        video : video
+        image: image,
+        video: video
       }
     );
   } catch (notificationError) {
