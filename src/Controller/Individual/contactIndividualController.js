@@ -200,7 +200,7 @@ const createContact = async (req, res) => {
                     {
                       userIds: userArray,
                       notification: {
-                        title: "Contect Saved",
+                        title: "Contact Saved",
                         body: notificationContentForMobile,
                       },
                     }
