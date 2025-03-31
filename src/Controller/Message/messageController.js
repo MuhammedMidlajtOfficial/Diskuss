@@ -83,11 +83,27 @@ exports.sendAdminMessage = async (req, res) => {
 
   io.emit("newMessage", message);
 
+
   // const newChatList = await getAdminNewChatList({userId : "67bdb074ed52c8f211cc44f9"});
   // console.log("newChatList", newChatList);
   // io.to(receiverSocketId).to(senderSocketId).emit("newChat", newChatList);
   // io.emit("newChat", newChatList);
   // io.to(receiverSocketId).emit("newChat", newChatList);
+
+  // Notify the receiver using the admin backend
+  try {
+    await axios.post(
+      "http://13.203.24.247:9000/api/v1/fcm/sendAdminNotification",
+      {
+        content,
+        userType: userType.toLowerCase(), 
+        image : image,
+        video : video
+      }
+    );
+  } catch (notificationError) {
+    console.error("Error sending Admin notification:", notificationError.message);
+  }
 
   return res.status(201).json({
     ...message.toObject(),
