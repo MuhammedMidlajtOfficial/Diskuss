@@ -90,10 +90,13 @@ exports.sendAdminMessage = async (req, res) => {
   // io.emit("newChat", newChatList);
   // io.to(receiverSocketId).emit("newChat", newChatList);
 
+  // const url = "http://13.203.24.247:9000/api/v1/fcm/sendAdminNotification"
+  const url = "https://api.knowconnections.com/admin2/api/v1/fcm/sendAdminNotification "
+
   // Notify the receiver using the admin backend
   try {
     await axios.post(
-      "http://13.203.24.247:9000/api/v1/fcm/sendAdminNotification",
+      url,
       {
         content,
         userType: userType.toLowerCase(), 
@@ -639,7 +642,7 @@ exports.getMessagesByChatId = async (req, res) => {
   try {
     const [messages, totalMessages] = await Promise.all([
       Message.find({ chatId })
-        .sort({ timestamp: 1 })
+        .sort({ timestamp: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
