@@ -101,6 +101,7 @@ exports.sendAdminMessage = async (req, res) => {
         video: video
       }
     );
+    console.log(userType + " " + content + " Notification sent.");
   } catch (notificationError) {
     console.error("Error sending Admin notification:", notificationError.message);
   }
