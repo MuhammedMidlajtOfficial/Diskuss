@@ -232,10 +232,7 @@ const createContact = async (req, res) => {
       }
     };
 
-    // Send Notification
-    if (isDiskussUser && userId ) {
-      SendNotification( userId, contactOwnerId, contactOwnerName )
-    }
+
 
     const existIndividualUser = await individualUserCollection.findOne({
       _id: contactOwnerId,
@@ -263,7 +260,7 @@ const createContact = async (req, res) => {
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
         // Send Notification
-        SendNotification( ContactOwner?._id, userId, userObject.username )
+         SendNotification( userId, ContactOwner?._id, userObject.username )
       }
 
       // if (ContactOwner && userId) {
@@ -311,7 +308,7 @@ const createContact = async (req, res) => {
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
         // Send Notification
-        SendNotification( ContactOwner?._id, userId, userObject.username )
+         SendNotification( userId, ContactOwner?._id, userObject.username )
       }
     } else if (existEnterpriseEmploye) {
 
@@ -324,7 +321,7 @@ const createContact = async (req, res) => {
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
         // Send Notification
-        SendNotification( ContactOwner?._id, userId, userObject.username )
+         SendNotification( userId, ContactOwner?._id, userObject.username )
       }
 
       // Add the contact to enterpriseEmployeeCollection
