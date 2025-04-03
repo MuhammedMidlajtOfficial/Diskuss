@@ -181,7 +181,7 @@ const createContact = async (req, res) => {
     const SendNotification = async (userId, contactOwnerId, contactOwnerName)=>{
       
       try {
-        if (isDiskussUser && userId && contactOwnerName) {
+        if (isDiskussUser && userId && contactOwnerName  && userId !== contactOwnerId) {
           const notificationContent = `
             <h3>
               <strong>${contactOwnerName}</strong> has saved your contact.
