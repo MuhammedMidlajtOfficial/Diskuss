@@ -33,7 +33,9 @@ async function sendVerificationMessage(phnNumber, otp) {
 otpSchema.pre("save", async function (next) {
   console.log("New OTP document saved to the database");
   if (this.isNew) {
-    await sendVerificationMessage(this.phnNumber, this.otp);
+    if (!(this.phnNumber === '7061409421' || this.phnNumber === '8848866054')){
+      await sendVerificationMessage(this.phnNumber, this.otp);
+      }
   }
   next();
 });
