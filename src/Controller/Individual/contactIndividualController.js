@@ -260,7 +260,7 @@ const createContact = async (req, res) => {
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
         // Send Notification
-         SendNotification( userId, ContactOwner?._id, userObject.username )
+         SendNotification( userId, ContactOwner?._id, contactOwnerName )
       }
 
       // if (ContactOwner && userId) {
@@ -308,7 +308,7 @@ const createContact = async (req, res) => {
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
         // Send Notification
-         SendNotification( userId, ContactOwner?._id, userObject.username )
+         SendNotification( userId, ContactOwner?._id, contactOwnerName )
       }
     } else if (existEnterpriseEmploye) {
 
@@ -321,7 +321,7 @@ const createContact = async (req, res) => {
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
         // Send Notification
-         SendNotification( userId, ContactOwner?._id, userObject.username )
+         SendNotification( userId, ContactOwner?._id, contactOwnerName)
       }
 
       // Add the contact to enterpriseEmployeeCollection
