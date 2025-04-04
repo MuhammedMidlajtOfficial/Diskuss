@@ -120,9 +120,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
 
     const otpPayload = { phnNumber, otp };
 
-    if (!(phnNumber === '7061409421' || phnNumber === '8848866054')){
-          await otpCollection.create(otpPayload);
-        }
+    await otpCollection.create(otpPayload);
     return res.status(200).json({
       success: true,
       message: 'OTP sent successfully',
