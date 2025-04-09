@@ -8,7 +8,7 @@ const {
   deleteImageFromS3,
   uploadImageToS3,
 } = require("../../services/AWS/s3Bucket");
-const { individualUserCollection } = require("../../DBConfig");
+const individualUserCollection = require("../../models/users/individualUser");
 
 module.exports.getCardForUser = async (req, res) => {
   try {
