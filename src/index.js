@@ -22,7 +22,7 @@ const expressListRoutes = require('express-list-routes');
 const { connectDB, disconnectDB } = require('./DBConfig.js');
 // const { parseLogs } = require('./crons/testCron.js');
 require('dotenv').config()
-
+ 
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
 // const authEnterpriseRouter = require('./Routes/Enterprise/authEnterpriseRouter.js')
 // const profileRoutes = require('./Routes/Profile/profileRoutes.js')
@@ -70,7 +70,7 @@ app.use('/api/v1', routes);
 
 app.get('/api/v1',(req,res)=>{
   res.send({
-    message : "Welcome to the Know Connections API v1"
+    message : "Welcome to the Know Connections API v1 Development"
   })
 })
 

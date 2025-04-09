@@ -3,46 +3,33 @@ name: Deploy to Development Server
 on:
   push:
     branches:
-      - Development  # Runs when you push to 'Development' branch
+      - Development  # Runs on Development branch push
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Set up SSH agent and add SSH key from GitHub Secrets
     - name: Set up SSH Agent
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.KC_DEVELOPMENT_SSH_PRIVATE_KEY }}
 
-    # Deploy to EC2 instance
-    - name: Deploy to Development EC2
+    - name: Deploy to EC2 (Development)
       run: |
-        # Ensure known_hosts is set up (to avoid SSH confirmation prompts)
-         mkdir -p ~/.ssh
-        ssh-keyscan -H 15.206.211.84 >> ~/.ssh/known_hosts
-        chmod 600 ~/.ssh/known_hosts
-        
-        # Connect and deploy to the EC2 instance
-        ssh -o StrictHostKeyChecking=no ubuntu@15.206.211.84 << 'EOF'
-          cd ~/Diskuss
-          git checkout Development  # Ensure we are on the correct branch
-          git pull origin Development  # Pull latest code
+        ssh-keyscan 3.7.254.117 >> ~/.ssh/known_hosts
+        chmod 644 ~/.ssh/known_hosts
 
-          echo "Installing dependencies..."
+        ssh -o StrictHostKeyChecking=no ec2-user@3.7.254.117 << 'EOF'
+          cd ~/Diskuss || git clone -b Development https://github.com/YOUR_REPO.git ~/Diskuss && cd ~/Diskuss
+          git checkout Development
+          git pull origin Development
+
           npm install --production
-
-          echo "Restarting application..."
-          pm2 restart all || pm2 start server.js
+          pm2 reload all || pm2 start server.js
 
           echo "Deployment to Development server completed!"
         EOF
-
-    # Indicate job completion
-    - name: Complete Deployment
-      run: echo "Development Deployment successful!"
