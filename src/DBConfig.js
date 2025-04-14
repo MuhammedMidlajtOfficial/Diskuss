@@ -1,30 +1,31 @@
-require('dotenv').config();
-const crypto = require('crypto');
+// require('dotenv').config();
 
-const mongoose = require('mongoose');
-const mailSender = require('./util/mailSender');
-// console.log(process.env.MongoDBURL);
+// const crypto = require('crypto');
 
-if (!process.env.MongoDBURL) {
-  console.error("MongoDBURL environment variable is not defined.");
-  process.exit(1);
-}
+// const mongoose = require('mongoose');
+// const mailSender = require('./util/mailSender');
+// // console.log(process.env.MongoDBURL);
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MongoDBURL, {
-      connectTimeoutMS: 20000,
-      socketTimeoutMS: 45000,
-    });
-    console.log('DB Connected');
-    return
-  } catch (error) {
-    console.error('DB Connection Failed:', error);
-    return
-  }
-};
+// if (!process.env.MongoDBURL) {
+//   console.error("MongoDBURL environment variable is not defined.");
+//   process.exit(1);
+// }
 
-connectDB();
+// const connectDB = async () => {
+//   try {
+//     await mongoose.connect(process.env.MongoDBURL, {
+//       connectTimeoutMS: 20000,
+//       socketTimeoutMS: 45000,
+//     });
+//     console.log('DB Connected');
+//     return
+//   } catch (error) {
+//     console.error('DB Connection Failed:', error);
+//     return
+//   }
+// };
+
+// connectDB();
 
 // mongoose.connect( process.env.MongoDBURL,{
 //   connectTimeoutMS: 20000, 
@@ -50,6 +51,55 @@ connectDB();
 //       console.error('DB Connection Failed:', err);
 //     });
 // }
+
+
+// db.js
+require('dotenv').config();
+const mongoose = require('mongoose');
+
+let isConnected = false; // Prevent multiple connections
+
+const connectDB = async () => {
+  if (isConnected) {
+    console.log('🟢 Already connected to MongoDB');
+    return;
+  }
+
+  if (!process.env.MongoDBURL) {
+    console.error("❌ MongoDBURL not set in .env");
+    process.exit(1);
+  }
+
+  try {
+    const conn = await mongoose.connect(process.env.MongoDBURL, {
+      maxPoolSize: 100,            // Handle more concurrent operations
+      minPoolSize: 5,
+      serverSelectionTimeoutMS: 10000, // Fail fast if can't connect
+      connectTimeoutMS: 20000,
+      socketTimeoutMS: 45000,
+    });
+
+    isConnected = true;
+    console.log(`✅ MongoDB connected: ${conn.connection.host}`);
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err.message);
+    process.exit(1);
+  }
+};
+
+// Optional: Clean disconnection when app closes
+const disconnectDB = async () => {
+  if (!isConnected) return;
+
+  try {
+    await mongoose.disconnect();
+    console.log("🔌 MongoDB disconnected");
+    isConnected = false;
+  } catch (err) {
+    console.error("❌ Error during disconnection:", err.message);
+  }
+};
+
 
 
 
@@ -235,3 +285,5 @@ module.exports = {
   individualUserCollection :  mongoose.model('user', individualUserSchema),
 }
 // module.exports.otpCollection = mongoose.model('otp', otpSchema);
+
+module.exports = { connectDB, disconnectDB };

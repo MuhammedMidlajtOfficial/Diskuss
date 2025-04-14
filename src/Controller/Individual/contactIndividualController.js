@@ -1,4 +1,4 @@
-const { individualUserCollection } = require("../../DBConfig");
+const individualUserCollection = require("../../models/users/individualUser");
 const Contact = require("../../models/contacts/contact.individual.model");
 const enterpriseEmployeModel = require("../../models/users/enterpriseEmploye.model");
 const enterpriseUser = require("../../models/users/enterpriseUser");
