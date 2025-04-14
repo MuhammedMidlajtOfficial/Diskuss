@@ -150,7 +150,7 @@ module.exports.createCard = async (cardData) => {
 
     // Adding reward for user
     if( isUserExist?.referralCodeUsed ){
-      createCardByReferralCode(isUserExist.referralCodeUsed, isUserExist.phnNumber)      
+      createCardByReferralCode(isUserExist.referralCodeUsed, isUserExist.phnNumber, inviteeUsername = isUserExist.username)      
     }
 
     await individualUserCollection.updateOne(

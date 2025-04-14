@@ -94,7 +94,7 @@ const registerInvitee = async (referralId, inviteePhoneNo) => {
 };
 
 // Register Invitee by Referral Code
-const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, inviteeId = "") => {
+const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, inviteeId = "", inviteeUsername = "") => {
     // checking if the referral code is valid
     const [individualUser, enterpriseUser, enterpriseEmployeeUser] = await Promise.all(
         [
@@ -155,7 +155,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
       receiver:referrerId,
       currency: 'INR',
       type: "referral",
-      content: inviteePhoneNo +" has registered with your referral code",
+      content: (inviteeUsername || inviteePhoneNo) +" has registered with your referral code",
       status: "unread",
     });
     await notification.save();
@@ -238,7 +238,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
 };
 
 // Create Card by Referral Code and Invitee
-const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
+const createCardByReferralCode = async (referralCode, inviteePhoneNo, inviteeUsername = "") => {
     // checking if the referral code is valid
     const individualUser = await IndividualUser.findOne({ referralCode }).exec();
     const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
@@ -280,7 +280,7 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
         receiver:referrerId,
         currency: 'INR',
         type: "referral",
-        content: inviteePhoneNo +" has Created First Card.",
+        content: (inviteeUsername || inviteePhoneNo) +" has Created First Card.",
         status: "unread",
       });
       await notification.save();

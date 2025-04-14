@@ -15,7 +15,7 @@ const sendInvite = async (req, res) => {
 // Register Invitee
 const registerInvitee = async (req, res) => {
     try {
-        const { referralCode, inviteePhoneNo, inviteeId } = req.body;
+        const { referralCode, inviteePhoneNo, inviteeId, username } = req.body;
         const updatedReferral = await referralService.registerInviteeByReferralCode(referralCode, inviteePhoneNo, inviteeId);
         res.status(200).json({ message: "Invitee registered, coins awarded", updatedReferral });
     } catch (error) {
