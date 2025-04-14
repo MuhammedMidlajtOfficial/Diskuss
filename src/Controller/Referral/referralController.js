@@ -15,8 +15,8 @@ const sendInvite = async (req, res) => {
 // Register Invitee
 const registerInvitee = async (req, res) => {
     try {
-        const { referralCode, inviteePhoneNo, inviteeId, username } = req.body;
-        const updatedReferral = await referralService.registerInviteeByReferralCode(referralCode, inviteePhoneNo, inviteeId);
+        const { referralCode, inviteePhoneNo, inviteeId, inviteeUsername } = req.body;
+        const updatedReferral = await referralService.registerInviteeByReferralCode(referralCode, inviteePhoneNo, inviteeId, inviteeUsername);
         res.status(200).json({ message: "Invitee registered, coins awarded", updatedReferral });
     } catch (error) {
         if (error.message === "Referral not found") {
@@ -34,8 +34,8 @@ const registerInvitee = async (req, res) => {
 // Create Card by Invitee
 const createCardByInvitee = async (req, res) => {
     try {
-        const { referralCode, inviteePhoneNo } = req.body;
-        const updatedReferral = await referralService.createCardByReferralCode(referralCode, inviteePhoneNo);
+        const { referralCode, inviteePhoneNo, inviteeUsername } = req.body;
+        const updatedReferral = await referralService.createCardByReferralCode(referralCode, inviteePhoneNo, inviteeUsername);
         res.status(200).json({ message: "Card created, coins awarded", updatedReferral });
     } catch (error) {
         res.status(500).json({ error: error.message });
