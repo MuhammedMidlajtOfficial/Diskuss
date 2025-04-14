@@ -22,7 +22,7 @@ module.exports.postIndividualLogin = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const user = await individualUserCollection.findOne({ email });
+    const user = await individualUserCollection.findOne({ email, isDeleted: false });
     if (!user) {
       return res.status(404).json({ message: 'No account found with this email address' });
     }
@@ -53,7 +53,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
     }
 
     // Check if phnNumber exists
-    const user = await individualUserCollection.findOne({ phnNumber });
+    const user = await individualUserCollection.findOne({ phnNumber, isDeleted : false });
     if (!user) {
       return res.status(404).json({ message: 'Seems like you are new to   Know Connection, register now to Login' });
     }
@@ -105,7 +105,7 @@ module.exports.postIndividualLoginUsingPhnNumber = async (req, res) => {
     }
 
     // Check if phnNumber exists
-    const user = await individualUserCollection.findOne({ phnNumber });
+    const user = await individualUserCollection.findOne({ phnNumber, isDeleted : false  });
     if (!user) {
       return res.status(404).json({ message: 'Seems like you are new to Know Connection, register now to Login' });
     }
@@ -143,15 +143,15 @@ module.exports.postIndividualSignup = async (req, res) => {
       return res.status(400).json({ message :"All fields are required"}); // Correct response handling
     }
     // Check if email exists
-    const isEmailExist = await individualUserCollection.findOne({ email }).exec();
+    const isEmailExist = await individualUserCollection.findOne({ email, isDeleted : false   }).exec();
     
     if (isEmailExist) {
       return res.status(409).json({ message: "A user with this email address already exists. Please log in instead." });
     }
 
     // Check if phone number exists
-    const isPhoneExist = await individualUserCollection.findOne({ phnNumber }).exec();
-    const isPhoneExist2 = await enterpriseUser.findOne({ phnNumber }).exec();
+    const isPhoneExist = await individualUserCollection.findOne({ phnNumber, isDeleted : false  }).exec();
+    const isPhoneExist2 = await enterpriseUser.findOne({ phnNumber, isDeleted : false  }).exec();
 
     if (isPhoneExist || isPhoneExist2) {
       return res.status(409).json({ message: "A user with this phone number already exists. Please log in instead." }); // Correct response handling
@@ -192,7 +192,7 @@ module.exports.postIndividualSignup = async (req, res) => {
 
     if (newUser) {
       if(referralCode){
-        await referralService.registerInviteeByReferralCode(referralCode, newUser.phnNumber, newUser._id);
+        await referralService.registerInviteeByReferralCode(referralCode, newUser.phnNumber, newUser._id, inviteeUsername = newUser.username);
       }
 
       const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });
@@ -237,7 +237,7 @@ module.exports.postforgotPassword = async (req, res ) => {
       res.status(400, "All fields are Required")
     }
 
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    const isEmailExist = await individualUserCollection.findOne({ email: email, isDeleted : false  }).exec();
     if(isEmailExist){
       // hash password
       const hashedPassword = await bcrypt.hash(passwordRaw, 10);
@@ -272,7 +272,7 @@ module.exports.OtpValidate = async (req, res ) => {
       return res.status(400).json({ message: "Both phnNumber and Otp are required" });
     }
 
-    const isphoneExist = await individualUserCollection.findOne({ phnNumber: phnNumber }).exec();
+    const isphoneExist = await individualUserCollection.findOne({ phnNumber: phnNumber, isDeleted : false  }).exec();
     console.log("phone:",isphoneExist);
     
     if(isphoneExist){
@@ -296,7 +296,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
     if (!phnNumber) {
       return res.status(400).json({ message: "Phone Number is required" });
     }
-    const isphnNumberExist = await individualUserCollection.findOne({ phnNumber: phnNumber }).exec();
+    const isphnNumberExist = await individualUserCollection.findOne({ phnNumber: phnNumber, isDeleted : false  }).exec();
     if(!isphnNumberExist){
       return res.status(401).json({ message: "No account found with the provided phnNumber address" })
     }
@@ -325,7 +325,7 @@ module.exports.sendForgotPasswordOTP = async (req, res) => {
   }
 };
 
-module.exports.sendOTP = async (req, res) => {
+module.exports. sendOTP = async (req, res) => {
   try {
     const { phnNumber } = req.body;
 
@@ -340,9 +340,9 @@ module.exports.sendOTP = async (req, res) => {
 
     if(phnNumber){
       // Check if phone number exists in any of the collections
-      isIndividualExist = await individualUserCollection.findOne({ phnNumber }).exec();
-      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber }).exec();
-      isEnterpriseEmployeeExist = await EnterpriseEmployee.findOne({ phnNumber }).exec();
+      isIndividualExist = await individualUserCollection.findOne({ phnNumber, isDeleted : false  }).exec();
+      isEnterpriseExist = await enterpriseUser.findOne({ phnNumber, isDeleted : false  }).exec();
+      isEnterpriseEmployeeExist = await EnterpriseEmployee.findOne({ phnNumber, isDeleted : false }).exec();
     }
 
     if (isIndividualExist) {
@@ -398,7 +398,7 @@ module.exports.resetPassword = async (req, res ) => {
       return res.status(400).json({ message: "All fields are Required"})
     }
 
-    const isEmailExist = await individualUserCollection.findOne({ email: email }).exec();
+    const isEmailExist = await individualUserCollection.findOne({ email: email, isDeleted : false  }).exec();
     console.log("isEmailExist-",isEmailExist);
     if(!isEmailExist){
       return res.status(401).json({ message : "The provided email is not registered. Please check and try again."})
@@ -412,7 +412,7 @@ module.exports.resetPassword = async (req, res ) => {
     const hashedPassword = await bcrypt.hash(passwordRaw, 10);
     // Update password
     const user = await individualUserCollection.updateOne(
-      { email: email },
+      { email: email, isDeleted : false  },
       { $set: { password: hashedPassword } }
     );
     console.log('user',user);
@@ -442,7 +442,7 @@ module.exports.updateProfile = async (req, res) => {
     let isEnterpriseExist;
     let isEnterpriseEmployeeExist;
 
-    if (phnNumber) {
+    if (phnNumber && isUserExist.phnNumber !== phnNumber) {
       // Check if phone number exists in any of the collections, excluding the current user
       isIndividualExist = await individualUserCollection.findOne({ phnNumber, _id: { $ne: userId } }).exec();
       // isEnterpriseExist = await enterpriseUser.findOne({ phnNumber, _id: { $ne: userId } }).exec();
@@ -639,5 +639,27 @@ module.exports.getUserByPhone = async (req, res) => {
     return res.status(500).json({ 
       message: 'An unexpected error occurred. Please try again later'
     });
+  }
+};
+
+module.exports.deleteUserByUserId = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Update the user to mark as deleted
+    const result = await individualUserCollection.updateOne(
+      { _id: userId },
+      { $set: { isDeleted: true } }
+    );
+
+    // Check if the user was found and updated
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ message: "User has been deleted" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'An unexpected error occurred while deleting the user. Please try again later' });
   }
 };

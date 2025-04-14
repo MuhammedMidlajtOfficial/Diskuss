@@ -681,7 +681,7 @@ const deleteMeeting = async (req, res) => {
 
 
     
-const UpdateMeeting = async (req, res) => {
+const UpdateMeeting  = async (req, res) => {
   try {
     const { meetingId } = req.params;
     const updatedData = req.body;
@@ -693,6 +693,15 @@ const UpdateMeeting = async (req, res) => {
     }
 
     const ownerId = oldMeeting.meetingOwner;
+
+     const updateTime  = updatedData.startTime.split(":");
+
+     if(updateTime[0] < 10){
+
+      updatedData.startTime = "0" + updatedData.startTime;
+      console.log(updatedData.startTime)
+
+     }
 
     // Fetch the meeting owner's profile
     const invitedUserProfile =

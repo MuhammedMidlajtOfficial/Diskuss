@@ -177,6 +177,63 @@ const createContact = async (req, res) => {
     // Create the new contact
     const newContact = await Contact.create(contactDetails);
 
+    // if The contect is Know Connections user 
+    const SendNotification = async (userId, contactOwnerId, contactOwnerName)=>{
+      
+      try {
+        if (isDiskussUser && userId && contactOwnerName) {
+          const notificationContent = `
+            <h3>
+              <strong>${contactOwnerName}</strong> has saved your contact.
+              You can now chat and create a meeting with them.
+            </h3>
+          `;
+
+          const notificationContentForMobile = `${contactOwnerName} has saved your contact You can now chat and create a meeting with them.`
+
+          const userArray = [userId.toString()]
+          console.log(userArray)
+
+          try {
+             const repose = await axios.post(
+                    "http://13.203.24.247:9000/api/v1/fcm/sendContactNotification",
+                    {
+                      userIds: userArray,
+                      notification: {
+                        title: "Contact Saved",
+                        body: notificationContentForMobile,
+                      },
+                    }
+                  );
+                  console.log("Notification sent to mobile:", repose.data);
+          } catch (error) {
+            console.log("Error in sending notification to mobile:", error.message);
+          }
+
+
+          const notification = new Notification({
+            sender: contactOwnerId,
+            receiver: userId,
+            type: "contact_saved",
+            content: notificationContent,
+            status: "unread",
+          });
+
+          await notification.save();
+
+          try {
+            emitNotification(userId, notification);
+          } catch (emitError) {
+            console.error("Failed to emit notification:", emitError.message);
+          }
+        }
+      } catch (notificationError) {
+        console.error("Error in SendNotification:", notificationError.message);
+      }
+    };
+
+
+
     const existIndividualUser = await individualUserCollection.findOne({
       _id: contactOwnerId,
     });
@@ -196,9 +253,15 @@ const createContact = async (req, res) => {
       );
 
       const ContactOwner = await individualUserCollection.findById(contactOwnerId)
+      if (ContactOwner && userId) {
+        const userObject = existIndividualUserNumber || existEnterpriseUserNumber || existEnterpriseEmployeNumber;
+        const contactDetails = createContactDetails(userId, userObject, ContactOwner);
 
-      const userObject = existIndividualUserNumber || existEnterpriseUserNumber || existEnterpriseEmployeNumber;
-      const contactDetails = createContactDetails(userId, userObject, ContactOwner);
+        // Create the new contact
+        const newContact = await Contact.create(contactDetails);
+        // Send Notification
+         SendNotification( userId, ContactOwner?._id, contactOwnerName )
+      }
 
       // if (ContactOwner && userId) {
       //   const contactDetails = {
@@ -225,8 +288,8 @@ const createContact = async (req, res) => {
       //     ],
       //   };
         
-        // Create the new contact
-        const newContact = await Contact.create(contactDetails);
+        // // Create the new contact
+        // const newContact = await Contact.create(contactDetails);
       // }
 
     } else if (existEnterpriseUser ) {
@@ -244,6 +307,8 @@ const createContact = async (req, res) => {
         
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
+        // Send Notification
+         SendNotification( userId, ContactOwner?._id, contactOwnerName )
       }
     } else if (existEnterpriseEmploye) {
 
@@ -255,6 +320,8 @@ const createContact = async (req, res) => {
         
         // Create the new contact
         const newContact = await Contact.create(contactDetails);
+        // Send Notification
+         SendNotification( userId, ContactOwner?._id, contactOwnerName)
       }
 
       // Add the contact to enterpriseEmployeeCollection
@@ -286,64 +353,8 @@ const createContact = async (req, res) => {
       }
     }
 
-    // if The contect is Know Connections user 
-    const SendNotification = async ()=>{
-      
-      try {
-        if (isDiskussUser && userId && contactOwnerName) {
-          const notificationContent = `
-            <h3>
-              <strong>${contactOwnerName}</strong> has saved your contact.
-              You can now chat and create a meeting with them.
-            </h3>
-          `;
-
-          const notificationContentForMobile = `${contactOwnerName} has saved your contact You can now chat and create a meeting with them.`
-
-          const userArray = [userId.toString()]
-          console.log(userArray)
-
-          try {
-             const repose = await axios.post(
-                    "http://13.203.24.247:9000/api/v1/fcm/sendContactNotification",
-                    {
-                      userIds: userArray,
-                      notification: {
-                        title: "Contect Saved",
-                        body: notificationContentForMobile,
-                      },
-                    }
-                  );
-                  console.log("Notification sent to mobile:", repose.data);
-          } catch (error) {
-            console.log("Error in sending notification to mobile:", error.message);
-          }
-
-
-          const notification = new Notification({
-            sender: contactOwnerId,
-            receiver: userId,
-            type: "contact_saved",
-            content: notificationContent,
-            status: "unread",
-          });
-
-          await notification.save();
-
-          try {
-            emitNotification(userId, notification);
-          } catch (emitError) {
-            console.error("Failed to emit notification:", emitError.message);
-          }
-        }
-      } catch (notificationError) {
-        console.error("Error in SendNotification:", notificationError.message);
-      }
-    };
-      
-    if (isDiskussUser && userId ) {
-     SendNotification()
-    }
+    
+    
 
     return res
       .status(201)
@@ -373,6 +384,10 @@ const createContactDetails = ( userId, userObject, contactsData ) => {
       isDiskussUser: true,
     }],
   };
+
+
+  // Send Notification
+  SendNotification()
 };
 
 /**
@@ -408,7 +423,7 @@ const updateContact = async (req, res) => {
     }
 
     // Check if the contact exists
-    const contact = await Contact.findOne({ _id: contact_id });
+    const contact = await Contact.findOne({ _id: new mongoose.Types.ObjectId(contact_id) });
     if (!contact) {
       return res.status(404).json({ message: "Contact not found using this contact id" });
     }
@@ -479,6 +494,7 @@ const updateContact = async (req, res) => {
     const updatedContact = await Contact.updateOne(
       {
         _id: contact_id,
+        contacts: { $exists: true, $ne: [] }, // Ensure contacts array exists
         "contacts._id": contact.contacts[0]._id
       },
       {
@@ -509,15 +525,19 @@ const updateContact = async (req, res) => {
 
     // Depending on the user type, update the contact in the relevant collection
     const updateQuery = { _id: contactOwnerId };
-    const updateData = { $set: { "contacts.$.phnNumber": phnNumber } };
-    const arrayFilters = [{ "contact._id": contact_id }];
+    const updateData = { $push: { "contacts": contact_id } };
+    // const arrayFilters = [{ "contact._id": contact_id }];
 
+    // console.log('updateQuery-',updateQuery);
+    console.log('updateData-',updateData);
+    // console.log('arrayFilters-',arrayFilters);
+    
     if (existIndividualUser) {
-      await individualUserCollection.updateOne(updateQuery, updateData, { arrayFilters });
+      await individualUserCollection.updateOne(updateQuery, updateData);
     } else if (existEnterpriseUser) {
-      await enterpriseUser.updateOne(updateQuery, updateData, { arrayFilters });
+      await enterpriseUser.updateOne(updateQuery, updateData);
     } else if (existEnterpriseEmploye) {
-      await enterpriseEmployeModel.updateOne(updateQuery, updateData, { arrayFilters });
+      await enterpriseEmployeModel.updateOne(updateQuery, updateData);
     }
 
     return res.status(200).json({ message: "Contact updated successfully" });
@@ -867,63 +887,7 @@ const createPhoneContacts = async (req, res) => {
       }
     }
 
-    const SendNotification = async (userId, isDiskussUser)=>{
-      
-      try {
-        if (isDiskussUser && userId) {
-          const notificationContent = `
-            <h3>
-              <strong>${contactOwnerName}</strong> has added you to their contacts. 
-              Start a chat or schedule a meeting with them!.
-            </h3>
-          `;
-
-          const notification = new Notification({
-            sender: contactOwnerId,
-            receiver: userId,
-            type: "contact_saved",
-            content: notificationContent,
-            status: "unread",
-          });
-
-          await notification.save();
-
-          try {
-            emitNotification(userId, notification);
-          } catch (emitError) {
-            console.error("Failed to emit notification:", emitError.message);
-          }
-        }
-      } catch (notificationError) {
-        console.error("Error in SendNotification:", notificationError.message);
-      }
-    };
-      
-    
-      await Promise.all(validContacts.map((c) => SendNotification(c.userId, c.isDiskussUser)));
-    
-      const notificationContentForMobile = `${contactOwnerName} has saved your contact You can now chat and create a meeting with them.`
-
-      const userArray = validContacts.map(contact => contact.userId.toString());
-
-      if(userArray.length > 0){
-        try {
-          const repose = await axios.post(
-                 "http://13.203.24.247:9000/api/v1/fcm/sendContactNotification",
-                 {
-                   userIds: userArray,
-                   notification: {
-                     title: "Contect Saved",
-                     body: notificationContentForMobile,
-                   },
-                 }
-               );
-               console.log("Notification sent to mobile:", repose.data);
-       } catch (error) {
-         console.log("Error in sending notification to mobile:", error.message);
-       }
-      }
-
+   
 
 
     return res.status(201).json({
