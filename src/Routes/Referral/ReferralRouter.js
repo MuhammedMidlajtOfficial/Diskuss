@@ -10,6 +10,7 @@ router.post('/register', ReferralController.registerInvitee);
 router.post('/card', ReferralController.createCardByInvitee);
 router.get('/details/:userId', ReferralController.getReferralDetails);
 router.get('/code-check/:referralCode', ReferralController.checkReferralCode);
+router.get('/referral-details/:userId', ReferralController.getUserReferralDetails);
 
 // Incentive Routes
 router.get('/withdraw', WithdrawalController.getAllWithdrawalDetails);
@@ -25,7 +26,7 @@ router.get('/admin/monthly', ReferralController.getMonthlyReferralsCounts);
 
 router.get('/check-subscription/:userId', ReferralController.checkUserSubscription);
 
-
+// router.get('/test/:userId', ReferralController.test);.
 // Old Referral Routes
 // router.post('/', ReferralController.createReferral);
 // router.get('/', ReferralController.getAllReferrals);

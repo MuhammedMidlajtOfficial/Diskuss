@@ -119,6 +119,16 @@ const checkUserSubscription = async (req, res) => {
     }
 };
 
+const getUserReferralDetails = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        // console.log("userId : ", userId)
+        const referral = await referralService.populateReferrer();
+        res.status(200).json(referral);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 module.exports = {
     sendInvite,
@@ -129,7 +139,8 @@ module.exports = {
     getAllReferrals,
     getMonthlyReferralsCounts,
     createWithdrawal,
-    checkUserSubscription
+    checkUserSubscription,
+    getUserReferralDetails
 }
 
 // // controllers/referralController.js

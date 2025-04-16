@@ -283,7 +283,9 @@ individualUserSchema.pre('save', async function(next) {
 
 module.exports = {
   individualUserCollection :  mongoose.model('user', individualUserSchema),
+  connectDB, 
+  disconnectDB
 }
 // module.exports.otpCollection = mongoose.model('otp', otpSchema);
 
-module.exports = { connectDB, disconnectDB };
+// module.exports = {  };
