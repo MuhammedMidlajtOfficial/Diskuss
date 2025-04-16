@@ -119,6 +119,7 @@ module.exports.sendOTPForPhnNumber = async (req, res) => {
     }
 
     const otpPayload = { phnNumber, otp };
+
     await otpCollection.create(otpPayload);
     return res.status(200).json({
       success: true,
