@@ -20,7 +20,8 @@ cron.schedule('0 0 * * *', async () => {
   }
 });
 
-// // MEETING NOTIFICATION 
+// MEETING NOTIFICATION 
+
 cron.schedule("* * * * *", async () => {
   try {
     console.log("🔍 Checking for upcoming and ongoing meetings...");
