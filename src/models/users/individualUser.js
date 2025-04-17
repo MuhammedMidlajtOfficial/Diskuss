@@ -100,8 +100,21 @@ const IndividualUserSchema = new mongoose.Schema({
     coinsWithdrawn: { type: Number, default: 0 },
     coinsPending: { type: Number, default: 0 },
     invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
+<<<<<<< HEAD
     isDeleted : {type: Boolean, default: false}
   } ,{ timestamps: true });
+=======
+  
+    meetings: [
+      {
+        type: String,
+        ref: "EnterpriseMeeting", // Reference to Meeting model
+        required: false,
+      },
+    ],
+    isDeleted : {type: Boolean, default: false}
+ }, { timestamps: true });
+>>>>>>> e61513fc07769b220c726a1874f13a416621a6e7
 
 // Set referral code as unique
 // Generate a unique referral code using crypto or any other method
