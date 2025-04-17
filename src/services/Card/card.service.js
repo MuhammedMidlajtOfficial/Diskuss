@@ -1,4 +1,4 @@
-const { individualUserCollection } = require("../../DBConfig");
+const individualUserCollection = require("../../models/users/individualUser");
 const enterpriseUser = require("../../models/users/enterpriseUser");
 const enterpriseEmployee = require("../../models/users/enterpriseEmploye.model");
 const EnterpriseEmployeeCard = require("../../models/cards/enterpriseEmployeCard.model");
@@ -150,7 +150,7 @@ module.exports.createCard = async (cardData) => {
 
     // Adding reward for user
     if( isUserExist?.referralCodeUsed ){
-      createCardByReferralCode(isUserExist.referralCodeUsed, isUserExist.phnNumber)      
+      createCardByReferralCode(isUserExist.referralCodeUsed, isUserExist.phnNumber, inviteeUsername = isUserExist.username)      
     }
 
     await individualUserCollection.updateOne(

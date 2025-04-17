@@ -6,7 +6,7 @@ const enterpriseEmployeCardModel = require("../../models/cards/enterpriseEmploye
 const mailSender = require("../../util/mailSender");
 const bcrypt = require("bcrypt");
 const { uploadImageToS3, deleteImageFromS3 } = require("../../services/AWS/s3Bucket");
-const { individualUserCollection } = require("../../DBConfig");
+const individualUserCollection = require("../../models/users/individualUser");
 
 module.exports.getCards = async (req, res) => {
   try {

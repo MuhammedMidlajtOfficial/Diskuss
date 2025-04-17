@@ -21,6 +21,7 @@ cron.schedule('0 0 * * *', async () => {
 });
 
 // MEETING NOTIFICATION 
+
 cron.schedule("* * * * *", async () => {
   try {
     console.log("🔍 Checking for upcoming and ongoing meetings...");
@@ -109,5 +110,4 @@ cron.schedule("* * * * *", async () => {
     console.error("🔥 Error in cron job:", error);
   }
 });
-
 

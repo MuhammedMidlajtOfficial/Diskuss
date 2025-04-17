@@ -19,9 +19,10 @@ require('./services/Cron/cron.service.js');
 const logger = require('./config/logger.js');
 const morgan = require('./config/morgan.js');
 const expressListRoutes = require('express-list-routes');
+const { connectDB, disconnectDB } = require('./DBConfig.js');
 // const { parseLogs } = require('./crons/testCron.js');
 require('dotenv').config()
-
+ 
 // const authIndividualRouter = require('./Routes/Individual/authIndividualRouter.js')
 // const authEnterpriseRouter = require('./Routes/Enterprise/authEnterpriseRouter.js')
 // const profileRoutes = require('./Routes/Profile/profileRoutes.js')
@@ -69,7 +70,7 @@ app.use('/api/v1', routes);
 
 app.get('/api/v1',(req,res)=>{
   res.send({
-    message : "Welcome to the Know Connections API v1"
+    message : "Welcome to the Know Connections API V1 Development"
   })
 })
 
@@ -102,12 +103,26 @@ function getRoutes(stack, basePath = '') {
 // console.log('All Routes:', JSON.stringify(allRoutes, null, 2));
 
 
+const port = process.env.PORT || "2000"
 
-const port = process.env.PORT || "3000"
-
-server.listen(port, () => {
-  console.log(`Server connected on http://localhost:${port}`);
-  logger.info(`Server connected on http://localhost:${port}`);
+connectDB().then(() => {
+  server.listen(port, () => { // Use `server.listen` instead of `app.listen` if using socket.io
+    console.log('🚀 Server is running on port', port);
+  });
 });
 
-module.exports = {app};
+// ✅ Graceful shutdown (IMPORTANT)
+process.on('SIGINT', async () => {
+  console.log('\n🛑 SIGINT received. Closing DB connection...');
+  await disconnectDB();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('\n🛑 SIGTERM received. Closing DB connection...');
+  await disconnectDB();
+  process.exit(0);
+});
+
+module.exports = { app };
+

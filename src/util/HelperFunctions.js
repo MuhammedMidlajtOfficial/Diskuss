@@ -1,6 +1,7 @@
 const EnterpriseUser = require('../models/users/enterpriseUser');
 const { individualUserCollection: IndividualUser } = require('../DBConfig');
 const EnterpriseEmployeeUser = require('../models/users/enterpriseEmploye.model');
+const { ObjectId } = require('mongodb');
 
 const  convertToMonthlyCounts = (year, data) => {
     year = parseInt(year);
@@ -61,7 +62,38 @@ const checkUserType = async (userId) => {
     }
 }
 
+const findUsernameById = async (id) => {
+    try {
+        if (!ObjectId.isValid(id)) {
+            throw new Error('Invalid ID format');
+        }
+
+        const objectId = new ObjectId(id);
+
+        // Query all collections simultaneously and resolve the first match
+        const user = await Promise.any([
+            IndividualUser.findOne({ _id: objectId }, { username: 1 }).lean(),
+            EnterpriseUser.findOne({ _id: objectId }, { username: 1 }).lean(),
+            EnterpriseEmployeeUser.findOne({ _id: objectId }, { username: 1 }).lean()
+        ]);
+
+        if (!user) {
+            return { error: 'No user found with the given ID' };
+        }
+
+        return { username: user.username };
+    } catch (error) {
+        if (error instanceof AggregateError) {
+            return { error: 'No user found with the given ID' };
+        }
+        console.error('Error finding user:', error.message);
+        return { error: error.message };
+    }
+};
+
+
 module.exports = {
     convertToMonthlyCounts,
-    checkUserType
+    checkUserType,
+    findUsernameById
 };

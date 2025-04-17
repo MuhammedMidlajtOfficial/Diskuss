@@ -237,7 +237,7 @@ module.exports.postEnterpriseSignup = async (req, res) => {
 
     console.log(newUser);
     if(referralCode){
-            await referralService.registerInviteeByReferralCode(referralCode, newUser.phnNumber, newUser._id);
+            await referralService.registerInviteeByReferralCode(referralCode, newUser.phnNumber, newUser._id, inviteeUsername = newUser.username);
     }
 
     // ✅ 7. Generate JWT tokens
