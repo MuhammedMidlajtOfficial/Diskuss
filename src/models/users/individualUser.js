@@ -61,7 +61,7 @@ const IndividualUserSchema = new mongoose.Schema({
     },
     meetings : [{
       type: String,
-      ref: "Meeting", // Reference to Meeting model
+      // ref: "Meeting", // Reference to Meeting model
       required: false,
     }],
     status:{
