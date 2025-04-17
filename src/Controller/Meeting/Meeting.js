@@ -413,28 +413,28 @@ const getMeetingsByIds = async (req, res) => {
     //   _id: { $in: meetingIds },
     //   // selectedDate: { $gte: today },
     // }).sort({ selectedDate: 1 }); // Ascending order based on selectedDate
-  //   const meetings = await MeetingBase.aggregate([
-  //     {
-  //         $match: {
-  //             $and: [
-  //                 {
-  //                     $or: [
-  //                         { meetingOwner: new ObjectId(userId) }, // Convert userId to ObjectId
-  //                         { 'invitedPeople.user': new ObjectId(userId) } // Convert userId to ObjectId
-  //                     ]
-  //                 },
-  //                 { selectedDate: { $gte: today } } // Filter meetings with selectedDate >= today
-  //             ]
-  //         }
-  //     }
-  // ]);
-  const meetings = await MeetingBase.find({
-    $or: [
-      { meetingOwner: userId },
-      { 'invitedPeople.user': userId }
-    ],
-    selectedDate: { $gte: today }
-  }).sort({ selectedDate: 1 });
+    const meetings = await MeetingBase.aggregate([
+      {
+          $match: {
+              $and: [
+                  {
+                      $or: [
+                          { meetingOwner: new ObjectId(userId) }, // Convert userId to ObjectId
+                          { 'invitedPeople.user': new ObjectId(userId) } // Convert userId to ObjectId
+                      ]
+                  },
+                  { selectedDate: { $gte: today } } // Filter meetings with selectedDate >= today
+              ]
+          }
+      }
+  ]);
+  // const meetings = await MeetingBase.find({
+  //   $or: [
+  //     { meetingOwner: userId },
+  //     { 'invitedPeople.user': userId }
+  //   ],
+  //   selectedDate: { $gte: today }
+  // }).sort({ selectedDate: 1 });
   
 
 
