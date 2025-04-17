@@ -11,7 +11,8 @@ const ReferralSchema = new mongoose.Schema({
     rewardsEarned: { type: Number, default: 0 },
     isSubscribed: { type: Boolean, default: false },
     registeredAt: { type: Date },
-    cardCreatedAt: { type: Date }
+    cardCreatedAt: { type: Date },
+    inviteeUsername: { type: String },
 }, { timestamps: true });
 
 

@@ -192,7 +192,7 @@ module.exports.postIndividualSignup = async (req, res) => {
 
     if (newUser) {
       if(referralCode){
-        await referralService.registerInviteeByReferralCode(referralCode, newUser.phnNumber, newUser._id);
+        await referralService.registerInviteeByReferralCode(referralCode, newUser.phnNumber, newUser._id, inviteeUsername = newUser.username);
       }
 
       const existingContact = await Contact.find({ 'contacts.phnNumber': newUser.phnNumber });

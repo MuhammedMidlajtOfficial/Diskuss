@@ -1,7 +1,7 @@
 const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
 const enterpriseUser = require('../../models/users/enterpriseUser');
 const UserSubscription = require('../../models/subscription/userSubscription.model');
-const { individualUserCollection } = require("../../DBConfig");
+const individualUserCollection = require("../../models/users/individualUser");
 const { razorpay } = require('../Razorpay/razorpay');
 const subscriptionPlanModel = require('../../models/subscription/subscriptionPlan.model');
 const mailSender = require('../../util/mailSender');

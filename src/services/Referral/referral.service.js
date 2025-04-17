@@ -5,12 +5,13 @@ const EnterpriseEmployeeUser = require("../../models/users/enterpriseEmploye.mod
 const { ObjectAlreadyInActiveTierError } = require('@aws-sdk/client-s3');
 const {convertToMonthlyCounts} = require('../../util/HelperFunctions');
 const { ObjectId } = require('mongodb');
-const { checkUserType } = require('../../util/HelperFunctions');
+const { checkUserType, findUsernameById } = require('../../util/HelperFunctions');
 const Settings = require('../../models/settings/settingModel');
 const configModel = require('../../models/config/config.model');
 const UserSubscription = require('../../models/subscription/userSubscription.model');
 const Notification = require("../../models/notification/NotificationModel")
 const {emitNotification} = require("../../Controller/Socket.io/NotificationSocketIo");
+
 
 
 const configId = "67988e04e60b8e8d6f248e07"
@@ -94,7 +95,7 @@ const registerInvitee = async (referralId, inviteePhoneNo) => {
 };
 
 // Register Invitee by Referral Code
-const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, inviteeId = "") => {
+const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, inviteeId = "", inviteeUsername = "") => {
     // checking if the referral code is valid
     const [individualUser, enterpriseUser, enterpriseEmployeeUser] = await Promise.all(
         [
@@ -131,7 +132,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
         referralCode: referralCode
     });
     
-    referral = await Referral.findOne({ referrer: referrerId, inviteePhoneNo, status : "Invited"}).exec(); 
+    referral = await Referral.findOne({ referrer: referrerId, inviteePhoneNo, inviteeUsername, status : "Invited"}).exec(); 
 
     if(!referral) {
         newReferral.referrer = individualUser ? individualUser._id : enterpriseUser ? enterpriseUser._id : enterpriseEmployeeUser._id;
@@ -155,7 +156,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
       receiver:referrerId,
       currency: 'INR',
       type: "referral",
-      content: inviteePhoneNo +" has registered with your referral code",
+      content: (inviteeUsername || inviteePhoneNo) +" has registered with your referral code",
       status: "unread",
     });
     await notification.save();
@@ -238,7 +239,7 @@ const registerInviteeByReferralCode = async (referralCode, inviteePhoneNo, invit
 };
 
 // Create Card by Referral Code and Invitee
-const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
+const createCardByReferralCode = async (referralCode, inviteePhoneNo, inviteeUsername = "") => {
     // checking if the referral code is valid
     const individualUser = await IndividualUser.findOne({ referralCode }).exec();
     const enterpriseUser = await EnterpriseUser.findOne({ referralCode }).exec();
@@ -280,7 +281,7 @@ const createCardByReferralCode = async (referralCode, inviteePhoneNo) => {
         receiver:referrerId,
         currency: 'INR',
         type: "referral",
-        content: inviteePhoneNo +" has Created First Card.",
+        content: (inviteeUsername || inviteePhoneNo) +" has Created First Card.",
         status: "unread",
       });
       await notification.save();
@@ -393,6 +394,9 @@ const getReferralDetails = async (userId) => {
     if (!referalConfig) {
         throw new Error("Referral configuration not found");
     }
+
+    
+
     const settings = referalConfig.config;
     // Update invitee's coin balance
     // const totalCoinsData = await Referral.aggregate([ 
@@ -832,6 +836,83 @@ const updateCoinsBalance = async (userId) => {
 }
 };
 
+const newinvitedUsers =  [
+    {
+        "_id": "67f5e480125ca8f9317199bc",
+        "inviteePhoneNo": "8762190131",
+        "referralCode": "32B4798F",
+        "invitee": "67f5e480125ca8f9317199b5",
+        "status": "Card Created",
+        "rewardsEarned": 100,
+        "isSubscribed": true,
+        "referrer": "67be3408b58788b423209a3b",
+        "createdAt": "2025-04-09T03:07:44.901Z",
+        "updatedAt": "2025-04-14T12:33:47.508Z",
+        "__v": 0,
+        "registeredAt": "2025-04-14T12:33:47.507Z"
+    },
+    {
+        "_id": "67f8db0f125ca8f93189956b",
+        "inviteePhoneNo": "9538188175",
+        "referralCode": "32B4798F",
+        "invitee": "67f8db0f125ca8f931899564",
+        "status": "Card Created",
+        "rewardsEarned": 100,
+        "isSubscribed": false,
+        "referrer": "67be3408b58788b423209a3b",
+        "createdAt": "2025-04-11T09:04:15.095Z",
+        "updatedAt": "2025-04-11T09:08:38.423Z",
+        "__v": 0,
+        "registeredAt": "2025-04-11T09:08:38.423Z"
+    },
+    {
+        "_id": "67fc90a1125ca8f9319309b6",
+        "inviteePhoneNo": "9945444711",
+        "referralCode": "32B4798F",
+        "invitee": "67fc90a1125ca8f9319309af",
+        "status": "Card Created",
+        "rewardsEarned": 100,
+        "isSubscribed": false,
+        "referrer": "67be3408b58788b423209a3b",
+        "createdAt": "2025-04-14T04:35:45.715Z",
+        "updatedAt": "2025-04-14T05:02:55.123Z",
+        "__v": 0,
+        "registeredAt": "2025-04-14T05:02:55.122Z"
+    }
+]
+
+const populateReferrer = async (invitedUsers = newinvitedUsers) => {
+    return await Promise.all(
+      invitedUsers.map(async (userElem) => {
+        const objectId = new ObjectId(userElem.invitee);
+        // const objectId = new ObjectId("67f5e480125ca8f9317199b5");
+        // console.log(objectId);
+
+        const [individualUser, enterpriseUser, enterpriseEmployeeUser] = await Promise.all([
+                    IndividualUser.findOne({ _id: objectId }, { username: 1, image:1 }).lean(),
+                    EnterpriseUser.findOne({ _id: objectId }, { username: 1, image:1 }).lean(),
+                    EnterpriseEmployeeUser.findOne({ _id: objectId }, { username: 1, image:1 }).lean()
+                ]);
+        
+        let user = null;
+        if (individualUser) {
+            user = individualUser;
+        } else if (enterpriseUser) {
+            user = enterpriseUser;
+        } else if (enterpriseEmployeeUser) {
+            user = enterpriseEmployeeUser;
+        }
+        // console.log("user : ", user);
+
+        return {
+            ...userElem,
+            inviteeUsername: user ? user.username : null,
+            inviteeImage: user ? user.image : null,
+        };
+      })
+    );
+  };
+
 module.exports = {
     sendInvite,
     registerInvitee,
@@ -846,7 +927,8 @@ module.exports = {
     createCardByReferralCode,
 
     checkUserSubscription,
-    checkUserSubscriptionByPhoneNo
+    checkUserSubscriptionByPhoneNo,
+    populateReferrer,
 }
 
 // const {Referral} = require('../../models/referral/referral.model');

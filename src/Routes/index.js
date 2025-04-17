@@ -32,7 +32,9 @@ const logRouter = require('./logRouter.js')
 const uploadVCard = require("./VCard/VCardRoute.js")
 const settingsRouter = require('./settingsRoutes.js'); 
 const urlShortnerRouter = require('./urlShortner/urlShortnerRotuer.js');
+const userRouter = require('./userRouter.js')
 const { validateJwtToken } = require('../Middleware/validateJwtToken.js');
+const path = require('path');
 
 
 const router = express.Router();
@@ -178,6 +180,10 @@ const defaultRoutes = [
   {
     path : '/urlShortner',
     route : urlShortnerRouter
+  },
+  {
+    path: '/user',
+    route: userRouter
   }
   
 ];
