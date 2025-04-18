@@ -15,6 +15,7 @@ const PaymentSchema = new mongoose.Schema({
 }); 
 
 const UserSubscriptionSchema = new mongoose.Schema({
+    invoiceNumber : { type: String },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'SubscriptionPlan',default:null},
     planName: { type: String ,default:""},

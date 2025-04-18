@@ -8,6 +8,10 @@ const {emitNotification,} = require("../../Controller/Socket.io/NotificationSock
 const axios = require('axios');
 const mongoose = require('mongoose');
 const { Referral } = require('../../models/referral/referral.model');
+const { default: Invoice } = require('../../models/subscription/invoice');
+const { individualUserCollection } = require('../../DBConfig');
+const enterpriseUser = require('../../models/users/enterpriseUser');
+const enterpriseEmployeModel = require('../../models/users/enterpriseEmploye.model');
 
 /**
  * Get all UserSubscription
@@ -42,6 +46,7 @@ const getUserSubscriptionByUserId = async (req, res) => {
  * @param {Response} res
  * @returns {Promise<Response>}
     */
+let idNumber = 0;
 const createUserSubscription = async (req, res) => {
   try {
     const { 
@@ -90,9 +95,40 @@ const createUserSubscription = async (req, res) => {
       console.error("Failed to create Razorpay order.");
       return res.status(500).json({ error: "Failed to create Razorpay order" });
     }
+    
+    const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const now = new Date();
+    const currentMonth = monthNames[now.getMonth()];
+    const currentYear = now.getFullYear();
+
+    let userTypeCode = '';
+    if (userId) {
+      isIndividualExist = await individualUserCollection.findById(userId).exec();
+      isEnterpriseExist = await enterpriseUser.findById(userId).exec();
+      isEnterpriseEmployeeExist = await enterpriseEmployeModel.findById(userId).exec();
+    }
+
+    if (isIndividualExist) {
+      userTypeCode = 'INV';
+    } else if (isEnterpriseExist) {
+      userTypeCode = 'ENT';
+    } else if (isEnterpriseEmployeeExist) {
+      userTypeCode = 'EMP';
+    }
+
+    // Query invoice collection for count in this month for the user type
+    const invoiceCount = await Invoice.countDocuments({
+      type: userTypeCode,
+      month: currentMonth,
+      year: currentYear,
+    });
+
+    const paddedCount = String(invoiceCount + 1).padStart(4, '0');
+    const invoiceNumber = `KC/${userTypeCode}/${currentMonth}/${paddedCount}`;
 
     // Prepare subscription data with Razorpay order ID
     const userSubscriptionData = {
+      invoiceNumber,
       userId,
       planId: newPlanId,
       planName: subscriptionPlan.name,
@@ -109,6 +145,14 @@ const createUserSubscription = async (req, res) => {
       razorpayOrderId: razorpayOrder.id,  // Store the Razorpay order ID
       status: 'pending'  // Set as 'pending' until payment confirmation
     };
+
+    // Save invoice data
+    await Invoice.create({
+      invoiceNumber,
+      type: userTypeCode,
+      month: currentMonth,
+      year: currentYear,
+    });
 
     // Save the user subscription data in the database
     const newUserSubscriptionData = await UserSubscriptionService.createUserSubscription(userSubscriptionData);
