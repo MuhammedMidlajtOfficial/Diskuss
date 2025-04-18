@@ -56,6 +56,7 @@
 // db.js
 require('dotenv').config();
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 let isConnected = false; // Prevent multiple connections
 

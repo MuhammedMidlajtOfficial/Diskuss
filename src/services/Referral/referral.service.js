@@ -881,7 +881,9 @@ const newinvitedUsers =  [
     }
 ]
 
-const populateReferrer = async (invitedUsers = newinvitedUsers) => {
+const populateReferrer = async (userId) => {
+    const invitedUsers = await Referral.find({referrer: userId}).lean();
+    console.log(invitedUsers);
     return await Promise.all(
       invitedUsers.map(async (userElem) => {
         const objectId = new ObjectId(userElem.invitee);
