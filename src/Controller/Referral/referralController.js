@@ -123,7 +123,7 @@ const getUserReferralDetails = async (req, res) => {
     try {
         const { userId } = req.params;
         // console.log("userId : ", userId)
-        const referral = await referralService.populateReferrer();
+        const referral = await referralService.populateReferrer(userId);
         res.status(200).json(referral);
     } catch (error) {
         res.status(500).json({ error: error.message });
