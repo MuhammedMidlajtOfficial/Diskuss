@@ -97,21 +97,8 @@ const IndividualUserSchema = new mongoose.Schema({
     coinsBalance : { type: Number, default: 0 },
     coinsRewarded: { type: Number, default: 0 },
     coinsWithdrawn: { type: Number, default: 0 },
-    coinsWithdrawn: { type: Number, default: 0 },
     coinsPending: { type: Number, default: 0 },
     invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
-    isDeleted : {type: Boolean, default: false}
-  } ,{ timestamps: true });
-  
-    meetings: [
-      {
-        type: String,
-        ref: "EnterpriseMeeting", // Reference to Meeting model
-        required: false,
-      },
-    ],
-    isDeleted : {type: Boolean, default: false}
- }, { timestamps: true });
     isDeleted : {type: Boolean, default: false}
   } ,{ timestamps: true });
 
