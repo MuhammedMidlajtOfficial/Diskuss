@@ -289,3 +289,4 @@ module.exports = {
 // module.exports.otpCollection = mongoose.model('otp', otpSchema);
 
 // module.exports = {  };
+module.exports = { connectDB, disconnectDB };

@@ -62,6 +62,7 @@ const IndividualUserSchema = new mongoose.Schema({
     meetings : [{
       type: String,
       // ref: "Meeting", // Reference to Meeting model
+      ref: "Meeting", // Reference to Meeting model
       required: false,
     }],
     status:{
@@ -96,6 +97,7 @@ const IndividualUserSchema = new mongoose.Schema({
     }, // Referral code used by the user
     coinsBalance : { type: Number, default: 0 },
     coinsRewarded: { type: Number, default: 0 },
+    coinsWithdrawn: { type: Number, default: 0 },
     coinsWithdrawn: { type: Number, default: 0 },
     coinsPending: { type: Number, default: 0 },
     invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Referral' }],
