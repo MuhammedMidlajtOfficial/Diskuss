@@ -107,7 +107,7 @@ const port = process.env.PORT || "2000"
 
 connectDB().then(() => {
   server.listen(port, () => { // Use `server.listen` instead of `app.listen` if using socket.io
-    console.log('🚀 Server is running on port', port);
+    console.log('🚀 Development Server is running on port', port);
   });
 });
 
