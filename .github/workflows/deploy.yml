@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main  # You can change this to the branch you use for deployment
+      - dev-server  # You can change this to the branch you use for deployment
 
 jobs:
   deploy:
@@ -25,16 +25,16 @@ jobs:
       run: |
         # Ensure known_hosts is set up (to avoid interactive prompts)
         mkdir -p ~/.ssh
-        ssh-keyscan -H 13.203.24.247 >> ~/.ssh/known_hosts
+        ssh-keyscan -H 13.200.242.253 >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
         
         # Run the deploy commands on your EC2 instance
-        ssh -o StrictHostKeyChecking=no ubuntu@13.203.24.247 << 'EOF'
+        ssh -o StrictHostKeyChecking=no ec2-user@13.200.242.253 << 'EOF'
           cd ~/Diskuss
           git pull origin main  # Pull latest code from GitHub
           npm install  # Install dependencies
           # Restart the application or any service you need here (e.g., pm2 restart, etc.)
-          pm2 restart 10  # Example if you use pm2 to manage your application
+          pm2 restart 0  # Example if you use pm2 to manage your application
         EOF
 
     # Complete the job
