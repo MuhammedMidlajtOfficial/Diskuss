@@ -31,7 +31,7 @@ jobs:
         # Run the deploy commands on your EC2 instance
         ssh -o StrictHostKeyChecking=no ec2-user@13.200.242.253 << 'EOF'
           cd ~/Diskuss
-          git pull origin main  # Pull latest code from GitHub
+          git pull origin dev-server  # Pull latest code from GitHub
           npm install  # Install dependencies
           # Restart the application or any service you need here (e.g., pm2 restart, etc.)
           pm2 restart 0  # Example if you use pm2 to manage your application
