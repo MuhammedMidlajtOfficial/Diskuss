@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy to EC2 Development
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
         ssh-private-key: ${{ secrets.DISKUSS_SSH_PRIVATE_KEY }}
 
     # Deploy to EC2 instance
-    - name: Deploy to EC2
+    - name: Deploy to EC2 Dev Server
       run: |
         # Ensure known_hosts is set up (to avoid interactive prompts)
         mkdir -p ~/.ssh
